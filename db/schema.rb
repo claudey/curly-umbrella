@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_14_231742) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_14_232854) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -101,6 +101,65 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_14_231742) do
     t.index ["name"], name: "index_insurance_companies_on_name"
   end
 
+  create_table "motor_applications", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.bigint "client_id", null: false
+    t.string "application_number", null: false
+    t.string "status", default: "draft", null: false
+    t.datetime "submitted_at"
+    t.datetime "reviewed_at"
+    t.bigint "reviewed_by_id"
+    t.datetime "approved_at"
+    t.bigint "approved_by_id"
+    t.datetime "rejected_at"
+    t.bigint "rejected_by_id"
+    t.text "rejection_reason"
+    t.string "vehicle_make", null: false
+    t.string "vehicle_model", null: false
+    t.integer "vehicle_year", null: false
+    t.string "vehicle_color"
+    t.string "vehicle_chassis_number"
+    t.string "vehicle_engine_number"
+    t.string "vehicle_registration_number"
+    t.decimal "vehicle_value", precision: 15, scale: 2
+    t.string "vehicle_category", null: false
+    t.string "vehicle_fuel_type"
+    t.string "vehicle_transmission"
+    t.integer "vehicle_seating_capacity"
+    t.string "vehicle_usage", null: false
+    t.integer "vehicle_mileage"
+    t.string "driver_license_number", null: false
+    t.date "driver_license_expiry", null: false
+    t.string "driver_license_class"
+    t.integer "driver_years_experience"
+    t.integer "driver_age"
+    t.string "driver_occupation"
+    t.boolean "driver_has_claims", default: false, null: false
+    t.text "driver_claims_details"
+    t.string "coverage_type", null: false
+    t.date "coverage_start_date", null: false
+    t.date "coverage_end_date", null: false
+    t.decimal "sum_insured", precision: 15, scale: 2
+    t.decimal "deductible", precision: 15, scale: 2
+    t.decimal "premium_amount", precision: 15, scale: 2
+    t.decimal "commission_rate", precision: 5, scale: 2
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.datetime "discarded_at"
+    t.index ["application_number"], name: "index_motor_applications_on_application_number", unique: true
+    t.index ["approved_by_id"], name: "index_motor_applications_on_approved_by_id"
+    t.index ["client_id"], name: "index_motor_applications_on_client_id"
+    t.index ["discarded_at"], name: "index_motor_applications_on_discarded_at"
+    t.index ["driver_license_number"], name: "index_motor_applications_on_driver_license_number"
+    t.index ["organization_id"], name: "index_motor_applications_on_organization_id"
+    t.index ["rejected_by_id"], name: "index_motor_applications_on_rejected_by_id"
+    t.index ["reviewed_by_id"], name: "index_motor_applications_on_reviewed_by_id"
+    t.index ["status"], name: "index_motor_applications_on_status"
+    t.index ["submitted_at"], name: "index_motor_applications_on_submitted_at"
+    t.index ["vehicle_registration_number"], name: "index_motor_applications_on_vehicle_registration_number"
+  end
+
   create_table "organizations", force: :cascade do |t|
     t.string "name", null: false
     t.string "license_number", null: false
@@ -134,5 +193,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_14_231742) do
   add_foreign_key "brokerage_agents", "users"
   add_foreign_key "clients", "organizations"
   add_foreign_key "insurance_companies", "users", column: "approved_by_id"
+  add_foreign_key "motor_applications", "clients"
+  add_foreign_key "motor_applications", "organizations"
+  add_foreign_key "motor_applications", "users", column: "approved_by_id"
+  add_foreign_key "motor_applications", "users", column: "rejected_by_id"
+  add_foreign_key "motor_applications", "users", column: "reviewed_by_id"
   add_foreign_key "users", "organizations"
 end

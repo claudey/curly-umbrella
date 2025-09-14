@@ -1,0 +1,457 @@
+<%= render 'shared/page_header', 
+    title: 'New Motor Insurance Application', 
+    subtitle: 'Complete all steps to submit your motor insurance application' %>
+
+<%= render 'shared/breadcrumbs', breadcrumbs: [
+  { name: 'Dashboard', url: root_path, icon: :house },
+  { name: 'Motor Applications', url: motor_applications_path, icon: :car },
+  { name: 'New Application' }
+] %>
+
+<div class="bg-white rounded-lg shadow-sm border border-base-200">
+  <%= form_with model: @motor_application, 
+                local: true, 
+                data: { 
+                  controller: "multi-step-form form-validation",
+                  "multi-step-form-current-step-value": 1,
+                  "form-validation-realtime-value": true,
+                  "form-validation-submit-button-value": "[data-multi-step-form-target='nextButton']"
+                }, 
+                class: "p-6" do |form| %>
+    
+    <!-- Progress Bar -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-sm font-medium text-gray-700" data-multi-step-form-target="progress">
+          Step 1 of 4
+        </span>
+        <span class="text-sm text-gray-500">Complete all required fields</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2">
+        <div class="bg-primary h-2 rounded-full transition-all duration-300" 
+             style="width: 25%"
+             data-multi-step-form-target="progressBar"
+             role="progressbar" 
+             aria-valuenow="25" 
+             aria-valuemin="0" 
+             aria-valuemax="100">
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 1: Vehicle Details -->
+    <div data-multi-step-form-target="step" class="space-y-6">
+      <div class="border-b border-gray-200 pb-4 mb-6">
+        <h3 class="text-lg font-medium text-gray-900 flex items-center">
+          <%= phosphor_icon(:car, size: 5, css_class: "mr-2") %>
+          Vehicle Information
+        </h3>
+        <p class="text-sm text-gray-500 mt-1">Provide details about the vehicle to be insured</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <%= render Ui::Form::InputComponent.new(
+          form: form,
+          name: :vehicle_make,
+          label: "Vehicle Make",
+          placeholder: "e.g., Toyota, Honda, Mercedes",
+          required: true,
+          icon: :car,
+          data: { "form-validation-target": "field" }
+        ) %>
+
+        <%= render Ui::Form::InputComponent.new(
+          form: form,
+          name: :vehicle_model,
+          label: "Vehicle Model",
+          placeholder: "e.g., Camry, Civic, C-Class",
+          required: true
+        ) %>
+
+        <div class="form-control w-full">
+          <%= form.label :vehicle_year, "Vehicle Year", class: "label label-text" %>
+          <%= form.select :vehicle_year, 
+                          options_for_select((1990..Date.current.year + 1).map { |year| [year, year] }.reverse),
+                          { prompt: "Select Year" },
+                          { class: "select select-bordered w-full", required: true, data: { "form-validation-target": "field" } } %>
+        </div>
+
+        <div class="form-control w-full">
+          <%= form.label :vehicle_category, "Vehicle Category", class: "label label-text" %>
+          <%= form.select :vehicle_category,
+                          options_for_select(MotorApplication::VEHICLE_CATEGORIES.map { |cat| [cat.humanize, cat] }),
+                          { prompt: "Select Category" },
+                          { class: "select select-bordered w-full", required: true } %>
+        </div>
+
+        <%= render Ui::Form::InputComponent.new(
+          form: form,
+          name: :vehicle_color,
+          label: "Vehicle Color",
+          placeholder: "e.g., Red, Blue, White"
+        ) %>
+
+        <%= render Ui::Form::InputComponent.new(
+          form: form,
+          name: :vehicle_registration_number,
+          label: "Registration Number",
+          placeholder: "e.g., GR-1234-20"
+        ) %>
+
+        <%= render Ui::Form::InputComponent.new(
+          form: form,
+          name: :vehicle_chassis_number,
+          label: "Chassis Number",
+          placeholder: "Vehicle Chassis/VIN Number"
+        ) %>
+
+        <%= render Ui::Form::InputComponent.new(
+          form: form,
+          name: :vehicle_engine_number,
+          label: "Engine Number",
+          placeholder: "Vehicle Engine Number"
+        ) %>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="form-control w-full">
+          <%= form.label :vehicle_fuel_type, "Fuel Type", class: "label label-text" %>
+          <%= form.select :vehicle_fuel_type,
+                          options_for_select(MotorApplication::FUEL_TYPES.map { |fuel| [fuel.humanize, fuel] }),
+                          { prompt: "Select Fuel Type" },
+                          { class: "select select-bordered w-full" } %>
+        </div>
+
+        <div class="form-control w-full">
+          <%= form.label :vehicle_transmission, "Transmission", class: "label label-text" %>
+          <%= form.select :vehicle_transmission,
+                          options_for_select(MotorApplication::TRANSMISSION_TYPES.map { |trans| [trans.humanize, trans] }),
+                          { prompt: "Select Transmission" },
+                          { class: "select select-bordered w-full" } %>
+        </div>
+
+        <%= render Ui::Form::InputComponent.new(
+          form: form,
+          name: :vehicle_seating_capacity,
+          type: "number",
+          label: "Seating Capacity",
+          placeholder: "e.g., 5"
+        ) %>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="form-control w-full">
+          <%= form.label :vehicle_usage, "Vehicle Usage", class: "label label-text" %>
+          <%= form.select :vehicle_usage,
+                          options_for_select(MotorApplication::VEHICLE_USAGE_TYPES.map { |usage| [usage.humanize, usage] }),
+                          { prompt: "Select Usage Type" },
+                          { class: "select select-bordered w-full", required: true } %>
+        </div>
+
+        <%= render Ui::Form::InputComponent.new(
+          form: form,
+          name: :vehicle_value,
+          type: "number",
+          label: "Vehicle Value (GHS)",
+          placeholder: "e.g., 45000",
+          hint: "Current market value of the vehicle"
+        ) %>
+      </div>
+    </div>
+
+    <!-- Step 2: Driver Information -->
+    <div data-multi-step-form-target="step" class="space-y-6 hidden">
+      <div class="border-b border-gray-200 pb-4 mb-6">
+        <h3 class="text-lg font-medium text-gray-900 flex items-center">
+          <%= phosphor_icon(:user, size: 5, css_class: "mr-2") %>
+          Driver Information
+        </h3>
+        <p class="text-sm text-gray-500 mt-1">Provide driver details and driving history</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <%= render Ui::Form::InputComponent.new(
+          form: form,
+          name: :driver_license_number,
+          label: "Driver's License Number",
+          placeholder: "e.g., DL-123456789",
+          required: true,
+          icon: :identification_card,
+          data: { "form-validation-target": "field" }
+        ) %>
+
+        <%= render Ui::Form::InputComponent.new(
+          form: form,
+          name: :driver_license_expiry,
+          type: "date",
+          label: "License Expiry Date",
+          required: true,
+          data: { "form-validation-target": "field" }
+        ) %>
+
+        <div class="form-control w-full">
+          <%= form.label :driver_license_class, "License Class", class: "label label-text" %>
+          <%= form.select :driver_license_class,
+                          options_for_select([
+                            ['Class A - Motorcycles', 'A'],
+                            ['Class B - Light Vehicles', 'B'],
+                            ['Class C - Medium Vehicles', 'C'],
+                            ['Class D - Heavy Vehicles', 'D']
+                          ]),
+                          { prompt: "Select License Class" },
+                          { class: "select select-bordered w-full" } %>
+        </div>
+
+        <%= render Ui::Form::InputComponent.new(
+          form: form,
+          name: :driver_years_experience,
+          type: "number",
+          label: "Years of Driving Experience",
+          placeholder: "e.g., 5"
+        ) %>
+
+        <%= render Ui::Form::InputComponent.new(
+          form: form,
+          name: :driver_occupation,
+          label: "Driver's Occupation",
+          placeholder: "e.g., Teacher, Engineer"
+        ) %>
+
+        <%= render Ui::Form::InputComponent.new(
+          form: form,
+          name: :vehicle_mileage,
+          type: "number",
+          label: "Current Mileage (km)",
+          placeholder: "e.g., 85000"
+        ) %>
+      </div>
+
+      <div class="space-y-4">
+        <div class="form-control">
+          <label class="label cursor-pointer justify-start">
+            <%= form.check_box :driver_has_claims, class: "checkbox checkbox-primary mr-3" %>
+            <span class="label-text">Driver has previous insurance claims</span>
+          </label>
+        </div>
+
+        <div class="form-control w-full">
+          <%= form.label :driver_claims_details, "Claims Details", class: "label label-text" %>
+          <%= form.text_area :driver_claims_details,
+                             placeholder: "Provide details of any previous claims (if applicable)",
+                             class: "textarea textarea-bordered w-full h-24" %>
+          <div class="label">
+            <span class="label-text-alt">Only fill this if you have previous claims</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Coverage Requirements -->
+    <div data-multi-step-form-target="step" class="space-y-6 hidden">
+      <div class="border-b border-gray-200 pb-4 mb-6">
+        <h3 class="text-lg font-medium text-gray-900 flex items-center">
+          <%= phosphor_icon(:shield_check, size: 5, css_class: "mr-2") %>
+          Coverage Requirements
+        </h3>
+        <p class="text-sm text-gray-500 mt-1">Select your desired insurance coverage and policy period</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="form-control w-full">
+          <%= form.label :coverage_type, "Coverage Type", class: "label label-text" %>
+          <%= form.select :coverage_type,
+                          options_for_select(MotorApplication::COVERAGE_TYPES.map { |type| [type.humanize, type] }),
+                          { prompt: "Select Coverage Type" },
+                          { class: "select select-bordered w-full", required: true } %>
+          <div class="label">
+            <span class="label-text-alt">Choose the level of coverage you need</span>
+          </div>
+        </div>
+
+        <%= render Ui::Form::InputComponent.new(
+          form: form,
+          name: :sum_insured,
+          type: "number",
+          label: "Sum Insured (GHS)",
+          placeholder: "e.g., 50000",
+          hint: "Maximum amount payable in case of total loss"
+        ) %>
+
+        <%= render Ui::Form::InputComponent.new(
+          form: form,
+          name: :coverage_start_date,
+          type: "date",
+          label: "Coverage Start Date",
+          required: true
+        ) %>
+
+        <%= render Ui::Form::InputComponent.new(
+          form: form,
+          name: :coverage_end_date,
+          type: "date",
+          label: "Coverage End Date",
+          required: true
+        ) %>
+
+        <%= render Ui::Form::InputComponent.new(
+          form: form,
+          name: :deductible,
+          type: "number",
+          label: "Deductible (GHS)",
+          placeholder: "e.g., 1000",
+          hint: "Amount you pay before insurance coverage kicks in"
+        ) %>
+      </div>
+    </div>
+
+    <!-- Step 4: Review and Submit -->
+    <div data-multi-step-form-target="step" class="space-y-6 hidden">
+      <div class="border-b border-gray-200 pb-4 mb-6">
+        <h3 class="text-lg font-medium text-gray-900 flex items-center">
+          <%= phosphor_icon(:check_circle, size: 5, css_class: "mr-2") %>
+          Review & Submit
+        </h3>
+        <p class="text-sm text-gray-500 mt-1">Review your application details and add any additional notes</p>
+      </div>
+
+      <div class="bg-base-100 rounded-lg p-6 space-y-4">
+        <h4 class="font-medium text-gray-900">Application Summary</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <span class="font-medium">Vehicle:</span>
+            <span id="review-vehicle" class="text-gray-600"></span>
+          </div>
+          <div>
+            <span class="font-medium">Coverage Type:</span>
+            <span id="review-coverage" class="text-gray-600"></span>
+          </div>
+          <div>
+            <span class="font-medium">Coverage Period:</span>
+            <span id="review-period" class="text-gray-600"></span>
+          </div>
+          <div>
+            <span class="font-medium">Driver License:</span>
+            <span id="review-license" class="text-gray-600"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-control w-full">
+        <%= form.label :notes, "Additional Notes", class: "label label-text" %>
+        <%= form.text_area :notes,
+                           placeholder: "Any additional information or special requests...",
+                           class: "textarea textarea-bordered w-full h-32" %>
+      </div>
+
+      <!-- Document Upload Section -->
+      <div class="space-y-4">
+        <h4 class="font-medium text-gray-900 flex items-center">
+          <%= phosphor_icon(:paperclip, size: 5, css_class: "mr-2") %>
+          Supporting Documents
+        </h4>
+        <p class="text-sm text-gray-500">Upload relevant documents (optional but recommended)</p>
+        
+        <div data-controller="file-upload" 
+             data-file-upload-max-files-value="5"
+             data-file-upload-max-size-value="<%= 5.megabytes %>"
+             data-file-upload-accepted-types-value='["image/*", "application/pdf", ".doc", ".docx"]'
+             class="space-y-4">
+          
+          <!-- Drop Zone -->
+          <div data-file-upload-target="dropzone" 
+               class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors cursor-pointer">
+            <div class="space-y-2">
+              <%= phosphor_icon(:cloud_arrow_up, size: 12, css_class: "mx-auto text-gray-400") %>
+              <div>
+                <p class="text-sm font-medium text-gray-900">
+                  Click to upload or drag and drop
+                </p>
+                <p class="text-xs text-gray-500">
+                  Driver's license, vehicle registration, insurance history, etc.
+                </p>
+                <p class="text-xs text-gray-400">
+                  PNG, JPG, PDF, DOC up to 5MB (max 5 files)
+                </p>
+              </div>
+            </div>
+            
+            <input type="file" 
+                   multiple 
+                   accept="image/*,.pdf,.doc,.docx"
+                   data-file-upload-target="input"
+                   data-action="change->file-upload#inputChanged"
+                   class="hidden">
+          </div>
+          
+          <!-- File Preview -->
+          <div data-file-upload-target="preview" class="space-y-2"></div>
+        </div>
+      </div>
+
+      <div class="alert alert-info">
+        <%= phosphor_icon(:info, size: 5, css_class: "mr-2") %>
+        <span>
+          By submitting this application, you confirm that all information provided is accurate and complete. 
+          Your application will be reviewed within 2-3 business days.
+        </span>
+      </div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="flex justify-between items-center pt-6 border-t border-gray-200 mt-8">
+      <%= render Ui::ButtonComponent.new(
+        variant: "ghost",
+        icon: :arrow_left,
+        data: { action: "click->multi-step-form#previous", "multi-step-form-target": "prevButton" },
+        disabled: true
+      ) do %>
+        Previous
+      <% end %>
+
+      <div class="flex space-x-3">
+        <%= render Ui::ButtonComponent.new(
+          variant: "outline",
+          href: motor_applications_path
+        ) do %>
+          Cancel
+        <% end %>
+
+        <%= render Ui::ButtonComponent.new(
+          variant: "primary",
+          icon: :arrow_right,
+          icon_position: :right,
+          data: { action: "click->multi-step-form#next", "multi-step-form-target": "nextButton" }
+        ) do %>
+          Next
+        <% end %>
+      </div>
+    </div>
+
+  <% end %>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Auto-populate review section when form values change
+  const form = document.querySelector('form');
+  
+  form.addEventListener('input', function() {
+    updateReviewSection();
+  });
+
+  function updateReviewSection() {
+    const make = document.querySelector('[name="motor_application[vehicle_make]"]')?.value || '';
+    const model = document.querySelector('[name="motor_application[vehicle_model]"]')?.value || '';
+    const year = document.querySelector('[name="motor_application[vehicle_year]"]')?.value || '';
+    const coverage = document.querySelector('[name="motor_application[coverage_type]"]')?.value || '';
+    const startDate = document.querySelector('[name="motor_application[coverage_start_date]"]')?.value || '';
+    const endDate = document.querySelector('[name="motor_application[coverage_end_date]"]')?.value || '';
+    const license = document.querySelector('[name="motor_application[driver_license_number]"]')?.value || '';
+    
+    document.getElementById('review-vehicle').textContent = `${year} ${make} ${model}`.trim();
+    document.getElementById('review-coverage').textContent = coverage.replace('_', ' ').toUpperCase();
+    document.getElementById('review-period').textContent = startDate && endDate ? `${startDate} to ${endDate}` : '';
+    document.getElementById('review-license').textContent = license;
+  }
+});
+</script>

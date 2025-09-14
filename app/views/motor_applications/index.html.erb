@@ -1,0 +1,262 @@
+<%= render 'shared/page_header', 
+    title: 'Motor Insurance Applications', 
+    subtitle: 'Manage and track motor insurance applications' do %>
+  <%= render Ui::ButtonComponent.new(
+    variant: 'primary',
+    icon: :plus,
+    href: new_motor_application_path
+  ) do %>
+    New Application
+  <% end %>
+<% end %>
+
+<%= render 'shared/breadcrumbs', breadcrumbs: [
+  { name: 'Dashboard', url: root_path, icon: :house },
+  { name: 'Motor Applications', icon: :car }
+] %>
+
+<!-- Filter and Search Section -->
+<div class="bg-white rounded-lg shadow-sm border border-base-200 p-6 mb-6">
+  <%= form_with url: motor_applications_path, method: :get, local: true, class: "flex flex-col lg:flex-row gap-4" do |form| %>
+    <div class="flex-1">
+      <%= form.text_field :search, 
+                          placeholder: "Search by client name or application number...",
+                          value: params[:search],
+                          class: "input input-bordered w-full" %>
+    </div>
+    
+    <div class="flex gap-2">
+      <%= form.select :status, 
+                      options_for_select([
+                        ['All Statuses', ''],
+                        ['Draft', 'draft'],
+                        ['Submitted', 'submitted'],
+                        ['Under Review', 'under_review'],
+                        ['Approved', 'approved'],
+                        ['Rejected', 'rejected']
+                      ], params[:status]),
+                      {},
+                      { class: "select select-bordered" } %>
+      
+      <%= render Ui::ButtonComponent.new(
+        variant: 'outline',
+        icon: :magnifying_glass
+      ) do %>
+        Search
+      <% end %>
+      
+      <% if params[:search].present? || params[:status].present? %>
+        <%= link_to motor_applications_path, class: "btn btn-ghost" do %>
+          <%= phosphor_icon(:x, size: 4, css_class: "mr-1") %>
+          Clear
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+  <%= render 'shared/stats_card',
+      title: 'Total Applications',
+      value: current_user.organization.motor_applications.count,
+      icon: :file_text,
+      change: '+12%',
+      change_type: 'positive',
+      change_period: 'vs last month' %>
+  
+  <%= render 'shared/stats_card',
+      title: 'Pending Review',
+      value: current_user.organization.motor_applications.pending_review.count,
+      icon: :clock,
+      change: '+3',
+      change_type: 'positive',
+      change_period: 'this week' %>
+  
+  <%= render 'shared/stats_card',
+      title: 'Approved',
+      value: current_user.organization.motor_applications.approved.count,
+      icon: :check_circle,
+      change: '+8%',
+      change_type: 'positive',
+      change_period: 'vs last month' %>
+  
+  <%= render 'shared/stats_card',
+      title: 'Under Review',
+      value: current_user.organization.motor_applications.under_review.count,
+      icon: :eye,
+      change: '+2',
+      change_type: 'positive',
+      change_period: 'today' %>
+</div>
+
+<!-- Applications Table -->
+<div class="bg-white rounded-lg shadow-sm border border-base-200">
+  <% if @motor_applications.any? %>
+    <div class="overflow-x-auto">
+      <table class="table table-zebra w-full">
+        <thead>
+          <tr>
+            <th>Application #</th>
+            <th>Client</th>
+            <th>Vehicle</th>
+            <th>Coverage Type</th>
+            <th>Status</th>
+            <th>Submitted</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @motor_applications.each do |application| %>
+            <tr>
+              <td>
+                <div class="font-medium">
+                  <%= link_to application.application_number, application, 
+                             class: "link link-primary" %>
+                </div>
+              </td>
+              
+              <td>
+                <div class="flex items-center space-x-3">
+                  <div class="avatar placeholder">
+                    <div class="bg-neutral text-neutral-content rounded-full w-8">
+                      <span class="text-xs">
+                        <%= application.client.first_name.first.upcase %>
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="font-bold text-sm">
+                      <%= application.client.full_name %>
+                    </div>
+                    <div class="text-sm opacity-50">
+                      <%= application.client.email %>
+                    </div>
+                  </div>
+                </div>
+              </td>
+              
+              <td>
+                <div class="text-sm">
+                  <div class="font-medium">
+                    <%= application.vehicle_display_name %>
+                  </div>
+                  <div class="text-gray-500">
+                    <%= application.vehicle_category.humanize %>
+                  </div>
+                </div>
+              </td>
+              
+              <td>
+                <span class="text-sm">
+                  <%= application.coverage_type.humanize %>
+                </span>
+              </td>
+              
+              <td>
+                <div class="badge <%= application.status_badge_class %>">
+                  <%= application.status.humanize %>
+                </div>
+              </td>
+              
+              <td>
+                <div class="text-sm">
+                  <% if application.submitted_at %>
+                    <%= time_ago_in_words(application.submitted_at) %> ago
+                  <% else %>
+                    <span class="text-gray-400">Not submitted</span>
+                  <% end %>
+                </div>
+              </td>
+              
+              <td>
+                <div class="flex space-x-2">
+                  <%= link_to application, 
+                             class: "btn btn-ghost btn-xs",
+                             title: "View" do %>
+                    <%= phosphor_icon(:eye, size: 4) %>
+                  <% end %>
+                  
+                  <% if application.can_edit? %>
+                    <%= link_to edit_motor_application_path(application), 
+                               class: "btn btn-ghost btn-xs",
+                               title: "Edit" do %>
+                      <%= phosphor_icon(:pencil, size: 4) %>
+                    <% end %>
+                  <% end %>
+                  
+                  <% if application.can_submit? %>
+                    <%= link_to submit_application_motor_application_path(application), 
+                               method: :patch,
+                               class: "btn btn-primary btn-xs",
+                               title: "Submit",
+                               data: { confirm: "Are you sure you want to submit this application?" } do %>
+                      <%= phosphor_icon(:paper_plane_tilt, size: 4) %>
+                    <% end %>
+                  <% end %>
+                  
+                  <div class="dropdown dropdown-end">
+                    <div tabindex="0" role="button" class="btn btn-ghost btn-xs">
+                      <%= phosphor_icon(:dots_three_vertical, size: 4) %>
+                    </div>
+                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                      <li>
+                        <%= link_to application do %>
+                          <%= phosphor_icon(:eye, size: 4, css_class: "mr-2") %>
+                          View Details
+                        <% end %>
+                      </li>
+                      
+                      <% if application.can_edit? %>
+                        <li>
+                          <%= link_to edit_motor_application_path(application) do %>
+                            <%= phosphor_icon(:pencil, size: 4, css_class: "mr-2") %>
+                            Edit
+                          <% end %>
+                        </li>
+                      <% end %>
+                      
+                      <% if application.draft? %>
+                        <li>
+                          <%= link_to motor_application_path(application), 
+                                     method: :delete,
+                                     data: { confirm: "Are you sure?" },
+                                     class: "text-error" do %>
+                            <%= phosphor_icon(:trash, size: 4, css_class: "mr-2") %>
+                            Delete
+                          <% end %>
+                        </li>
+                      <% end %>
+                    </ul>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Pagination would go here -->
+    <div class="p-4 border-t">
+      <div class="text-sm text-gray-500">
+        Showing <%= @motor_applications.count %> applications
+      </div>
+    </div>
+  <% else %>
+    <div class="p-12">
+      <%= render 'shared/empty_state',
+          icon: :car,
+          title: 'No motor insurance applications',
+          description: 'Get started by creating your first motor insurance application.' do %>
+        <%= render Ui::ButtonComponent.new(
+          variant: 'primary',
+          icon: :plus,
+          href: new_motor_application_path
+        ) do %>
+          Create Application
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

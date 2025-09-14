@@ -67,15 +67,15 @@
 - [x] Create shared partials for common layouts
 
 ### 1.6 Motor Insurance Application Forms
-- [ ] Create MotorApplication model with detailed fields
-- [ ] Design multi-step form using DaisyUI components:
-  - [ ] Vehicle details step
-  - [ ] Driver information step  
-  - [ ] Coverage requirements step
-  - [ ] Review and submit step
-- [ ] Implement form validation with real-time feedback
-- [ ] Add file upload capability for documents
-- [ ] Create application management dashboard
+- [x] Create MotorApplication model with detailed fields
+- [x] Design multi-step form using DaisyUI components:
+  - [x] Vehicle details step
+  - [x] Driver information step  
+  - [x] Coverage requirements step
+  - [x] Review and submit step
+- [x] Implement form validation with real-time feedback
+- [x] Add file upload capability for documents
+- [x] Create application management dashboard
 
 ### 1.7 Basic Notification System
 - [ ] Set up ActionMailer with Brevo integration

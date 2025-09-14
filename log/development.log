@@ -173,3 +173,143 @@ Migrating to AddDiscardedAtToBrokerageAgents (20250914231742)
   [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mCOMMIT /*application='Brokersync'*/[0m
   [1m[35m (0.1ms)[0m  [1m[34mSELECT pg_advisory_unlock(3723901152872937645) /*application='Brokersync'*/[0m
   [1m[36mActiveRecord::SchemaMigration Load (0.1ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Brokersync'*/[0m
+  [1m[35m (0.1ms)[0m  [1m[34mSELECT pg_try_advisory_lock(3723901152872937645) /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (1.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.4ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='Brokersync'*/[0m
+Migrating to CreateMotorApplications (20250914232832)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN /*application='Brokersync'*/[0m
+  [1m[35m (9.1ms)[0m  [1m[35mCREATE TABLE "motor_applications" ("id" bigserial primary key, "organization_id" bigint NOT NULL, "client_id" bigint NOT NULL, "application_number" character varying NOT NULL, "status" character varying DEFAULT 'draft' NOT NULL, "submitted_at" timestamp(6), "reviewed_at" timestamp(6), "reviewed_by_id" bigint, "approved_at" timestamp(6), "approved_by_id" bigint, "rejected_at" timestamp(6), "rejected_by_id" bigint, "rejection_reason" text, "vehicle_make" character varying NOT NULL, "vehicle_model" character varying NOT NULL, "vehicle_year" integer NOT NULL, "vehicle_color" character varying, "vehicle_chassis_number" character varying, "vehicle_engine_number" character varying, "vehicle_registration_number" character varying, "vehicle_value" decimal(15,2), "vehicle_category" character varying NOT NULL, "vehicle_fuel_type" character varying, "vehicle_transmission" character varying, "vehicle_seating_capacity" integer, "vehicle_usage" character varying NOT NULL, "vehicle_mileage" integer, "driver_license_number" character varying NOT NULL, "driver_license_expiry" date NOT NULL, "driver_license_class" character varying, "driver_years_experience" integer, "driver_age" integer, "driver_occupation" character varying, "driver_has_claims" boolean DEFAULT FALSE NOT NULL, "driver_claims_details" text, "coverage_type" character varying NOT NULL, "coverage_start_date" date NOT NULL, "coverage_end_date" date NOT NULL, "sum_insured" decimal(15,2), "deductible" decimal(15,2), "premium_amount" decimal(15,2), "commission_rate" decimal(5,2), "notes" text, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL, CONSTRAINT "fk_rails_5ccefe8455"
+FOREIGN KEY ("organization_id")
+  REFERENCES "organizations" ("id")
+, CONSTRAINT "fk_rails_29438a500c"
+FOREIGN KEY ("client_id")
+  REFERENCES "clients" ("id")
+, CONSTRAINT "fk_rails_edfd8a1431"
+FOREIGN KEY ("reviewed_by_id")
+  REFERENCES "users" ("id")
+, CONSTRAINT "fk_rails_0b8463c924"
+FOREIGN KEY ("approved_by_id")
+  REFERENCES "users" ("id")
+, CONSTRAINT "fk_rails_cd7b5738a9"
+FOREIGN KEY ("rejected_by_id")
+  REFERENCES "users" ("id")
+) /*application='Brokersync'*/[0m
+  [1m[35m (0.5ms)[0m  [1m[35mCREATE INDEX "index_motor_applications_on_organization_id" ON "motor_applications" ("organization_id") /*application='Brokersync'*/[0m
+  [1m[35m (0.4ms)[0m  [1m[35mCREATE INDEX "index_motor_applications_on_client_id" ON "motor_applications" ("client_id") /*application='Brokersync'*/[0m
+  [1m[35m (0.6ms)[0m  [1m[35mCREATE INDEX "index_motor_applications_on_reviewed_by_id" ON "motor_applications" ("reviewed_by_id") /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE INDEX "index_motor_applications_on_approved_by_id" ON "motor_applications" ("approved_by_id") /*application='Brokersync'*/[0m
+  [1m[35m (0.4ms)[0m  [1m[35mCREATE INDEX "index_motor_applications_on_rejected_by_id" ON "motor_applications" ("rejected_by_id") /*application='Brokersync'*/[0m
+  [1m[35m (11.0ms)[0m  [1m[35mCREATE INDEX "index_motor_applications_on_organization_id" ON "motor_applications" ("organization_id") /*application='Brokersync'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[31mROLLBACK /*application='Brokersync'*/[0m
+  [1m[35m (0.1ms)[0m  [1m[34mSELECT pg_advisory_unlock(3723901152872937645) /*application='Brokersync'*/[0m
+  [1m[35m (0.1ms)[0m  [1m[34mSELECT pg_try_advisory_lock(3723901152872937645) /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.4ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.3ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='Brokersync'*/[0m
+Migrating to CreateMotorApplications (20250914232832)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN /*application='Brokersync'*/[0m
+  [1m[35m (3.6ms)[0m  [1m[35mCREATE TABLE "motor_applications" ("id" bigserial primary key, "organization_id" bigint NOT NULL, "client_id" bigint NOT NULL, "application_number" character varying NOT NULL, "status" character varying DEFAULT 'draft' NOT NULL, "submitted_at" timestamp(6), "reviewed_at" timestamp(6), "reviewed_by_id" bigint, "approved_at" timestamp(6), "approved_by_id" bigint, "rejected_at" timestamp(6), "rejected_by_id" bigint, "rejection_reason" text, "vehicle_make" character varying NOT NULL, "vehicle_model" character varying NOT NULL, "vehicle_year" integer NOT NULL, "vehicle_color" character varying, "vehicle_chassis_number" character varying, "vehicle_engine_number" character varying, "vehicle_registration_number" character varying, "vehicle_value" decimal(15,2), "vehicle_category" character varying NOT NULL, "vehicle_fuel_type" character varying, "vehicle_transmission" character varying, "vehicle_seating_capacity" integer, "vehicle_usage" character varying NOT NULL, "vehicle_mileage" integer, "driver_license_number" character varying NOT NULL, "driver_license_expiry" date NOT NULL, "driver_license_class" character varying, "driver_years_experience" integer, "driver_age" integer, "driver_occupation" character varying, "driver_has_claims" boolean DEFAULT FALSE NOT NULL, "driver_claims_details" text, "coverage_type" character varying NOT NULL, "coverage_start_date" date NOT NULL, "coverage_end_date" date NOT NULL, "sum_insured" decimal(15,2), "deductible" decimal(15,2), "premium_amount" decimal(15,2), "commission_rate" decimal(5,2), "notes" text, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL, CONSTRAINT "fk_rails_5ccefe8455"
+FOREIGN KEY ("organization_id")
+  REFERENCES "organizations" ("id")
+, CONSTRAINT "fk_rails_29438a500c"
+FOREIGN KEY ("client_id")
+  REFERENCES "clients" ("id")
+, CONSTRAINT "fk_rails_edfd8a1431"
+FOREIGN KEY ("reviewed_by_id")
+  REFERENCES "users" ("id")
+, CONSTRAINT "fk_rails_0b8463c924"
+FOREIGN KEY ("approved_by_id")
+  REFERENCES "users" ("id")
+, CONSTRAINT "fk_rails_cd7b5738a9"
+FOREIGN KEY ("rejected_by_id")
+  REFERENCES "users" ("id")
+) /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE INDEX "index_motor_applications_on_organization_id" ON "motor_applications" ("organization_id") /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE INDEX "index_motor_applications_on_client_id" ON "motor_applications" ("client_id") /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE INDEX "index_motor_applications_on_reviewed_by_id" ON "motor_applications" ("reviewed_by_id") /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE INDEX "index_motor_applications_on_approved_by_id" ON "motor_applications" ("approved_by_id") /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE INDEX "index_motor_applications_on_rejected_by_id" ON "motor_applications" ("rejected_by_id") /*application='Brokersync'*/[0m
+  [1m[35m (3.7ms)[0m  [1m[35mCREATE INDEX "index_motor_applications_on_client_id" ON "motor_applications" ("client_id") /*application='Brokersync'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[31mROLLBACK /*application='Brokersync'*/[0m
+  [1m[35m (0.1ms)[0m  [1m[34mSELECT pg_advisory_unlock(3723901152872937645) /*application='Brokersync'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[34mSELECT pg_try_advisory_lock(3723901152872937645) /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.3ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.9ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='Brokersync'*/[0m
+Migrating to CreateMotorApplications (20250914232832)
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN /*application='Brokersync'*/[0m
+  [1m[35m (7.6ms)[0m  [1m[35mCREATE TABLE "motor_applications" ("id" bigserial primary key, "organization_id" bigint NOT NULL, "client_id" bigint NOT NULL, "application_number" character varying NOT NULL, "status" character varying DEFAULT 'draft' NOT NULL, "submitted_at" timestamp(6), "reviewed_at" timestamp(6), "reviewed_by_id" bigint, "approved_at" timestamp(6), "approved_by_id" bigint, "rejected_at" timestamp(6), "rejected_by_id" bigint, "rejection_reason" text, "vehicle_make" character varying NOT NULL, "vehicle_model" character varying NOT NULL, "vehicle_year" integer NOT NULL, "vehicle_color" character varying, "vehicle_chassis_number" character varying, "vehicle_engine_number" character varying, "vehicle_registration_number" character varying, "vehicle_value" decimal(15,2), "vehicle_category" character varying NOT NULL, "vehicle_fuel_type" character varying, "vehicle_transmission" character varying, "vehicle_seating_capacity" integer, "vehicle_usage" character varying NOT NULL, "vehicle_mileage" integer, "driver_license_number" character varying NOT NULL, "driver_license_expiry" date NOT NULL, "driver_license_class" character varying, "driver_years_experience" integer, "driver_age" integer, "driver_occupation" character varying, "driver_has_claims" boolean DEFAULT FALSE NOT NULL, "driver_claims_details" text, "coverage_type" character varying NOT NULL, "coverage_start_date" date NOT NULL, "coverage_end_date" date NOT NULL, "sum_insured" decimal(15,2), "deductible" decimal(15,2), "premium_amount" decimal(15,2), "commission_rate" decimal(5,2), "notes" text, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL, CONSTRAINT "fk_rails_5ccefe8455"
+FOREIGN KEY ("organization_id")
+  REFERENCES "organizations" ("id")
+, CONSTRAINT "fk_rails_29438a500c"
+FOREIGN KEY ("client_id")
+  REFERENCES "clients" ("id")
+, CONSTRAINT "fk_rails_edfd8a1431"
+FOREIGN KEY ("reviewed_by_id")
+  REFERENCES "users" ("id")
+, CONSTRAINT "fk_rails_0b8463c924"
+FOREIGN KEY ("approved_by_id")
+  REFERENCES "users" ("id")
+, CONSTRAINT "fk_rails_cd7b5738a9"
+FOREIGN KEY ("rejected_by_id")
+  REFERENCES "users" ("id")
+) /*application='Brokersync'*/[0m
+  [1m[35m (0.4ms)[0m  [1m[35mCREATE INDEX "index_motor_applications_on_organization_id" ON "motor_applications" ("organization_id") /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE INDEX "index_motor_applications_on_client_id" ON "motor_applications" ("client_id") /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE INDEX "index_motor_applications_on_reviewed_by_id" ON "motor_applications" ("reviewed_by_id") /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE INDEX "index_motor_applications_on_approved_by_id" ON "motor_applications" ("approved_by_id") /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE INDEX "index_motor_applications_on_rejected_by_id" ON "motor_applications" ("rejected_by_id") /*application='Brokersync'*/[0m
+  [1m[35m (0.5ms)[0m  [1m[35mCREATE UNIQUE INDEX "index_motor_applications_on_application_number" ON "motor_applications" ("application_number") /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE INDEX "index_motor_applications_on_status" ON "motor_applications" ("status") /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE INDEX "index_motor_applications_on_submitted_at" ON "motor_applications" ("submitted_at") /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE INDEX "index_motor_applications_on_vehicle_registration_number" ON "motor_applications" ("vehicle_registration_number") /*application='Brokersync'*/[0m
+  [1m[35m (0.4ms)[0m  [1m[35mCREATE INDEX "index_motor_applications_on_driver_license_number" ON "motor_applications" ("driver_license_number") /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.1ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20250914232832') RETURNING "version" /*application='Brokersync'*/[0m
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mCOMMIT /*application='Brokersync'*/[0m
+Migrating to AddDiscardedAtToMotorApplications (20250914232854)
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN /*application='Brokersync'*/[0m
+  [1m[35m (2.6ms)[0m  [1m[35mALTER TABLE "motor_applications" ADD "discarded_at" timestamp(6) /*application='Brokersync'*/[0m
+  [1m[35m (1.3ms)[0m  [1m[35mCREATE INDEX "index_motor_applications_on_discarded_at" ON "motor_applications" ("discarded_at") /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.4ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20250914232854') RETURNING "version" /*application='Brokersync'*/[0m
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mCOMMIT /*application='Brokersync'*/[0m
+  [1m[35m (0.2ms)[0m  [1m[34mSELECT pg_advisory_unlock(3723901152872937645) /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.1ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Brokersync'*/[0m
+Started GET "/" for ::1 at 2025-09-14 23:32:29 +0000
+  [1m[36mActiveRecord::SchemaMigration Load (1.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Brokersync'*/[0m
+  
+ArgumentError (wrong number of arguments (given 0, expected 1..2)):
+  
+app/models/user.rb:12:in '<class:User>'
+app/models/user.rb:1:in '<main>'
+config/routes.rb:10:in 'block in <main>'
+config/routes.rb:1:in '<main>'
+Started GET "/favicon.ico" for ::1 at 2025-09-14 23:32:29 +0000
+  
+ActionController::RoutingError (No route matches [GET] "/favicon.ico"):
+  
+Started GET "/" for ::1 at 2025-09-14 23:32:46 +0000
+  
+ActionController::RoutingError (No route matches [GET] "/"):
+  
+Started GET "/" for ::1 at 2025-09-14 23:32:52 +0000
+  
+ActionController::RoutingError (No route matches [GET] "/"):
+  
+Started GET "/" for ::1 at 2025-09-14 23:33:48 +0000
+  
+ArgumentError (wrong number of arguments (given 0, expected 1..2)):
+  
+app/models/user.rb:12:in '<class:User>'
+app/models/user.rb:1:in '<main>'
+config/routes.rb:10:in 'block in <main>'
+config/routes.rb:1:in '<main>'
+Started GET "/" for ::1 at 2025-09-14 23:35:29 +0000
+  
+ArgumentError (wrong number of arguments (given 0, expected 1..2)):
+  
+app/models/user.rb:12:in '<class:User>'
+app/models/user.rb:1:in '<main>'
+config/routes.rb:10:in 'block in <main>'
+config/routes.rb:1:in '<main>'
+Started GET "/" for ::1 at 2025-09-14 23:35:30 +0000
+  
+ActionController::RoutingError (No route matches [GET] "/"):
+  
