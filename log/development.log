@@ -44,3 +44,132 @@ FOREIGN KEY ("organization_id")
   [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mCOMMIT /*application='Brokersync'*/[0m
   [1m[35m (0.1ms)[0m  [1m[34mSELECT pg_advisory_unlock(3723901152872937645) /*application='Brokersync'*/[0m
   [1m[36mActiveRecord::SchemaMigration Load (0.1ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Brokersync'*/[0m
+  [1m[35m (0.1ms)[0m  [1m[34mSELECT pg_try_advisory_lock(3723901152872937645) /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.7ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.4ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='Brokersync'*/[0m
+Migrating to CreateBrokerageAgents (20250914231458)
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN /*application='Brokersync'*/[0m
+  [1m[35m (6.0ms)[0m  [1m[35mCREATE TABLE "brokerage_agents" ("id" bigserial primary key, "user_id" bigint NOT NULL, "organization_id" bigint NOT NULL, "role" character varying DEFAULT 'agent' NOT NULL, "active" boolean DEFAULT TRUE NOT NULL, "join_date" date NOT NULL, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL, CONSTRAINT "fk_rails_a8357c2fe7"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+, CONSTRAINT "fk_rails_d40bb13765"
+FOREIGN KEY ("organization_id")
+  REFERENCES "organizations" ("id")
+) /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE INDEX "index_brokerage_agents_on_user_id" ON "brokerage_agents" ("user_id") /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE INDEX "index_brokerage_agents_on_organization_id" ON "brokerage_agents" ("organization_id") /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE UNIQUE INDEX "index_brokerage_agents_on_user_id_and_organization_id" ON "brokerage_agents" ("user_id", "organization_id") /*application='Brokersync'*/[0m
+  [1m[35m (11.4ms)[0m  [1m[35mCREATE INDEX "index_brokerage_agents_on_organization_id" ON "brokerage_agents" ("organization_id") /*application='Brokersync'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[31mROLLBACK /*application='Brokersync'*/[0m
+  [1m[35m (0.1ms)[0m  [1m[34mSELECT pg_advisory_unlock(3723901152872937645) /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.3ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.8ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.1ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.1ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Brokersync'*/[0m
+  [1m[35m (0.1ms)[0m  [1m[34mSELECT pg_try_advisory_lock(3723901152872937645) /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.1ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Brokersync'*/[0m
+Migrating to AddDetailsToUsers (20250914225734)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN /*application='Brokersync'*/[0m
+  [1m[35m (3.4ms)[0m  [1m[35mALTER TABLE "users" DROP CONSTRAINT "fk_rails_d7b9ff90af" /*application='Brokersync'*/[0m
+  [1m[35m (0.4ms)[0m  [1m[35mALTER TABLE "users" DROP COLUMN "organization_id" /*application='Brokersync'*/[0m
+  [1m[35m (0.1ms)[0m  [1m[35mALTER TABLE "users" DROP COLUMN "role" /*application='Brokersync'*/[0m
+  [1m[35m (0.1ms)[0m  [1m[35mALTER TABLE "users" DROP COLUMN "phone" /*application='Brokersync'*/[0m
+  [1m[35m (0.1ms)[0m  [1m[35mALTER TABLE "users" DROP COLUMN "last_name" /*application='Brokersync'*/[0m
+  [1m[35m (0.1ms)[0m  [1m[35mALTER TABLE "users" DROP COLUMN "first_name" /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Destroy (0.2ms)[0m  [1m[31mDELETE FROM "schema_migrations" WHERE "schema_migrations"."version" = '20250914225734' /*application='Brokersync'*/[0m
+  [1m[36mTRANSACTION (2.4ms)[0m  [1m[35mCOMMIT /*application='Brokersync'*/[0m
+  [1m[35m (0.2ms)[0m  [1m[34mSELECT pg_advisory_unlock(3723901152872937645) /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.1ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Brokersync'*/[0m
+  [1m[35m (0.1ms)[0m  [1m[34mSELECT pg_try_advisory_lock(3723901152872937645) /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.9ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.7ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='Brokersync'*/[0m
+Migrating to AddDetailsToUsers (20250914225734)
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN /*application='Brokersync'*/[0m
+  [1m[35m (1.5ms)[0m  [1m[35mALTER TABLE "users" ADD "first_name" character varying /*application='Brokersync'*/[0m
+  [1m[35m (0.1ms)[0m  [1m[35mALTER TABLE "users" ADD "last_name" character varying /*application='Brokersync'*/[0m
+  [1m[35m (0.1ms)[0m  [1m[35mALTER TABLE "users" ADD "phone" character varying /*application='Brokersync'*/[0m
+  [1m[35m (0.1ms)[0m  [1m[35mALTER TABLE "users" ADD "role" integer /*application='Brokersync'*/[0m
+  [1m[35m (0.2ms)[0m  [1m[35mALTER TABLE "users" ADD "organization_id" bigint NOT NULL /*application='Brokersync'*/[0m
+  [1m[35m (1.7ms)[0m  [1m[35mCREATE INDEX "index_users_on_organization_id" ON "users" ("organization_id") /*application='Brokersync'*/[0m
+  [1m[35m (2.3ms)[0m  [1m[35mALTER TABLE "users" ADD CONSTRAINT "fk_rails_d7b9ff90af"
+FOREIGN KEY ("organization_id")
+  REFERENCES "organizations" ("id")
+ /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.2ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20250914225734') RETURNING "version" /*application='Brokersync'*/[0m
+  [1m[36mTRANSACTION (0.6ms)[0m  [1m[35mCOMMIT /*application='Brokersync'*/[0m
+Migrating to CreateBrokerageAgents (20250914231458)
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN /*application='Brokersync'*/[0m
+  [1m[35m (4.9ms)[0m  [1m[35mCREATE TABLE "brokerage_agents" ("id" bigserial primary key, "user_id" bigint NOT NULL, "organization_id" bigint NOT NULL, "role" character varying DEFAULT 'agent' NOT NULL, "active" boolean DEFAULT TRUE NOT NULL, "join_date" date NOT NULL, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL, CONSTRAINT "fk_rails_a8357c2fe7"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+, CONSTRAINT "fk_rails_d40bb13765"
+FOREIGN KEY ("organization_id")
+  REFERENCES "organizations" ("id")
+) /*application='Brokersync'*/[0m
+  [1m[35m (2.3ms)[0m  [1m[35mCREATE INDEX "index_brokerage_agents_on_user_id" ON "brokerage_agents" ("user_id") /*application='Brokersync'*/[0m
+  [1m[35m (0.7ms)[0m  [1m[35mCREATE INDEX "index_brokerage_agents_on_organization_id" ON "brokerage_agents" ("organization_id") /*application='Brokersync'*/[0m
+  [1m[35m (0.9ms)[0m  [1m[35mCREATE UNIQUE INDEX "index_brokerage_agents_on_user_id_and_organization_id" ON "brokerage_agents" ("user_id", "organization_id") /*application='Brokersync'*/[0m
+  [1m[35m (0.6ms)[0m  [1m[35mCREATE INDEX "index_brokerage_agents_on_active" ON "brokerage_agents" ("active") /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.1ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20250914231458') RETURNING "version" /*application='Brokersync'*/[0m
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mCOMMIT /*application='Brokersync'*/[0m
+Migrating to CreateClients (20250914231533)
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mBEGIN /*application='Brokersync'*/[0m
+  [1m[35m (1.8ms)[0m  [1m[35mCREATE TABLE "clients" ("id" bigserial primary key, "organization_id" bigint NOT NULL, "first_name" character varying NOT NULL, "last_name" character varying NOT NULL, "email" character varying NOT NULL, "phone" character varying, "date_of_birth" date, "address" text, "city" character varying, "state" character varying, "postal_code" character varying, "country" character varying DEFAULT 'Ghana', "id_number" character varying, "id_type" character varying, "occupation" character varying, "employer" character varying, "annual_income" decimal(15,2), "marital_status" character varying, "next_of_kin" character varying, "next_of_kin_phone" character varying, "emergency_contact" character varying, "emergency_contact_phone" character varying, "preferred_contact_method" character varying DEFAULT 'email', "communication_preferences" text, "notes" text, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL, CONSTRAINT "fk_rails_e6ab7b7c9a"
+FOREIGN KEY ("organization_id")
+  REFERENCES "organizations" ("id")
+) /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE INDEX "index_clients_on_organization_id" ON "clients" ("organization_id") /*application='Brokersync'*/[0m
+  [1m[35m (3.6ms)[0m  [1m[35mCREATE INDEX "index_clients_on_organization_id" ON "clients" ("organization_id") /*application='Brokersync'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[31mROLLBACK /*application='Brokersync'*/[0m
+  [1m[35m (0.1ms)[0m  [1m[34mSELECT pg_advisory_unlock(3723901152872937645) /*application='Brokersync'*/[0m
+  [1m[35m (0.1ms)[0m  [1m[34mSELECT pg_try_advisory_lock(3723901152872937645) /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.3ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.3ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='Brokersync'*/[0m
+Migrating to CreateClients (20250914231533)
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN /*application='Brokersync'*/[0m
+  [1m[35m (2.4ms)[0m  [1m[35mCREATE TABLE "clients" ("id" bigserial primary key, "organization_id" bigint NOT NULL, "first_name" character varying NOT NULL, "last_name" character varying NOT NULL, "email" character varying NOT NULL, "phone" character varying, "date_of_birth" date, "address" text, "city" character varying, "state" character varying, "postal_code" character varying, "country" character varying DEFAULT 'Ghana', "id_number" character varying, "id_type" character varying, "occupation" character varying, "employer" character varying, "annual_income" decimal(15,2), "marital_status" character varying, "next_of_kin" character varying, "next_of_kin_phone" character varying, "emergency_contact" character varying, "emergency_contact_phone" character varying, "preferred_contact_method" character varying DEFAULT 'email', "communication_preferences" text, "notes" text, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL, CONSTRAINT "fk_rails_e6ab7b7c9a"
+FOREIGN KEY ("organization_id")
+  REFERENCES "organizations" ("id")
+) /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE INDEX "index_clients_on_organization_id" ON "clients" ("organization_id") /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE INDEX "index_clients_on_email" ON "clients" ("email") /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE INDEX "index_clients_on_first_name_and_last_name" ON "clients" ("first_name", "last_name") /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE INDEX "index_clients_on_phone" ON "clients" ("phone") /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE INDEX "index_clients_on_id_number" ON "clients" ("id_number") /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.1ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20250914231533') RETURNING "version" /*application='Brokersync'*/[0m
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mCOMMIT /*application='Brokersync'*/[0m
+Migrating to CreateInsuranceCompanies (20250914231604)
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN /*application='Brokersync'*/[0m
+  [1m[35m (2.2ms)[0m  [1m[35mCREATE TABLE "insurance_companies" ("id" bigserial primary key, "name" character varying NOT NULL, "business_registration_number" character varying NOT NULL, "license_number" character varying NOT NULL, "contact_person" character varying NOT NULL, "email" character varying NOT NULL, "phone" character varying, "address" text, "city" character varying, "state" character varying, "postal_code" character varying, "country" character varying DEFAULT 'Ghana', "website" character varying, "insurance_types" text, "rating" decimal(3,2) DEFAULT 0.0, "commission_rate" decimal(5,2) DEFAULT 0.0, "terms_and_conditions" text, "payment_terms" character varying DEFAULT 'net_30', "active" boolean DEFAULT TRUE NOT NULL, "approved" boolean DEFAULT FALSE NOT NULL, "approved_at" timestamp(6), "approved_by_id" bigint, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL, CONSTRAINT "fk_rails_3faea0c030"
+FOREIGN KEY ("approved_by_id")
+  REFERENCES "users" ("id")
+) /*application='Brokersync'*/[0m
+  [1m[35m (0.4ms)[0m  [1m[35mCREATE INDEX "index_insurance_companies_on_approved_by_id" ON "insurance_companies" ("approved_by_id") /*application='Brokersync'*/[0m
+  [1m[35m (0.4ms)[0m  [1m[35mCREATE INDEX "index_insurance_companies_on_name" ON "insurance_companies" ("name") /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE UNIQUE INDEX "index_insurance_companies_on_email" ON "insurance_companies" ("email") /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE UNIQUE INDEX "index_insurance_companies_on_business_registration_number" ON "insurance_companies" ("business_registration_number") /*application='Brokersync'*/[0m
+  [1m[35m (0.4ms)[0m  [1m[35mCREATE UNIQUE INDEX "index_insurance_companies_on_license_number" ON "insurance_companies" ("license_number") /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE INDEX "index_insurance_companies_on_active" ON "insurance_companies" ("active") /*application='Brokersync'*/[0m
+  [1m[35m (0.4ms)[0m  [1m[35mCREATE INDEX "index_insurance_companies_on_approved" ON "insurance_companies" ("approved") /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.1ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20250914231604') RETURNING "version" /*application='Brokersync'*/[0m
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mCOMMIT /*application='Brokersync'*/[0m
+Migrating to AddDiscardedAtToClients (20250914231735)
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN /*application='Brokersync'*/[0m
+  [1m[35m (0.7ms)[0m  [1m[35mALTER TABLE "clients" ADD "discarded_at" timestamp(6) /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE INDEX "index_clients_on_discarded_at" ON "clients" ("discarded_at") /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.0ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20250914231735') RETURNING "version" /*application='Brokersync'*/[0m
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mCOMMIT /*application='Brokersync'*/[0m
+Migrating to AddDiscardedAtToInsuranceCompanies (20250914231739)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN /*application='Brokersync'*/[0m
+  [1m[35m (0.6ms)[0m  [1m[35mALTER TABLE "insurance_companies" ADD "discarded_at" timestamp(6) /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE INDEX "index_insurance_companies_on_discarded_at" ON "insurance_companies" ("discarded_at") /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.0ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20250914231739') RETURNING "version" /*application='Brokersync'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mCOMMIT /*application='Brokersync'*/[0m
+Migrating to AddDiscardedAtToBrokerageAgents (20250914231742)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN /*application='Brokersync'*/[0m
+  [1m[35m (0.5ms)[0m  [1m[35mALTER TABLE "brokerage_agents" ADD "discarded_at" timestamp(6) /*application='Brokersync'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE INDEX "index_brokerage_agents_on_discarded_at" ON "brokerage_agents" ("discarded_at") /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.0ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20250914231742') RETURNING "version" /*application='Brokersync'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mCOMMIT /*application='Brokersync'*/[0m
+  [1m[35m (0.1ms)[0m  [1m[34mSELECT pg_advisory_unlock(3723901152872937645) /*application='Brokersync'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.1ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Brokersync'*/[0m

@@ -47,11 +47,11 @@
 - [x] Create core migrations:
   - [x] Organizations (Brokerages)
   - [x] Users with polymorphic associations
-  - [ ] BrokerageAgents (join table)
-  - [ ] Clients
-  - [ ] Insurance Companies
+  - [x] BrokerageAgents (join table)
+  - [x] Clients
+  - [x] Insurance Companies
 - [x] Set up proper indexes and foreign key constraints
-- [ ] Implement soft deletes for audit purposes
+- [x] Implement soft deletes for audit purposes
 - [x] Add database-level validations
 
 ### 1.5 Basic UI Framework

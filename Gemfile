@@ -65,3 +65,4 @@ gem "aws-sdk-s3", "~> 1.199"
 gem "acts_as_tenant", "~> 1.0"
 
 gem "devise", "~> 4.9"
+gem 'discard', '~> 1.3'
