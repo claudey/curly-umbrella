@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rails new:*)",
+      "Bash(bundle:*)",
+      "Bash(rails tailwindcss:*)",
+      "Bash(rails generate:*)",
+      "Bash(rails:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
