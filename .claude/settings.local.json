@@ -5,7 +5,9 @@
       "Bash(bundle:*)",
       "Bash(rails tailwindcss:*)",
       "Bash(rails generate:*)",
-      "Bash(rails:*)"
+      "Bash(rails:*)",
+      "Bash(git rm:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
