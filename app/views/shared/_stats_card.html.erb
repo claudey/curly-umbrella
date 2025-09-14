@@ -1,0 +1,30 @@
+<%# 
+  Stats Card Component
+  Usage: 
+    <%= render 'shared/stats_card', 
+        title: 'Total Clients', 
+        value: '1,234', 
+        icon: :users,
+        change: '+12%',
+        change_type: 'positive' %>
+%>
+
+<div class="stat bg-base-100 rounded-lg p-6 shadow-sm border border-base-200">
+  <div class="stat-figure text-primary">
+    <%= phosphor_icon(icon, size: 8) %>
+  </div>
+  
+  <div class="stat-title text-base-content/70"><%= title %></div>
+  <div class="stat-value text-primary"><%= value %></div>
+  
+  <% if local_assigns[:change] %>
+    <div class="stat-desc">
+      <span class="<%= change_type == 'positive' ? 'text-success' : 'text-error' %>">
+        <%= change %>
+      </span>
+      <% if local_assigns[:change_period] %>
+        <%= change_period %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

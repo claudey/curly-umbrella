@@ -1,0 +1,19 @@
+<%= content_tag tag_name, **tag_options do %>
+  <% if loading %>
+    <span class="loading loading-spinner loading-sm"></span>
+  <% else %>
+    <div class="<%= content_classes %>">
+      <% if show_icon? && icon_left? %>
+        <%= helpers.phosphor_icon(icon, size: icon_size) %>
+      <% end %>
+      
+      <% if content.present? %>
+        <span><%= content %></span>
+      <% end %>
+      
+      <% if show_icon? && icon_right? %>
+        <%= helpers.phosphor_icon(icon, size: icon_size) %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

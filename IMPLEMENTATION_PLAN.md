@@ -56,15 +56,15 @@
 
 ### 1.5 Basic UI Framework
 - [x] Create application layout with DaisyUI navbar
-- [ ] Implement responsive sidebar navigation
+- [x] Implement responsive sidebar navigation
 - [x] Design component library using DaisyUI:
   - [x] Form components (input, select, textarea)
   - [x] Button variations
   - [x] Card layouts
   - [x] Alert/notification components
-  - [ ] Modal dialogs
-- [ ] Set up ViewComponent for reusable UI elements
-- [ ] Create shared partials for common layouts
+  - [x] Modal dialogs
+- [x] Set up ViewComponent for reusable UI elements
+- [x] Create shared partials for common layouts
 
 ### 1.6 Motor Insurance Application Forms
 - [ ] Create MotorApplication model with detailed fields

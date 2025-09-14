@@ -1,0 +1,39 @@
+<div class="<%= card_classes %>">
+  <% if show_image? %>
+    <figure>
+      <%= image_tag image, alt: title || "Card image" %>
+    </figure>
+  <% end %>
+
+  <div class="card-body">
+    <% if show_header? %>
+      <% if header? %>
+        <%= header %>
+      <% else %>
+        <% if title.present? %>
+          <h2 class="card-title"><%= title %></h2>
+        <% end %>
+        <% if subtitle.present? %>
+          <p class="text-base-content/70"><%= subtitle %></p>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <% if body? %>
+      <%= body %>
+    <% elsif content.present? %>
+      <%= content %>
+    <% end %>
+
+    <% if show_footer? %>
+      <div class="card-actions justify-end">
+        <% if actions? %>
+          <% actions.each do |action| %>
+            <%= action %>
+          <% end %>
+        <% end %>
+        <%= footer if footer? %>
+      </div>
+    <% end %>
+  </div>
+</div>

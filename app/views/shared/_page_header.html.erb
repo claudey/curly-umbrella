@@ -1,0 +1,29 @@
+<%# 
+  Page Header Component
+  Usage: 
+    <%= render 'shared/page_header', title: 'Page Title', subtitle: 'Optional subtitle' do %>
+      <!-- Optional action buttons -->
+      <%= render Ui::ButtonComponent.new(variant: 'primary', icon: :plus) do %>
+        New Item
+      <% end %>
+    <% end %>
+%>
+
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+  <div class="mb-4 sm:mb-0">
+    <h1 class="text-2xl font-bold text-gray-900">
+      <%= title %>
+    </h1>
+    <% if local_assigns[:subtitle] %>
+      <p class="mt-1 text-sm text-gray-500">
+        <%= subtitle %>
+      </p>
+    <% end %>
+  </div>
+  
+  <% if content.present? %>
+    <div class="flex flex-col sm:flex-row gap-3">
+      <%= content %>
+    </div>
+  <% end %>
+</div>

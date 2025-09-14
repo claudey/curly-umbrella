@@ -1,0 +1,35 @@
+<%# 
+  Breadcrumbs Component
+  Usage: 
+    <%= render 'shared/breadcrumbs', breadcrumbs: [
+      { name: 'Home', url: root_path },
+      { name: 'Clients', url: clients_path },
+      { name: 'John Doe' } # current page, no URL
+    ] %>
+%>
+
+<% if local_assigns[:breadcrumbs] && breadcrumbs.any? %>
+  <div class="breadcrumbs text-sm mb-4">
+    <ul>
+      <% breadcrumbs.each_with_index do |crumb, index| %>
+        <li>
+          <% if crumb[:url] && index < breadcrumbs.length - 1 %>
+            <%= link_to crumb[:url], class: "hover:text-primary" do %>
+              <% if crumb[:icon] %>
+                <%= phosphor_icon(crumb[:icon], size: 4, css_class: "mr-1") %>
+              <% end %>
+              <%= crumb[:name] %>
+            <% end %>
+          <% else %>
+            <span class="text-base-content/70">
+              <% if crumb[:icon] %>
+                <%= phosphor_icon(crumb[:icon], size: 4, css_class: "mr-1") %>
+              <% end %>
+              <%= crumb[:name] %>
+            </span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

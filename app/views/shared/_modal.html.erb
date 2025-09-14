@@ -1,0 +1,52 @@
+<%# 
+  Modal Component
+  Usage: 
+    <%= render 'shared/modal', id: 'my-modal', title: 'Modal Title' do %>
+      Content goes here
+    <% end %>
+%>
+
+<div id="<%= id %>" 
+     class="modal hidden fixed inset-0 z-50" 
+     data-controller="modal" 
+     data-modal-open-class="modal-open">
+  
+  <!-- Backdrop -->
+  <div class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 hidden transition-opacity duration-200" 
+       data-modal-target="backdrop"
+       data-action="click->modal#clickOutside">
+  </div>
+  
+  <!-- Modal Dialog -->
+  <div class="modal-dialog fixed inset-0 flex items-center justify-center p-4">
+    <div class="modal-content bg-white rounded-lg shadow-xl max-w-lg w-full max-h-full overflow-y-auto transform transition-all duration-200 scale-95"
+         data-modal-target="dialog"
+         tabindex="-1">
+      
+      <!-- Header -->
+      <div class="modal-header flex items-center justify-between p-6 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">
+          <%= title %>
+        </h3>
+        <button type="button" 
+                class="btn btn-sm btn-circle btn-ghost"
+                data-action="click->modal#close"
+                aria-label="Close modal">
+          <%= phosphor_icon(:x, size: 5) %>
+        </button>
+      </div>
+      
+      <!-- Body -->
+      <div class="modal-body p-6">
+        <%= yield %>
+      </div>
+      
+      <!-- Footer (optional) -->
+      <% if local_assigns[:footer] %>
+        <div class="modal-footer flex justify-end space-x-3 p-6 border-t border-gray-200">
+          <%= footer %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

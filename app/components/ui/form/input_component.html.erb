@@ -1,0 +1,28 @@
+<div class="<%= wrapper_classes %>">
+  <% if show_label? %>
+    <%= form.label name, label, class: label_classes %>
+  <% end %>
+  
+  <% if show_icon? %>
+    <div class="relative">
+      <%= form.text_field name, **input_options %>
+      <div class="absolute inset-y-0 <%= icon_position == :left ? 'left-0 pl-3' : 'right-0 pr-3' %> flex items-center pointer-events-none">
+        <%= helpers.phosphor_icon(icon, size: icon_size, css_class: "text-base-content/40") %>
+      </div>
+    </div>
+  <% else %>
+    <%= form.text_field name, **input_options %>
+  <% end %>
+  
+  <% if show_hint? || has_error? %>
+    <div class="label">
+      <% if has_error? %>
+        <% error_messages.each do |error| %>
+          <span class="label-text-alt text-error"><%= error %></span>
+        <% end %>
+      <% elsif show_hint? %>
+        <span class="label-text-alt"><%= hint %></span>
+      <% end %>
+    </div>
+  <% end %>
+</div>

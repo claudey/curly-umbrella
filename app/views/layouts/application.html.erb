@@ -23,21 +23,165 @@
   </head>
 
   <body data-theme="light">
-    <!-- Flash messages -->
-    <% if notice %>
-      <div class="alert alert-success">
-        <p class="notice"><%= notice %></p>
-      </div>
-    <% end %>
-    
-    <% if alert %>
-      <div class="alert alert-error">
-        <p class="alert"><%= alert %></p>
-      </div>
-    <% end %>
+    <div class="drawer lg:drawer-open" data-controller="sidebar" data-sidebar-open-class="drawer-open">
+      <!-- Sidebar toggle for mobile -->
+      <input id="drawer-toggle" type="checkbox" class="drawer-toggle" />
+      
+      <!-- Page content -->
+      <div class="drawer-content flex flex-col">
+        <!-- Navbar -->
+        <div class="navbar bg-base-300 w-full">
+          <div class="flex-none lg:hidden">
+            <label for="drawer-toggle" class="btn btn-square btn-ghost" data-action="click->sidebar#toggle" data-sidebar-target="toggle">
+              <%= phosphor_icon(:list, size: 6) %>
+            </label>
+          </div>
+          <div class="flex-1 px-2 mx-2">
+            <%= link_to "BrokerSync", root_path, class: "text-lg font-bold" %>
+          </div>
+          <div class="flex-none">
+            <% if user_signed_in? %>
+              <div class="dropdown dropdown-end">
+                <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
+                  <div class="w-10 rounded-full">
+                    <div class="bg-primary text-primary-content w-full h-full flex items-center justify-center text-lg font-semibold">
+                      <%= current_user.first_name&.first&.upcase || "U" %>
+                    </div>
+                  </div>
+                </div>
+                <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+                  <li><a href="#" class="justify-between">Profile</a></li>
+                  <li><a href="#">Settings</a></li>
+                  <li><%= link_to "Logout", destroy_user_session_path, method: :delete %></li>
+                </ul>
+              </div>
+            <% else %>
+              <%= link_to "Login", new_user_session_path, class: "btn btn-primary btn-sm" %>
+            <% end %>
+          </div>
+        </div>
 
-    <main class="container mx-auto mt-28 px-5 flex">
-      <%= yield %>
-    </main>
+        <!-- Flash messages -->
+        <% if notice %>
+          <div class="alert alert-success mx-4 mt-4">
+            <p class="notice"><%= notice %></p>
+          </div>
+        <% end %>
+        
+        <% if alert %>
+          <div class="alert alert-error mx-4 mt-4">
+            <p class="alert"><%= alert %></p>
+          </div>
+        <% end %>
+
+        <!-- Page content -->
+        <main class="flex-1 p-6">
+          <%= yield %>
+        </main>
+      </div>
+      
+      <!-- Sidebar -->
+      <div class="drawer-side" data-sidebar-target="sidebar">
+        <label for="drawer-toggle" aria-label="close sidebar" class="drawer-overlay" data-action="click->sidebar#close" data-sidebar-target="overlay"></label>
+        <aside class="bg-base-200 min-h-full w-80">
+          <div class="p-4">
+            <h2 class="text-lg font-semibold mb-4">Navigation</h2>
+            <ul class="menu p-0 w-full">
+              <li><%= link_to "Dashboard", root_path, class: "flex items-center space-x-3" %></li>
+              
+              <% if user_signed_in? %>
+                <!-- Clients Section -->
+                <li>
+                  <details open>
+                    <summary class="font-medium">
+                      <%= nav_icon(:users) %>
+                      Clients
+                    </summary>
+                    <ul>
+                      <li><a href="#">All Clients</a></li>
+                      <li><a href="#">Add Client</a></li>
+                    </ul>
+                  </details>
+                </li>
+
+                <!-- Applications Section -->
+                <li>
+                  <details open>
+                    <summary class="font-medium">
+                      <%= nav_icon(:file_text) %>
+                      Applications
+                    </summary>
+                    <ul>
+                      <li><a href="#">Motor Insurance</a></li>
+                      <li><a href="#">Life Insurance</a></li>
+                      <li><a href="#">Fire Insurance</a></li>
+                      <li><a href="#">Residential Insurance</a></li>
+                    </ul>
+                  </details>
+                </li>
+
+                <!-- Quotes Section -->
+                <li>
+                  <details>
+                    <summary class="font-medium">
+                      <%= nav_icon(:calculator) %>
+                      Quotes
+                    </summary>
+                    <ul>
+                      <li><a href="#">All Quotes</a></li>
+                      <li><a href="#">Pending Reviews</a></li>
+                      <li><a href="#">Approved</a></li>
+                    </ul>
+                  </details>
+                </li>
+
+                <!-- Insurance Companies Section -->
+                <li>
+                  <details>
+                    <summary class="font-medium">
+                      <%= nav_icon(:buildings) %>
+                      Insurance Companies
+                    </summary>
+                    <ul>
+                      <li><a href="#">All Companies</a></li>
+                      <li><a href="#">Pending Approval</a></li>
+                    </ul>
+                  </details>
+                </li>
+
+                <!-- Reports Section -->
+                <li>
+                  <details>
+                    <summary class="font-medium">
+                      <%= nav_icon(:chart_bar) %>
+                      Reports
+                    </summary>
+                    <ul>
+                      <li><a href="#">Performance</a></li>
+                      <li><a href="#">Analytics</a></li>
+                    </ul>
+                  </details>
+                </li>
+
+                <!-- Settings Section -->
+                <li>
+                  <details>
+                    <summary class="font-medium">
+                      <%= nav_icon(:gear) %>
+                      Settings
+                    </summary>
+                    <ul>
+                      <li><a href="#">Organization</a></li>
+                      <li><a href="#">Users</a></li>
+                      <li><a href="#">Preferences</a></li>
+                    </ul>
+                  </details>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </div>
   </body>
 </html>

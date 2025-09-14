@@ -173,6 +173,7 @@ GEM
       net-pop
       net-smtp
     marcel (1.0.4)
+    method_source (1.1.0)
     mini_mime (1.1.5)
     minitest (5.25.5)
     msgpack (1.8.0)
@@ -207,6 +208,8 @@ GEM
       racc (~> 1.4)
     orm_adapter (0.5.0)
     ostruct (0.6.3)
+    ox (2.14.23)
+      bigdecimal (>= 3.0)
     parallel (1.27.0)
     parser (3.3.9.0)
       ast (~> 2.4.1)
@@ -217,6 +220,10 @@ GEM
     pg (1.6.2-arm64-darwin)
     pg (1.6.2-x86_64-linux)
     pg (1.6.2-x86_64-linux-musl)
+    phosphor_icons (0.3.0)
+      actionview
+      ox (~> 2.14)
+      railties
     pp (0.6.2)
       prettyprint
     prettyprint (0.2.0)
@@ -361,6 +368,10 @@ GEM
     unicode-emoji (4.1.0)
     uri (1.0.3)
     useragent (0.16.11)
+    view_component (3.23.2)
+      activesupport (>= 5.2.0, < 8.1)
+      concurrent-ruby (~> 1)
+      method_source (~> 1.0)
     warden (1.2.9)
       rack (>= 2.0.9)
     web-console (4.2.1)
@@ -398,6 +409,7 @@ DEPENDENCIES
   kamal
   lexxy (~> 0.1.6.beta)
   pg (~> 1.1)
+  phosphor_icons (~> 0.3)
   propshaft
   puma (>= 5.0)
   rails (~> 8.0.2)
@@ -410,6 +422,7 @@ DEPENDENCIES
   thruster
   turbo-rails
   tzinfo-data
+  view_component (~> 3.0)
   web-console
 
 BUNDLED WITH
