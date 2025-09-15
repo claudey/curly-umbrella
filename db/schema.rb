@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_15_072310) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_15_081653) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -201,11 +201,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_072310) do
     t.datetime "discarded_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "distributed_at"
+    t.integer "distribution_count", default: 0
     t.index ["application_number", "organization_id"], name: "idx_on_application_number_organization_id_9dd04114b0", unique: true
     t.index ["approved_by_id"], name: "index_insurance_applications_on_approved_by_id"
     t.index ["client_id"], name: "idx_insurance_applications_client_id"
     t.index ["client_id"], name: "index_insurance_applications_on_client_id"
     t.index ["discarded_at"], name: "index_insurance_applications_on_discarded_at"
+    t.index ["distributed_at"], name: "index_insurance_applications_on_distributed_at"
+    t.index ["distribution_count"], name: "index_insurance_applications_on_distribution_count"
     t.index ["insurance_type", "status"], name: "index_insurance_applications_on_insurance_type_and_status"
     t.index ["organization_id", "status"], name: "index_insurance_applications_on_organization_id_and_status"
     t.index ["organization_id"], name: "index_insurance_applications_on_organization_id"

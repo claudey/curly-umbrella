@@ -1,0 +1,371 @@
+<% content_for :title, "Distribution Details - #{@application.application_number}" %>
+
+<div class="container mx-auto p-6">
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <nav class="breadcrumbs text-sm">
+        <ul>
+          <li><%= link_to "Distribution Management", admin_distributions_path %></li>
+          <li>Application Details</li>
+        </ul>
+      </nav>
+      <h1 class="text-3xl font-bold text-gray-900 mt-2"><%= @application.application_number %></h1>
+      <p class="text-gray-600 mt-1">
+        <%= @application.insurance_type_display_name %> Application Distribution
+      </p>
+    </div>
+    
+    <div class="flex gap-3">
+      <% if @application.can_be_distributed? %>
+        <%= link_to redistribute_admin_distribution_path(@application), 
+                   method: :post,
+                   class: "btn btn-primary btn-sm",
+                   data: { confirm: "This will distribute the application to eligible companies. Continue?" } do %>
+          <i class="ph ph-share-network w-4 h-4"></i>
+          Distribute Now
+        <% end %>
+      <% end %>
+      
+      <% if @application.distributed? %>
+        <%= link_to redistribute_admin_distribution_path(@application), 
+                   class: "btn btn-outline btn-sm" do %>
+          <i class="ph ph-arrow-clockwise w-4 h-4"></i>
+          Redistribute
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Application Summary -->
+    <div class="lg:col-span-2">
+      <!-- Application Info -->
+      <div class="card bg-base-100 shadow mb-6">
+        <div class="card-body">
+          <h2 class="card-title">Application Information</h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div>
+              <label class="label">
+                <span class="label-text font-semibold">Client</span>
+              </label>
+              <div class="flex items-center gap-3">
+                <div class="avatar placeholder">
+                  <div class="bg-neutral-focus text-neutral-content rounded-full w-12">
+                    <span class="text-lg"><%= @application.client.initials %></span>
+                  </div>
+                </div>
+                <div>
+                  <div class="font-bold"><%= @application.client.full_name %></div>
+                  <div class="text-sm opacity-70"><%= @application.client.email %></div>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <label class="label">
+                <span class="label-text font-semibold">Status</span>
+              </label>
+              <div class="badge <%= @application.status_badge_class %> badge-lg">
+                <i class="<%= @application.status_icon %> w-4 h-4 mr-2"></i>
+                <%= @application.status.humanize %>
+              </div>
+            </div>
+            
+            <div>
+              <label class="label">
+                <span class="label-text font-semibold">Insurance Type</span>
+              </label>
+              <div class="badge badge-outline badge-lg">
+                <%= @application.insurance_type_display_name %>
+              </div>
+            </div>
+            
+            <div>
+              <label class="label">
+                <span class="label-text font-semibold">Risk Level</span>
+              </label>
+              <div class="badge badge-lg" data-risk="<%= @application.risk_level %>">
+                <span class="<%= @application.risk_level_color %>">
+                  <%= @application.risk_level.humanize %> Risk
+                </span>
+              </div>
+            </div>
+            
+            <div>
+              <label class="label">
+                <span class="label-text font-semibold">Created</span>
+              </label>
+              <p><%= @application.created_at.strftime('%B %d, %Y at %I:%M %p') %></p>
+            </div>
+            
+            <% if @application.distributed? %>
+              <div>
+                <label class="label">
+                  <span class="label-text font-semibold">Distributed</span>
+                </label>
+                <p><%= @application.distributed_at.strftime('%B %d, %Y at %I:%M %p') %></p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Current Distributions -->
+      <div class="card bg-base-100 shadow mb-6">
+        <div class="card-body">
+          <div class="flex justify-between items-center">
+            <h2 class="card-title">Distribution Status</h2>
+            <div class="stats stats-vertical lg:stats-horizontal">
+              <div class="stat px-4 py-2">
+                <div class="stat-value text-lg"><%= @distribution_stats[:total_distributed] %></div>
+                <div class="stat-desc">Total Distributed</div>
+              </div>
+              <div class="stat px-4 py-2">
+                <div class="stat-value text-lg text-success">
+                  <%= @distribution_stats[:response_rate] %>%
+                </div>
+                <div class="stat-desc">Response Rate</div>
+              </div>
+            </div>
+          </div>
+
+          <% if @distributions.any? %>
+            <div class="overflow-x-auto mt-4">
+              <table class="table table-zebra w-full">
+                <thead>
+                  <tr>
+                    <th>Insurance Company</th>
+                    <th>Match Score</th>
+                    <th>Status</th>
+                    <th>Distributed</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% @distributions.each do |distribution| %>
+                    <tr>
+                      <td>
+                        <div class="flex items-center gap-3">
+                          <div class="avatar placeholder">
+                            <div class="bg-base-300 text-base-content rounded w-8">
+                              <span class="text-xs font-bold">
+                                <%= distribution.insurance_company.name.first(2).upcase %>
+                              </span>
+                            </div>
+                          </div>
+                          <div>
+                            <div class="font-bold">
+                              <%= distribution.insurance_company.name %>
+                            </div>
+                            <div class="text-sm opacity-50">
+                              <%= distribution.distribution_method.humanize %>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div class="w-24 bg-gray-200 rounded-full h-2">
+                            <div class="bg-primary h-2 rounded-full" 
+                                 style="width: <%= distribution.match_score %>%"></div>
+                          </div>
+                          <span class="text-sm font-medium">
+                            <%= distribution.match_score %>%
+                          </span>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="badge <%= distribution.status_badge_class %>">
+                          <%= distribution.status.humanize %>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="text-sm">
+                          <%= time_ago_in_words(distribution.created_at) %> ago
+                        </div>
+                        <div class="text-xs text-gray-500">
+                          <%= distribution.created_at.strftime('%b %d, %Y at %I:%M %p') %>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="join">
+                          <% if distribution.pending? %>
+                            <%= link_to expire_distribution_admin_distributions_path(distribution_id: distribution.id), 
+                                       method: :patch,
+                                       class: "btn btn-ghost btn-xs join-item",
+                                       data: { confirm: "Are you sure you want to expire this distribution?" } do %>
+                              <i class="ph ph-clock-countdown w-3 h-3"></i>
+                              Expire
+                            <% end %>
+                          <% elsif distribution.expired? %>
+                            <%= link_to reactivate_distribution_admin_distributions_path(distribution_id: distribution.id), 
+                                       method: :patch,
+                                       class: "btn btn-ghost btn-xs join-item" do %>
+                              <i class="ph ph-arrow-clockwise w-3 h-3"></i>
+                              Reactivate
+                            <% end %>
+                          <% end %>
+                        </div>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          <% else %>
+            <div class="text-center py-8">
+              <i class="ph ph-share-network text-4xl text-gray-400 mb-4"></i>
+              <p class="text-gray-500 font-medium">No distributions yet</p>
+              <p class="text-gray-400 text-sm">
+                This application hasn't been distributed to any insurance companies
+              </p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="lg:col-span-1">
+      <!-- Quick Stats -->
+      <div class="card bg-base-100 shadow mb-6">
+        <div class="card-body">
+          <h3 class="card-title text-lg">Distribution Summary</h3>
+          
+          <div class="grid grid-cols-2 gap-4 mt-4">
+            <div class="text-center">
+              <div class="text-2xl font-bold text-primary">
+                <%= @distribution_stats[:total_distributed] %>
+              </div>
+              <div class="text-sm text-gray-600">Companies</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-success">
+                <%= @distribution_stats[:responded] || 0 %>
+              </div>
+              <div class="text-sm text-gray-600">Responded</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-warning">
+                <%= @distribution_stats[:pending] %>
+              </div>
+              <div class="text-sm text-gray-600">Pending</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-info">
+                <%= @distribution_stats[:avg_match_score] %>%
+              </div>
+              <div class="text-sm text-gray-600">Avg Match</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manual Assignment -->
+      <% if @eligible_companies.any? %>
+        <div class="card bg-base-100 shadow mb-6">
+          <div class="card-body">
+            <h3 class="card-title text-lg">Manual Assignment</h3>
+            <p class="text-sm text-gray-600 mb-4">
+              Assign this application to additional insurance companies
+            </p>
+
+            <%= form_with url: manual_assign_admin_distribution_path(@application), 
+                         method: :post, local: true do |f| %>
+              <div class="space-y-3">
+                <% @eligible_companies.each do |company| %>
+                  <label class="label cursor-pointer justify-start">
+                    <%= f.check_box :company_ids, 
+                                   { multiple: true, class: "checkbox checkbox-primary mr-3" },
+                                   company.id, 
+                                   nil %>
+                    <div class="flex items-center gap-3">
+                      <div class="avatar placeholder">
+                        <div class="bg-base-300 text-base-content rounded w-8">
+                          <span class="text-xs font-bold">
+                            <%= company.name.first(2).upcase %>
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <span class="label-text font-medium">
+                          <%= company.name %>
+                        </span>
+                        <div class="text-xs text-gray-500">
+                          <%= company.insurance_types&.join(', ') || 'All types' %>
+                        </div>
+                      </div>
+                    </div>
+                  </label>
+                <% end %>
+              </div>
+
+              <div class="card-actions justify-end mt-6">
+                <%= f.submit "Assign Selected", 
+                           class: "btn btn-primary btn-sm",
+                           data: { confirm: "Are you sure you want to assign this application to the selected companies?" } %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% else %>
+        <div class="card bg-base-100 shadow mb-6">
+          <div class="card-body">
+            <h3 class="card-title text-lg">Manual Assignment</h3>
+            <div class="text-center py-4">
+              <i class="ph ph-check-circle text-4xl text-green-500 mb-2"></i>
+              <p class="text-sm text-gray-600">
+                All eligible companies have been assigned
+              </p>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <!-- Application Actions -->
+      <div class="card bg-base-100 shadow">
+        <div class="card-body">
+          <h3 class="card-title text-lg">Quick Actions</h3>
+          
+          <div class="space-y-2 mt-4">
+            <%= link_to insurance_companies_applications_path(@application), 
+                       class: "btn btn-ghost btn-sm w-full justify-start" do %>
+              <i class="ph ph-eye w-4 h-4"></i>
+              View Application Details
+            <% end %>
+            
+            <% if @application.has_quotes? %>
+              <%= link_to quotes_path(application_id: @application.id), 
+                         class: "btn btn-ghost btn-sm w-full justify-start" do %>
+                <i class="ph ph-file-text w-4 h-4"></i>
+                View Quotes (<%= @application.quotes.count %>)
+              <% end %>
+            <% end %>
+            
+            <%= link_to admin_distributions_path, 
+                       class: "btn btn-ghost btn-sm w-full justify-start" do %>
+              <i class="ph ph-arrow-left w-4 h-4"></i>
+              Back to Distributions
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .badge[data-risk="low"] {
+    @apply badge-success;
+  }
+  
+  .badge[data-risk="medium"] {
+    @apply badge-warning;
+  }
+  
+  .badge[data-risk="high"] {
+    @apply badge-error;
+  }
+</style>

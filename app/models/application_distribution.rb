@@ -233,9 +233,27 @@ class ApplicationDistribution < ApplicationRecord
   end
   
   def expires_in_days
-    return nil unless motor_application.application_expires_at
+    return nil unless quote_deadline
     
-    ((motor_application.application_expires_at - Time.current) / 1.day).to_i
+    ((quote_deadline - Time.current) / 1.day).ceil
+  end
+  
+  def quote_deadline
+    # Default 7 days from distribution
+    created_at + 7.days
+  end
+  
+  def deadline_expired?
+    quote_deadline && quote_deadline < Time.current
+  end
+  
+  def deadline_approaching?
+    return false unless quote_deadline
+    expires_in_days <= 2
+  end
+  
+  def has_submitted_quote?
+    insurance_application.quotes.exists?(insurance_company: insurance_company)
   end
   
   def high_match?

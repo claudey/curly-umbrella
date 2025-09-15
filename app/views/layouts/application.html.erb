@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= content_for(:title) || "Brokersync" %></title>
+    <title><%= content_for(:title) || "BrokerSync" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
@@ -26,7 +26,7 @@
     <div class="drawer lg:drawer-open" data-controller="sidebar" data-sidebar-open-class="drawer-open">
       <!-- Sidebar toggle for mobile -->
       <input id="drawer-toggle" type="checkbox" class="drawer-toggle" />
-      
+
       <!-- Page content -->
       <div class="drawer-content flex flex-col">
         <!-- Navbar -->
@@ -43,7 +43,7 @@
             <% if user_signed_in? %>
               <!-- Notifications -->
               <%= render 'shared/notification_dropdown' %>
-              
+
               <!-- User Menu -->
               <div class="dropdown dropdown-end">
                 <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
@@ -72,7 +72,7 @@
             <p class="notice"><%= notice %></p>
           </div>
         <% end %>
-        
+
         <% if alert %>
           <div class="alert alert-error mx-4 mt-4">
             <p class="alert"><%= alert %></p>
@@ -84,7 +84,7 @@
           <%= yield %>
         </main>
       </div>
-      
+
       <!-- Sidebar -->
       <div class="drawer-side" data-sidebar-target="sidebar">
         <label for="drawer-toggle" aria-label="close sidebar" class="drawer-overlay" data-action="click->sidebar#close" data-sidebar-target="overlay"></label>
@@ -93,7 +93,7 @@
             <h2 class="text-lg font-semibold mb-4">Navigation</h2>
             <ul class="menu p-0 w-full">
               <li><%= link_to "Dashboard", root_path, class: "flex items-center space-x-3" %></li>
-              
+
               <% if user_signed_in? %>
                 <!-- Clients Section -->
                 <li>

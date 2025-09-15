@@ -1,34 +1,37 @@
 class InsuranceCompanyMailer < ApplicationMailer
   def new_application_available(distribution)
     @distribution = distribution
-    @application = distribution.motor_application
+    @application = distribution.insurance_application
     @insurance_company = distribution.insurance_company
     @match_score = distribution.match_score
+    @client = @application.client
     
     mail(
       to: @insurance_company.email,
-      subject: "New Insurance Application Available - #{@application.coverage_type.humanize} Coverage",
+      subject: "New #{@application.insurance_type_display_name} Application Available - #{@application.application_number}",
       template_name: 'new_application_available'
     )
   end
   
   def application_reminder(distribution)
     @distribution = distribution
-    @application = distribution.motor_application
+    @application = distribution.insurance_application
     @insurance_company = distribution.insurance_company
-    @days_remaining = distribution.expires_in_days
+    @days_remaining = distribution.days_since_distribution
+    @client = @application.client
     
     mail(
       to: @insurance_company.email,
-      subject: "Reminder: Application Expires Soon - #{@application.application_number}",
+      subject: "Reminder: Application Pending Review - #{@application.application_number}",
       template_name: 'application_reminder'
     )
   end
   
   def quote_status_update(quote)
     @quote = quote
-    @application = quote.motor_application
+    @application = quote.insurance_application
     @insurance_company = quote.insurance_company
+    @client = @application.client
     
     subject_text = case @quote.status
                   when 'approved'
@@ -70,16 +73,16 @@ class InsuranceCompanyMailer < ApplicationMailer
     
     # Get recent applications
     @recent_applications = ApplicationDistribution.for_company(insurance_company)
-                                                 .includes(:motor_application)
+                                                 .includes(:insurance_application)
                                                  .where(created_at: date.beginning_of_day..date.end_of_day)
                                                  .limit(5)
     
-    # Get expiring applications
-    @expiring_applications = ApplicationDistribution.for_company(insurance_company)
-                                                   .pending
-                                                   .joins(:motor_application)
-                                                   .where('motor_applications.application_expires_at <= ?', 3.days.from_now)
-                                                   .limit(5)
+    # Get pending applications
+    @pending_applications = ApplicationDistribution.for_company(insurance_company)
+                                                  .pending
+                                                  .includes(:insurance_application)
+                                                  .where('application_distributions.created_at <= ?', 2.days.ago)
+                                                  .limit(5)
     
     mail(
       to: @insurance_company.email,

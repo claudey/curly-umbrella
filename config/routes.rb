@@ -11,6 +11,10 @@ Rails.application.routes.draw do
     get "dashboard/index"
   end
   namespace :admin do
+    get "distributions/index"
+    get "distributions/show"
+    get "distributions/redistribute"
+    get "distributions/expire"
     get "roles/index"
     get "roles/show"
     get "roles/new"

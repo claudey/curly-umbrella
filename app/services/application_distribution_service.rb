@@ -54,9 +54,9 @@ class ApplicationDistributionService
   end
 
   def self.auto_distribute_pending_applications
-    pending_applications = MotorApplication.submitted
-                                          .where(auto_distributed: false)
-                                          .where('created_at > ?', 1.hour.ago)
+    pending_applications = InsuranceApplication.submitted
+                                              .where(distributed_at: nil)
+                                              .where('created_at > ?', 1.hour.ago)
 
     results = []
     
@@ -65,7 +65,7 @@ class ApplicationDistributionService
       result = service.distribute!
       
       if result[:success]
-        application.update!(auto_distributed: true, distributed_at: Time.current)
+        application.update!(distributed_at: Time.current)
       end
       
       results << {
@@ -80,7 +80,7 @@ class ApplicationDistributionService
 
   def self.redistribute_application(application, options = {})
     # Mark existing distributions as expired
-    existing_distributions = ApplicationDistribution.where(motor_application: application)
+    existing_distributions = ApplicationDistribution.where(insurance_application: application)
                                                    .active
     existing_distributions.update_all(
       status: 'expired',
@@ -96,7 +96,7 @@ class ApplicationDistributionService
     # Find applications distributed 2 days ago that haven't been viewed
     reminder_distributions = ApplicationDistribution.pending
                                                    .where(created_at: 2.days.ago.beginning_of_day..2.days.ago.end_of_day)
-                                                   .includes(:insurance_company, :motor_application)
+                                                   .includes(:insurance_company, :insurance_application)
 
     reminder_distributions.find_each do |distribution|
       InsuranceCompanyMailer.application_reminder(distribution).deliver_later
@@ -154,7 +154,7 @@ class ApplicationDistributionService
         criteria = ApplicationDistribution.build_criteria(@application, company)
 
         distribution = ApplicationDistribution.create!(
-          motor_application: @application,
+          insurance_application: @application,
           insurance_company: company,
           distributed_by: @distributed_by,
           distribution_method: @distribution_method,

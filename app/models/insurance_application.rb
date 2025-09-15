@@ -155,6 +155,30 @@ class InsuranceApplication < ApplicationRecord
     end
   end
 
+  # Distribution methods
+  def can_be_distributed?
+    submitted? && distributed_at.nil?
+  end
+
+  def distributed?
+    distributed_at.present?
+  end
+
+  def distribution_deadline
+    return nil unless distributed_at
+    distributed_at + 7.days
+  end
+
+  def days_until_distribution_deadline
+    return nil unless distribution_deadline
+    ((distribution_deadline - Time.current) / 1.day).ceil
+  end
+
+  def distribution_expired?
+    return false unless distribution_deadline
+    distribution_deadline < Time.current
+  end
+
   def start_review!(user)
     return false unless can_review?
 
