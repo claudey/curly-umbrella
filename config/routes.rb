@@ -1,4 +1,15 @@
 Rails.application.routes.draw do
+  namespace :insurance_companies do
+    root "portal#dashboard"
+    get "dashboard", to: "portal#dashboard"
+    get "applications", to: "portal#applications"
+    get "applications/:id", to: "portal#show_application", as: :application
+    get "quotes", to: "portal#quotes"
+    get "quotes/new", to: "portal#new_quote"
+    post "quotes", to: "portal#create_quote"
+    get "quotes/:id", to: "portal#show_quote", as: :quote
+    patch "quotes/:id", to: "portal#update_quote"
+  end
   resources :quotes do
     member do
       patch :submit

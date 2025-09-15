@@ -1,0 +1,247 @@
+<div class="container mx-auto px-4 py-8">
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">Insurance Portal Dashboard</h1>
+      <p class="text-gray-600 mt-2">
+        Welcome back, <%= @insurance_company.name %>
+      </p>
+    </div>
+    
+    <div class="flex items-center gap-3">
+      <div class="badge badge-success badge-outline">
+        <%= @insurance_company.approval_status %>
+      </div>
+      <div class="rating rating-sm">
+        <% (1..5).each do |i| %>
+          <input type="radio" class="mask mask-star-2 bg-orange-400" 
+                 disabled <%= 'checked' if i <= @insurance_company.rating %> />
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="stat bg-base-100 shadow-sm rounded-lg">
+      <div class="stat-figure text-info">
+        <%= icon("clipboard-document-list", class: "w-8 h-8") %>
+      </div>
+      <div class="stat-title">New Applications</div>
+      <div class="stat-value text-info"><%= @stats[:pending_applications] %></div>
+      <div class="stat-desc">Available for quoting</div>
+    </div>
+    
+    <div class="stat bg-base-100 shadow-sm rounded-lg">
+      <div class="stat-figure text-warning">
+        <%= icon("clock", class: "w-8 h-8") %>
+      </div>
+      <div class="stat-title">Pending Quotes</div>
+      <div class="stat-value text-warning"><%= @stats[:submitted_quotes] %></div>
+      <div class="stat-desc">Awaiting response</div>
+    </div>
+    
+    <div class="stat bg-base-100 shadow-sm rounded-lg">
+      <div class="stat-figure text-success">
+        <%= icon("check-circle", class: "w-8 h-8") %>
+      </div>
+      <div class="stat-title">Accepted Quotes</div>
+      <div class="stat-value text-success"><%= @stats[:accepted_quotes] %></div>
+      <div class="stat-desc">This month</div>
+    </div>
+    
+    <div class="stat bg-base-100 shadow-sm rounded-lg">
+      <div class="stat-figure text-primary">
+        <%= icon("banknotes", class: "w-8 h-8") %>
+      </div>
+      <div class="stat-title">Total Quoted</div>
+      <div class="stat-value text-primary">
+        $<%= number_to_human(@stats[:total_premium_quoted], precision: 1) %>
+      </div>
+      <div class="stat-desc">Premium volume</div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Recent Applications -->
+    <div class="card bg-base-100 shadow-sm">
+      <div class="card-body">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="card-title">New Applications</h2>
+          <%= link_to insurance_companies_applications_path, class: "btn btn-ghost btn-sm" do %>
+            View All
+            <%= icon("arrow-right", class: "w-4 h-4") %>
+          <% end %>
+        </div>
+        
+        <% if @recent_applications.any? %>
+          <div class="space-y-3">
+            <% @recent_applications.each do |application| %>
+              <div class="flex justify-between items-center p-3 bg-base-200 rounded-lg hover:bg-base-300 transition-colors">
+                <div class="flex-1">
+                  <div class="font-medium">
+                    <%= link_to application.application_number, 
+                               insurance_companies_application_path(application),
+                               class: "link link-primary" %>
+                  </div>
+                  <div class="text-sm text-gray-600">
+                    <%= application.client_name %> • 
+                    <%= application.vehicle_display_name %>
+                  </div>
+                  <div class="text-xs text-gray-500">
+                    Submitted <%= time_ago_in_words(application.submitted_at || application.created_at) %> ago
+                  </div>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                  <span class="badge badge-outline badge-sm">
+                    <%= application.coverage_type&.humanize %>
+                  </span>
+                  <%= link_to insurance_companies_new_quote_path(application_id: application.id), 
+                             class: "btn btn-primary btn-sm" do %>
+                    <%= icon("plus") %>
+                    Quote
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="text-center py-8 text-gray-500">
+            <div class="w-12 h-12 mx-auto mb-3 text-gray-400">
+              <%= icon("clipboard-document", class: "w-12 h-12") %>
+            </div>
+            <p class="font-medium">No new applications</p>
+            <p class="text-sm">Check back later for new opportunities</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Recent Quotes -->
+    <div class="card bg-base-100 shadow-sm">
+      <div class="card-body">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="card-title">Recent Quotes</h2>
+          <%= link_to insurance_companies_quotes_path, class: "btn btn-ghost btn-sm" do %>
+            View All
+            <%= icon("arrow-right", class: "w-4 h-4") %>
+          <% end %>
+        </div>
+        
+        <% if @recent_quotes.any? %>
+          <div class="space-y-3">
+            <% @recent_quotes.each do |quote| %>
+              <div class="flex justify-between items-center p-3 bg-base-200 rounded-lg hover:bg-base-300 transition-colors">
+                <div class="flex-1">
+                  <div class="font-medium">
+                    <%= link_to quote.quote_number, 
+                               insurance_companies_quote_path(quote),
+                               class: "link link-primary" %>
+                  </div>
+                  <div class="text-sm text-gray-600">
+                    <%= quote.motor_application.client_name %> • 
+                    $<%= number_with_delimiter(quote.premium_amount) %>
+                  </div>
+                  <div class="text-xs text-gray-500">
+                    <%= time_ago_in_words(quote.created_at) %> ago
+                  </div>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                  <span class="badge <%= quote.status_badge_class %> badge-sm">
+                    <%= quote.status.humanize %>
+                  </span>
+                  <% if quote.expires_in_days && quote.expires_in_days <= 3 %>
+                    <span class="badge badge-warning badge-sm">
+                      <%= quote.expires_in_days %>d left
+                    </span>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="text-center py-8 text-gray-500">
+            <div class="w-12 h-12 mx-auto mb-3 text-gray-400">
+              <%= icon("document-text", class: "w-12 h-12") %>
+            </div>
+            <p class="font-medium">No quotes yet</p>
+            <p class="text-sm">Start by creating quotes for new applications</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Expiring Quotes Alert -->
+  <% if @expiring_quotes.any? %>
+    <div class="alert alert-warning mt-6">
+      <div class="flex-1">
+        <div class="flex items-center gap-2">
+          <%= icon("exclamation-triangle") %>
+          <h3 class="font-semibold">Quotes Expiring Soon</h3>
+        </div>
+        <div class="text-sm mt-1">
+          You have <%= @expiring_quotes.count %> 
+          quote<%= @expiring_quotes.count == 1 ? '' : 's' %> expiring in the next 7 days.
+        </div>
+        <div class="mt-2">
+          <% @expiring_quotes.each do |quote| %>
+            <span class="badge badge-warning badge-sm mr-1">
+              <%= quote.quote_number %> 
+              (<%= quote.expires_in_days %>d)
+            </span>
+          <% end %>
+        </div>
+      </div>
+      <div>
+        <%= link_to insurance_companies_quotes_path(status: 'approved'), 
+                   class: "btn btn-warning btn-sm" do %>
+          Review Quotes
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Quick Actions -->
+  <div class="card bg-base-100 shadow-sm mt-6">
+    <div class="card-body">
+      <h3 class="card-title mb-4">Quick Actions</h3>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="text-center p-4 border-2 border-dashed border-base-300 rounded-lg hover:border-primary transition-colors">
+          <%= link_to insurance_companies_applications_path, 
+                     class: "block text-decoration-none" do %>
+            <div class="w-12 h-12 mx-auto mb-2 text-primary">
+              <%= icon("magnifying-glass", class: "w-12 h-12") %>
+            </div>
+            <div class="font-medium">Browse Applications</div>
+            <div class="text-sm text-gray-600">Find new opportunities</div>
+          <% end %>
+        </div>
+        
+        <div class="text-center p-4 border-2 border-dashed border-base-300 rounded-lg hover:border-primary transition-colors">
+          <%= link_to insurance_companies_quotes_path, 
+                     class: "block text-decoration-none" do %>
+            <div class="w-12 h-12 mx-auto mb-2 text-primary">
+              <%= icon("document-text", class: "w-12 h-12") %>
+            </div>
+            <div class="font-medium">Manage Quotes</div>
+            <div class="text-sm text-gray-600">Track your submissions</div>
+          <% end %>
+        </div>
+        
+        <div class="text-center p-4 border-2 border-dashed border-base-300 rounded-lg hover:border-info transition-colors">
+          <a href="#" class="block text-decoration-none">
+            <div class="w-12 h-12 mx-auto mb-2 text-info">
+              <%= icon("chart-bar", class: "w-12 h-12") %>
+            </div>
+            <div class="font-medium">View Reports</div>
+            <div class="text-sm text-gray-600">Analyze performance</div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

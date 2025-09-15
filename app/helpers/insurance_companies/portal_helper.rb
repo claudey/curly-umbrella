@@ -1,0 +1,2 @@
+module InsuranceCompanies::PortalHelper
+end
