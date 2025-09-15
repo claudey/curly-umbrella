@@ -1,0 +1,232 @@
+<div class="print-page">
+  <!-- Header -->
+  <div class="print-header">
+    <div class="print-logo">BrokerSync</div>
+    <div class="print-document-type">Insurance Application</div>
+  </div>
+  
+  <div class="print-title">
+    <%= @application.insurance_type.humanize %> Insurance Application
+  </div>
+  
+  <!-- Application Summary -->
+  <div class="application-summary avoid-break">
+    <div class="print-two-columns">
+      <div class="print-column">
+        <div class="print-field-row">
+          <span class="print-field-label">Application No:</span>
+          <span class="print-field-value"><%= @application.id %></span>
+        </div>
+        <div class="print-field-row">
+          <span class="print-field-label">Date Submitted:</span>
+          <span class="print-field-value"><%= @application.created_at.strftime('%B %d, %Y') %></span>
+        </div>
+        <div class="print-field-row">
+          <span class="print-field-label">Status:</span>
+          <span class="print-field-value">
+            <span class="print-status <%= @application.status %>"><%= @application.status.humanize %></span>
+          </span>
+        </div>
+      </div>
+      <div class="print-column">
+        <div class="print-field-row">
+          <span class="print-field-label">Organization:</span>
+          <span class="print-field-value"><%= @application.organization.name %></span>
+        </div>
+        <div class="print-field-row">
+          <span class="print-field-label">Agent:</span>
+          <span class="print-field-value"><%= @application.created_by&.full_name || 'System' %></span>
+        </div>
+        <div class="print-field-row">
+          <span class="print-field-label">Insurance Type:</span>
+          <span class="print-field-value"><%= @application.insurance_type.humanize %></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Client Information -->
+  <div class="print-form-section">
+    <h3 class="print-form-section-title">Client Information</h3>
+    
+    <div class="print-two-columns">
+      <div class="print-column">
+        <div class="print-field-row">
+          <span class="print-field-label">Full Name:</span>
+          <span class="print-field-value"><%= @application.client_name %></span>
+        </div>
+        <div class="print-field-row">
+          <span class="print-field-label">Email:</span>
+          <span class="print-field-value"><%= @application.client_email %></span>
+        </div>
+        <div class="print-field-row">
+          <span class="print-field-label">Phone:</span>
+          <span class="print-field-value"><%= @application.client_phone %></span>
+        </div>
+        <% if @application.client_date_of_birth.present? %>
+          <div class="print-field-row">
+            <span class="print-field-label">Date of Birth:</span>
+            <span class="print-field-value"><%= @application.client_date_of_birth.strftime('%B %d, %Y') %></span>
+          </div>
+        <% end %>
+      </div>
+      <div class="print-column">
+        <% if @application.client_address.present? %>
+          <div class="print-field-row">
+            <span class="print-field-label">Address:</span>
+            <span class="print-field-value"><%= @application.client_address %></span>
+          </div>
+        <% end %>
+        <% if @application.client_city.present? %>
+          <div class="print-field-row">
+            <span class="print-field-label">City:</span>
+            <span class="print-field-value"><%= @application.client_city %></span>
+          </div>
+        <% end %>
+        <% if @application.client_state.present? %>
+          <div class="print-field-row">
+            <span class="print-field-label">State:</span>
+            <span class="print-field-value"><%= @application.client_state %></span>
+          </div>
+        <% end %>
+        <% if @application.client_postal_code.present? %>
+          <div class="print-field-row">
+            <span class="print-field-label">Postal Code:</span>
+            <span class="print-field-value"><%= @application.client_postal_code %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Insurance-specific Details -->
+  <% case @application.insurance_type %>
+  <% when 'motor' %>
+    <%= render 'shared/print_motor_details', application: @application %>
+  <% when 'fire' %>
+    <%= render 'shared/print_fire_details', application: @application %>
+  <% when 'liability' %>
+    <%= render 'shared/print_liability_details', application: @application %>
+  <% when 'general_accident' %>
+    <%= render 'shared/print_general_accident_details', application: @application %>
+  <% when 'bonds' %>
+    <%= render 'shared/print_bonds_details', application: @application %>
+  <% end %>
+  
+  <!-- Coverage Details -->
+  <% if @application.coverage_amount.present? %>
+    <div class="print-form-section">
+      <h3 class="print-form-section-title">Coverage Details</h3>
+      
+      <div class="print-two-columns">
+        <div class="print-column">
+          <div class="print-field-row">
+            <span class="print-field-label">Coverage Amount:</span>
+            <span class="print-field-value print-amount">
+              <%= number_to_currency(@application.coverage_amount) %>
+            </span>
+          </div>
+          <% if @application.deductible.present? %>
+            <div class="print-field-row">
+              <span class="print-field-label">Deductible:</span>
+              <span class="print-field-value print-amount">
+                <%= number_to_currency(@application.deductible) %>
+              </span>
+            </div>
+          <% end %>
+        </div>
+        <div class="print-column">
+          <% if @application.policy_start_date.present? %>
+            <div class="print-field-row">
+              <span class="print-field-label">Policy Start:</span>
+              <span class="print-field-value"><%= @application.policy_start_date.strftime('%B %d, %Y') %></span>
+            </div>
+          <% end %>
+          <% if @application.policy_end_date.present? %>
+            <div class="print-field-row">
+              <span class="print-field-label">Policy End:</span>
+              <span class="print-field-value"><%= @application.policy_end_date.strftime('%B %d, %Y') %></span>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+  
+  <!-- Risk Assessment -->
+  <% if @application.risk_score.present? %>
+    <div class="print-form-section">
+      <h3 class="print-form-section-title">Risk Assessment</h3>
+      
+      <table class="risk-assessment">
+        <tr>
+          <th>Risk Factor</th>
+          <th>Score</th>
+          <th>Level</th>
+          <th>Notes</th>
+        </tr>
+        <tr class="risk-level-<%= risk_level(@application.risk_score) %>">
+          <td>Overall Risk Score</td>
+          <td><%= @application.risk_score %>/100</td>
+          <td><%= risk_level(@application.risk_score).humanize %></td>
+          <td><%= @application.risk_notes if @application.risk_notes.present? %></td>
+        </tr>
+      </table>
+    </div>
+  <% end %>
+  
+  <!-- Additional Information -->
+  <% if @application.additional_info.present? %>
+    <div class="print-form-section">
+      <h3 class="print-form-section-title">Additional Information</h3>
+      <div style="margin-top: 10pt; line-height: 1.4;">
+        <%= simple_format(@application.additional_info) %>
+      </div>
+    </div>
+  <% end %>
+  
+  <!-- Documents -->
+  <% if @application.documents.any? %>
+    <div class="print-form-section">
+      <h3 class="print-form-section-title">Required Documents</h3>
+      <div class="document-list">
+        <ul>
+          <% @application.documents.each do |document| %>
+            <li>
+              <%= document.filename %> 
+              <span style="font-size: 9pt; color: #666;">
+                (Uploaded: <%= document.created_at.strftime('%m/%d/%Y') %>)
+              </span>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<!-- Page break for quotes if any -->
+<% if @application.quotes.any? %>
+  <div class="page-break"></div>
+  <%= render 'shared/print_quotes', quotes: @application.quotes %>
+<% end %>
+
+<!-- Footer -->
+<div class="print-footer">
+  <div style="text-align: left; float: left;">
+    Generated on <%= Date.current.strftime('%B %d, %Y') %>
+  </div>
+  <div style="text-align: center;">
+    BrokerSync Insurance Application - Confidential
+  </div>
+  <div style="text-align: right; float: right;" class="print-page-number"></div>
+</div>
+
+<% content_for :head do %>
+  <style>
+    @page {
+      size: A4;
+      margin: 20mm;
+    }
+  </style>
+<% end %>

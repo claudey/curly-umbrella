@@ -1,0 +1,116 @@
+<% content_for :title, "Quote ##{@quote.id}" %>
+
+<div class="print-page">
+  <div class="print-header">
+    <div class="print-logo">BrokerSync</div>
+    <div class="print-document-type">Insurance Quote</div>
+  </div>
+  
+  <div class="print-title">Insurance Quote</div>
+  
+  <!-- Quote Summary -->
+  <div class="application-summary avoid-break">
+    <div class="print-two-columns">
+      <div class="print-column">
+        <%= print_field "Quote No", @quote.id %>
+        <%= print_field "Date", @quote.created_at.strftime('%B %d, %Y') %>
+        <%= print_field "Status", content_tag(:span, @quote.status.humanize, class: print_status_class(@quote.status)) %>
+        <%= print_field "Valid Until", print_date(@quote.deadline) %>
+      </div>
+      <div class="print-column">
+        <%= print_field "Insurance Company", @quote.insurance_company&.name %>
+        <%= print_field "Application No", @quote.motor_application&.id %>
+        <%= print_field "Quoted By", @quote.quoted_by&.full_name %>
+        <%= print_field "Organization", @quote.organization.name %>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Premium Information -->
+  <div class="print-form-section">
+    <%= print_section_title "Premium Information" %>
+    
+    <div class="premium-calculation">
+      <table class="print-table">
+        <tr>
+          <td><strong>Premium Amount</strong></td>
+          <td class="print-amount"><%= number_to_currency(@quote.premium_amount) %></td>
+        </tr>
+        <% if @quote.coverage_amount.present? %>
+        <tr>
+          <td>Coverage Amount</td>
+          <td class="print-amount"><%= number_to_currency(@quote.coverage_amount) %></td>
+        </tr>
+        <% end %>
+        <% if @quote.commission_rate.present? %>
+        <tr>
+          <td>Commission Rate</td>
+          <td><%= @quote.commission_rate %>%</td>
+        </tr>
+        <% end %>
+        <% if @quote.commission_rate.present? && @quote.premium_amount.present? %>
+        <tr>
+          <td>Commission Amount</td>
+          <td class="print-amount">
+            <%= number_to_currency(@quote.premium_amount * (@quote.commission_rate / 100.0)) %>
+          </td>
+        </tr>
+        <% end %>
+      </table>
+    </div>
+  </div>
+  
+  <!-- Coverage Details -->
+  <% if @quote.coverage_details.present? %>
+    <div class="print-form-section">
+      <%= print_section_title "Coverage Details" %>
+      
+      <% @quote.coverage_details.each do |key, value| %>
+        <%= print_field key.humanize, value %>
+      <% end %>
+    </div>
+  <% end %>
+  
+  <!-- Terms & Conditions -->
+  <% if @quote.terms_conditions.present? %>
+    <div class="print-form-section">
+      <%= print_section_title "Terms & Conditions" %>
+      <div style="margin-top: 10pt; line-height: 1.4;">
+        <%= simple_format(@quote.terms_conditions) %>
+      </div>
+    </div>
+  <% end %>
+  
+  <!-- Additional Notes -->
+  <% if @quote.notes.present? %>
+    <div class="print-form-section">
+      <%= print_section_title "Additional Notes" %>
+      <div style="margin-top: 10pt; line-height: 1.4;">
+        <%= simple_format(@quote.notes) %>
+      </div>
+    </div>
+  <% end %>
+  
+  <!-- Application Details -->
+  <% if @quote.motor_application %>
+    <%= print_page_break %>
+    <%= render 'shared/print_application', application: @quote.motor_application %>
+  <% end %>
+  
+  <!-- Signatures -->
+  <div class="print-signatures">
+    <%= print_signature_section("Insurance Company Representative") %>
+    <%= print_signature_section("Client Signature") %>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="print-footer">
+  <div style="text-align: left; float: left;">
+    Generated on <%= Date.current.strftime('%B %d, %Y') %>
+  </div>
+  <div style="text-align: center;">
+    BrokerSync Insurance Quote - Confidential
+  </div>
+  <div style="text-align: right; float: right;" class="print-page-number"></div>
+</div>

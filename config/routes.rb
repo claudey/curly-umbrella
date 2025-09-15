@@ -54,6 +54,7 @@ Rails.application.routes.draw do
       patch :reject
       patch :accept
       patch :withdraw
+      get :print
     end
     
     collection do
@@ -74,6 +75,7 @@ Rails.application.routes.draw do
       patch :start_review
       patch :approve
       patch :reject
+      get :print
     end
   end
   devise_for :users

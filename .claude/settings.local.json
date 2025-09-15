@@ -8,7 +8,8 @@
       "Bash(rails:*)",
       "Bash(git rm:*)",
       "Bash(git add:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "ask": []

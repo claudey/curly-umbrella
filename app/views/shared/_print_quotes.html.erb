@@ -1,0 +1,134 @@
+<div class="print-page">
+  <div class="print-header">
+    <div class="print-logo">BrokerSync</div>
+    <div class="print-document-type">Quote Comparison</div>
+  </div>
+  
+  <div class="print-title">Insurance Quotes</div>
+  
+  <% if quotes.any? %>
+    <div class="quote-comparison">
+      <table class="print-table">
+        <thead>
+          <tr>
+            <th>Insurance Company</th>
+            <th>Premium Amount</th>
+            <th>Deductible</th>
+            <th>Coverage Limits</th>
+            <th>Status</th>
+            <th>Valid Until</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% quotes.each do |quote| %>
+            <tr>
+              <td>
+                <strong><%= quote.insurance_company.name if quote.insurance_company %></strong><br>
+                <span style="font-size: 9pt; color: #666;">
+                  Quote #<%= quote.id %>
+                </span>
+              </td>
+              <td class="print-amount">
+                <%= number_to_currency(quote.quote_amount) %>
+                <% if quote.payment_terms.present? %>
+                  <br><span style="font-size: 9pt;"><%= quote.payment_terms %></span>
+                <% end %>
+              </td>
+              <td class="print-amount">
+                <%= number_to_currency(quote.deductible) if quote.deductible %>
+              </td>
+              <td>
+                <% if quote.coverage_details.present? %>
+                  <%= simple_format(quote.coverage_details, {}, wrapper_tag: "span") %>
+                <% end %>
+              </td>
+              <td>
+                <span class="print-status <%= quote.status %>">
+                  <%= quote.status.humanize %>
+                </span>
+              </td>
+              <td>
+                <%= quote.deadline.strftime('%m/%d/%Y') if quote.deadline %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Quote Details -->
+    <% quotes.each_with_index do |quote, index| %>
+      <% if quote.additional_info.present? || quote.exclusions.present? %>
+        <div class="print-form-section avoid-break">
+          <h3 class="print-form-section-title">
+            Quote #<%= quote.id %> - <%= quote.insurance_company.name if quote.insurance_company %>
+          </h3>
+          
+          <% if quote.additional_info.present? %>
+            <div style="margin-bottom: 10pt;">
+              <strong>Additional Information:</strong><br>
+              <%= simple_format(quote.additional_info) %>
+            </div>
+          <% end %>
+          
+          <% if quote.exclusions.present? %>
+            <div style="margin-bottom: 10pt;">
+              <strong>Exclusions:</strong><br>
+              <%= simple_format(quote.exclusions) %>
+            </div>
+          <% end %>
+          
+          <% if quote.terms_conditions.present? %>
+            <div style="margin-bottom: 10pt;">
+              <strong>Terms & Conditions:</strong><br>
+              <%= simple_format(quote.terms_conditions) %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+    
+    <!-- Quote Summary -->
+    <% if quotes.length > 1 %>
+      <div class="print-form-section">
+        <h3 class="print-form-section-title">Quote Summary</h3>
+        
+        <table class="print-table">
+          <tr>
+            <td><strong>Lowest Premium:</strong></td>
+            <td class="print-amount">
+              <%= number_to_currency(quotes.minimum(:quote_amount)) %>
+              <span style="font-size: 9pt; color: #666;">
+                (<%= quotes.find { |q| q.quote_amount == quotes.minimum(:quote_amount) }&.insurance_company&.name %>)
+              </span>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Highest Premium:</strong></td>
+            <td class="print-amount">
+              <%= number_to_currency(quotes.maximum(:quote_amount)) %>
+              <span style="font-size: 9pt; color: #666;">
+                (<%= quotes.find { |q| q.quote_amount == quotes.maximum(:quote_amount) }&.insurance_company&.name %>)
+              </span>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Average Premium:</strong></td>
+            <td class="print-amount">
+              <%= number_to_currency(quotes.average(:quote_amount)) %>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Total Quotes Received:</strong></td>
+            <td><%= quotes.count %></td>
+          </tr>
+        </table>
+      </div>
+    <% end %>
+    
+  <% else %>
+    <div style="text-align: center; margin: 40pt 0; color: #666;">
+      <em>No quotes available for this application.</em>
+    </div>
+  <% end %>
+</div>

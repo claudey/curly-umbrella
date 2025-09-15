@@ -1,6 +1,6 @@
 class QuotesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_quote, only: [:show, :edit, :update, :destroy, :submit, :approve, :reject, :accept, :withdraw]
+  before_action :set_quote, only: [:show, :edit, :update, :destroy, :submit, :approve, :reject, :accept, :withdraw, :print]
 
   def index
     @quotes = current_user.organization.quotes
@@ -125,6 +125,10 @@ class QuotesController < ApplicationController
       redirect_to motor_application_path(@motor_application), 
                   alert: 'No approved quotes available for comparison.'
     end
+  end
+
+  def print
+    render layout: 'print'
   end
 
   private

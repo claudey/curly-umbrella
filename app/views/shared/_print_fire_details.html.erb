@@ -1,0 +1,137 @@
+<div class="print-form-section fire-details">
+  <h3 class="print-form-section-title">Property Details</h3>
+  
+  <% property_info = application.property_info || {} %>
+  
+  <div class="print-two-columns">
+    <div class="print-column">
+      <div class="print-field-row">
+        <span class="print-field-label">Property Type:</span>
+        <span class="print-field-value"><%= property_info['property_type']&.humanize %></span>
+      </div>
+      <div class="print-field-row">
+        <span class="print-field-label">Construction Type:</span>
+        <span class="print-field-value"><%= property_info['construction_type']&.humanize %></span>
+      </div>
+      <div class="print-field-row">
+        <span class="print-field-label">Year Built:</span>
+        <span class="print-field-value"><%= property_info['year_built'] %></span>
+      </div>
+      <div class="print-field-row">
+        <span class="print-field-label">Square Footage:</span>
+        <span class="print-field-value">
+          <%= number_with_delimiter(property_info['square_footage']) if property_info['square_footage'].present? %> sq ft
+        </span>
+      </div>
+    </div>
+    <div class="print-column">
+      <div class="print-field-row">
+        <span class="print-field-label">Property Value:</span>
+        <span class="print-field-value print-amount">
+          <%= number_to_currency(property_info['property_value']) if property_info['property_value'].present? %>
+        </span>
+      </div>
+      <div class="print-field-row">
+        <span class="print-field-label">Contents Value:</span>
+        <span class="print-field-value print-amount">
+          <%= number_to_currency(property_info['contents_value']) if property_info['contents_value'].present? %>
+        </span>
+      </div>
+      <div class="print-field-row">
+        <span class="print-field-label">Occupancy Type:</span>
+        <span class="print-field-value"><%= property_info['occupancy_type']&.humanize %></span>
+      </div>
+      <div class="print-field-row">
+        <span class="print-field-label">Number of Stories:</span>
+        <span class="print-field-value"><%= property_info['stories'] %></span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="print-field-row">
+    <span class="print-field-label">Property Address:</span>
+    <span class="print-field-value">
+      <%= [property_info['address'], property_info['city'], property_info['state'], property_info['zip']].compact.join(', ') %>
+    </span>
+  </div>
+</div>
+
+<!-- Safety Features -->
+<% if property_info['safety_features'].present? %>
+  <div class="print-form-section">
+    <h3 class="print-form-section-title">Safety & Security Features</h3>
+    
+    <table class="print-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Present</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% safety_features = property_info['safety_features'] || {} %>
+        <tr>
+          <td>Fire Alarm System</td>
+          <td><%= safety_features['fire_alarm'] ? 'Yes' : 'No' %></td>
+          <td><%= safety_features['fire_alarm_details'] %></td>
+        </tr>
+        <tr>
+          <td>Sprinkler System</td>
+          <td><%= safety_features['sprinkler_system'] ? 'Yes' : 'No' %></td>
+          <td><%= safety_features['sprinkler_details'] %></td>
+        </tr>
+        <tr>
+          <td>Security System</td>
+          <td><%= safety_features['security_system'] ? 'Yes' : 'No' %></td>
+          <td><%= safety_features['security_details'] %></td>
+        </tr>
+        <tr>
+          <td>Fire Extinguishers</td>
+          <td><%= safety_features['fire_extinguishers'] ? 'Yes' : 'No' %></td>
+          <td><%= safety_features['extinguisher_details'] %></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+<% end %>
+
+<!-- Risk Factors -->
+<% if property_info['risk_factors'].present? %>
+  <div class="print-form-section">
+    <h3 class="print-form-section-title">Risk Factors</h3>
+    
+    <table class="print-table">
+      <thead>
+        <tr>
+          <th>Risk Factor</th>
+          <th>Present</th>
+          <th>Distance/Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% risk_factors = property_info['risk_factors'] || {} %>
+        <tr>
+          <td>Nearest Fire Station</td>
+          <td>-</td>
+          <td><%= risk_factors['fire_station_distance'] %> miles</td>
+        </tr>
+        <tr>
+          <td>Nearest Fire Hydrant</td>
+          <td>-</td>
+          <td><%= risk_factors['fire_hydrant_distance'] %> feet</td>
+        </tr>
+        <tr>
+          <td>High Crime Area</td>
+          <td><%= risk_factors['high_crime_area'] ? 'Yes' : 'No' %></td>
+          <td><%= risk_factors['crime_details'] %></td>
+        </tr>
+        <tr>
+          <td>Flood Zone</td>
+          <td><%= risk_factors['flood_zone'] ? 'Yes' : 'No' %></td>
+          <td><%= risk_factors['flood_zone_details'] %></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+<% end %>

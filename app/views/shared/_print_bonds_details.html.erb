@@ -1,0 +1,82 @@
+<% content_for :title, "Bonds Insurance Application Details" %>
+
+<!-- Bonds Insurance Specific Details -->
+<div class="print-form-section">
+  <%= print_section_title "Bond Information" %>
+  
+  <div class="print-two-columns">
+    <div class="print-column">
+      <%= print_field "Bond Type", application.get_field('bond_type')&.humanize %>
+      <%= print_field "Principal Amount", application.get_field('principal_amount') ? number_to_currency(application.get_field('principal_amount').to_f) : nil %>
+      <%= print_field "Contract Details", application.get_field('contract_details') %>
+      <%= print_field "Project Description", application.get_field('project_description') %>
+    </div>
+    <div class="print-column">
+      <%= print_field "Contractor Experience", application.get_field('contractor_experience') %>
+      <%= print_field "Financial Statements", application.get_field('financial_statements') %>
+      <%= print_field "Performance History", application.get_field('performance_history') %>
+      <%= print_field "Surety Requirements", application.get_field('surety_requirements') %>
+    </div>
+  </div>
+</div>
+
+<!-- Project Details -->
+<div class="print-form-section">
+  <%= print_section_title "Project Details" %>
+  
+  <table class="print-table">
+    <tr>
+      <td><strong>Project Description</strong></td>
+      <td><%= application.get_field('project_description') || "-" %></td>
+    </tr>
+    <tr>
+      <td><strong>Contract Value</strong></td>
+      <td class="print-amount">
+        <%= application.get_field('principal_amount') ? number_to_currency(application.get_field('principal_amount').to_f) : "-" %>
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Bond Type</strong></td>
+      <td><%= application.get_field('bond_type')&.humanize || "-" %></td>
+    </tr>
+    <tr>
+      <td><strong>Contract Details</strong></td>
+      <td><%= application.get_field('contract_details') || "-" %></td>
+    </tr>
+  </table>
+</div>
+
+<!-- Contractor Assessment -->
+<div class="print-form-section">
+  <%= print_section_title "Contractor Assessment" %>
+  
+  <table class="print-table">
+    <tr>
+      <td><strong>Experience Level</strong></td>
+      <td><%= application.get_field('contractor_experience') || "Not specified" %></td>
+    </tr>
+    <tr>
+      <td><strong>Financial Standing</strong></td>
+      <td><%= application.get_field('financial_statements') || "Under review" %></td>
+    </tr>
+    <tr>
+      <td><strong>Performance History</strong></td>
+      <td><%= application.get_field('performance_history') || "No previous record" %></td>
+    </tr>
+    <tr>
+      <td><strong>Risk Level</strong></td>
+      <td><%= application.risk_level&.humanize || "Standard" %> (<%= application.risk_score || 50 %>/100)</td>
+    </tr>
+  </table>
+</div>
+
+<!-- Surety Requirements -->
+<% if application.get_field('surety_requirements').present? %>
+  <div class="print-form-section">
+    <%= print_section_title "Surety Requirements" %>
+    
+    <div style="margin-top: 10pt; line-height: 1.4;">
+      <%= simple_format(application.get_field('surety_requirements')) %>
+    </div>
+  </div>
+<% end %>

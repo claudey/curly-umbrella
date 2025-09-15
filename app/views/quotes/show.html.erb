@@ -17,6 +17,9 @@
     </div>
     
     <div class="flex items-center gap-3">
+      <!-- Print Button -->
+      <%= print_button("Print", "btn btn-outline btn-sm") %>
+      
       <!-- Status Badge -->
       <span class="badge <%= @quote.status_badge_class %> badge-lg">
         <%= @quote.status.humanize %>
@@ -92,10 +95,10 @@
           
           <div class="divider my-1"></div>
           <li>
-            <a href="#" onclick="window.print()">
+            <%= link_to print_quote_path(@quote), target: "_blank" do %>
               <%= icon("printer", class: "w-4 h-4") %>
               Print Quote
-            </a>
+            <% end %>
           </li>
         </ul>
       </div>

@@ -1,0 +1,65 @@
+<% content_for :title, "Liability Insurance Application Details" %>
+
+<!-- Liability Insurance Specific Details -->
+<div class="print-form-section">
+  <%= print_section_title "Business Information" %>
+  
+  <div class="print-two-columns">
+    <div class="print-column">
+      <%= print_field "Business Type", application.get_field('business_type')&.humanize %>
+      <%= print_field "Liability Type", application.get_field('liability_type')&.humanize %>
+      <%= print_field "Coverage Scope", application.get_field('coverage_scope') %>
+      <%= print_field "Annual Turnover", application.get_field('annual_turnover') ? number_to_currency(application.get_field('annual_turnover').to_f) : nil %>
+    </div>
+    <div class="print-column">
+      <%= print_field "Number of Employees", application.get_field('number_of_employees') %>
+      <%= print_field "Business Description", application.get_field('business_description') %>
+      <%= print_field "Previous Claims", application.get_field('previous_claims') %>
+      <%= print_field "Legal Disputes", application.get_field('legal_disputes') %>
+    </div>
+  </div>
+</div>
+
+<!-- Risk Assessment -->
+<div class="print-form-section">
+  <%= print_section_title "Risk Assessment" %>
+  
+  <table class="print-table">
+    <tr>
+      <td><strong>Risk Level</strong></td>
+      <td><%= application.risk_level&.humanize || "Not Assessed" %></td>
+    </tr>
+    <tr>
+      <td><strong>Risk Score</strong></td>
+      <td><%= application.risk_score || "N/A" %>/100</td>
+    </tr>
+    <tr>
+      <td><strong>Business Operations</strong></td>
+      <td><%= application.get_field('business_description') || "-" %></td>
+    </tr>
+  </table>
+</div>
+
+<!-- Coverage Requirements -->
+<% if application.sum_insured.present? || application.get_field('coverage_scope').present? %>
+  <div class="print-form-section">
+    <%= print_section_title "Coverage Requirements" %>
+    
+    <table class="print-table">
+      <% if application.sum_insured.present? %>
+        <tr>
+          <td><strong>Sum Insured</strong></td>
+          <td class="print-amount"><%= number_to_currency(application.sum_insured) %></td>
+        </tr>
+      <% end %>
+      <tr>
+        <td><strong>Coverage Scope</strong></td>
+        <td><%= application.get_field('coverage_scope') || "-" %></td>
+      </tr>
+      <tr>
+        <td><strong>Liability Type</strong></td>
+        <td><%= application.get_field('liability_type')&.humanize || "-" %></td>
+      </tr>
+    </table>
+  </div>
+<% end %>

@@ -1,6 +1,6 @@
 class MotorApplicationsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_motor_application, only: [:show, :edit, :update, :destroy, :submit_application, :start_review, :approve, :reject]
+  before_action :set_motor_application, only: [:show, :edit, :update, :destroy, :submit_application, :start_review, :approve, :reject, :print]
   before_action :ensure_can_edit, only: [:edit, :update]
 
   def index
@@ -98,6 +98,11 @@ class MotorApplicationsController < ApplicationController
     else
       redirect_to @motor_application, alert: 'Unable to reject application.'
     end
+  end
+
+  def print
+    @application = @motor_application # For consistency with print template
+    render layout: 'print'
   end
 
   private

@@ -1,0 +1,71 @@
+<% content_for :title, "General Accident Insurance Application Details" %>
+
+<!-- General Accident Insurance Specific Details -->
+<div class="print-form-section">
+  <%= print_section_title "Personal Information" %>
+  
+  <div class="print-two-columns">
+    <div class="print-column">
+      <%= print_field "Coverage Type", application.get_field('coverage_type')&.humanize %>
+      <%= print_field "Occupation", application.get_field('occupation')&.humanize %>
+      <%= print_field "Annual Income", application.get_field('annual_income') ? number_to_currency(application.get_field('annual_income').to_f) : nil %>
+      <%= print_field "Beneficiary Details", application.get_field('beneficiary_details') %>
+    </div>
+    <div class="print-column">
+      <%= print_field "Medical History", application.get_field('medical_history') %>
+      <%= print_field "Lifestyle Factors", application.get_field('lifestyle_factors') %>
+      <%= print_field "Sports Activities", application.get_field('sports_activities') %>
+      <%= print_field "Previous Policies", application.get_field('previous_policies') %>
+    </div>
+  </div>
+</div>
+
+<!-- Health and Lifestyle Assessment -->
+<div class="print-form-section">
+  <%= print_section_title "Health and Lifestyle Assessment" %>
+  
+  <table class="print-table">
+    <tr>
+      <td><strong>Medical History</strong></td>
+      <td><%= application.get_field('medical_history') || "None reported" %></td>
+    </tr>
+    <tr>
+      <td><strong>Lifestyle Risk Factors</strong></td>
+      <td><%= application.get_field('lifestyle_factors') || "Standard lifestyle" %></td>
+    </tr>
+    <tr>
+      <td><strong>Sports/High-Risk Activities</strong></td>
+      <td><%= application.get_field('sports_activities') || "None reported" %></td>
+    </tr>
+    <tr>
+      <td><strong>Occupation Risk Level</strong></td>
+      <td><%= application.get_field('occupation')&.humanize || "-" %></td>
+    </tr>
+  </table>
+</div>
+
+<!-- Coverage Details -->
+<div class="print-form-section">
+  <%= print_section_title "Coverage Details" %>
+  
+  <table class="print-table">
+    <tr>
+      <td><strong>Coverage Type</strong></td>
+      <td><%= application.get_field('coverage_type')&.humanize || "-" %></td>
+    </tr>
+    <% if application.sum_insured.present? %>
+      <tr>
+        <td><strong>Sum Insured</strong></td>
+        <td class="print-amount"><%= number_to_currency(application.sum_insured) %></td>
+      </tr>
+    <% end %>
+    <tr>
+      <td><strong>Beneficiary</strong></td>
+      <td><%= application.get_field('beneficiary_details') || "-" %></td>
+    </tr>
+    <tr>
+      <td><strong>Risk Assessment</strong></td>
+      <td><%= application.risk_level&.humanize || "Standard" %> (<%= application.risk_score || 50 %>/100)</td>
+    </tr>
+  </table>
+</div>

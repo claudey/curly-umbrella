@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>
+    <%= content_for(:title) || "Print Document" %> - BrokerSync
+  </title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  
+  <style>
+    @page {
+      size: A4;
+      margin: 20mm;
+      @top-center {
+        content: "<%= current_user.organization.name if current_user.organization %>";
+        font-size: 10pt;
+        color: #666;
+      }
+      @bottom-center {
+        content: "Page " counter(page) " of " counter(pages);
+        font-size: 9pt;
+        color: #666;
+      }
+    }
+  </style>
+  
+  <%# Load print-optimized styles %>
+  <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+  
+  <%= yield :head %>
+</head>
+
+<body class="print-mode" data-theme="light">
+  <div class="print-container">
+    <%= yield %>
+  </div>
+  
+  <!-- Auto-print script -->
+  <script>
+    window.onload = function() {
+      // Small delay to ensure styles are loaded
+      setTimeout(function() {
+        window.print();
+        
+        // Close window after printing (for popup windows)
+        window.onafterprint = function() {
+          if (window.opener) {
+            window.close();
+          }
+        };
+      }, 500);
+    };
+  </script>
+</body>
+</html>
