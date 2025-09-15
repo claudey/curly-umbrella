@@ -1,4 +1,18 @@
 Rails.application.routes.draw do
+  resources :documents do
+    member do
+      get :download
+      patch :archive
+      patch :restore
+      get :versions
+      post :new_version
+    end
+    
+    collection do
+      get :archived
+      get :expiring
+    end
+  end
   namespace :insurance_company do
     get "quotes/index"
     get "quotes/show"

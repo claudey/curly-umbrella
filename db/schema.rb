@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_15_132052) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_15_170522) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -176,6 +176,44 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_132052) do
     t.index ["motor_application_id"], name: "index_distribution_analytics_on_motor_application_id"
     t.index ["occurred_at", "event_type"], name: "index_distribution_analytics_on_occurred_at_and_event_type"
     t.index ["occurred_at"], name: "index_distribution_analytics_on_occurred_at"
+  end
+
+  create_table "documents", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "description"
+    t.string "document_type", null: false
+    t.bigint "file_size"
+    t.string "content_type"
+    t.string "checksum"
+    t.integer "version", default: 1, null: false
+    t.boolean "is_current", default: true, null: false
+    t.json "metadata", default: {}
+    t.bigint "organization_id", null: false
+    t.bigint "user_id", null: false
+    t.string "documentable_type", null: false
+    t.bigint "documentable_id", null: false
+    t.string "category"
+    t.string "tags", default: [], array: true
+    t.boolean "is_public", default: false, null: false
+    t.boolean "is_archived", default: false, null: false
+    t.datetime "archived_at"
+    t.bigint "archived_by_id"
+    t.text "archive_reason"
+    t.datetime "expires_at"
+    t.string "access_level", default: "private", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["archived_by_id"], name: "index_documents_on_archived_by_id"
+    t.index ["category"], name: "index_documents_on_category"
+    t.index ["documentable_type", "documentable_id"], name: "index_documents_on_documentable"
+    t.index ["documentable_type", "documentable_id"], name: "index_documents_on_documentable_type_and_documentable_id"
+    t.index ["expires_at"], name: "index_documents_on_expires_at"
+    t.index ["is_archived", "archived_at"], name: "index_documents_on_is_archived_and_archived_at"
+    t.index ["is_current", "version"], name: "index_documents_on_is_current_and_version"
+    t.index ["organization_id", "document_type"], name: "index_documents_on_organization_id_and_document_type"
+    t.index ["organization_id"], name: "index_documents_on_organization_id"
+    t.index ["tags"], name: "index_documents_on_tags", using: :gin
+    t.index ["user_id"], name: "index_documents_on_user_id"
   end
 
   create_table "insurance_applications", force: :cascade do |t|
@@ -552,6 +590,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_132052) do
   add_foreign_key "company_preferences", "insurance_companies"
   add_foreign_key "distribution_analytics", "insurance_companies"
   add_foreign_key "distribution_analytics", "motor_applications"
+  add_foreign_key "documents", "organizations"
+  add_foreign_key "documents", "users"
+  add_foreign_key "documents", "users", column: "archived_by_id"
   add_foreign_key "insurance_applications", "clients"
   add_foreign_key "insurance_applications", "organizations"
   add_foreign_key "insurance_applications", "users"

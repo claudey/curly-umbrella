@@ -9,7 +9,8 @@ class MotorApplication < ApplicationRecord
   belongs_to :rejected_by, class_name: 'User', optional: true
 
   has_many :quotes, dependent: :destroy
-  has_many_attached :documents
+  has_many :documents, as: :documentable, dependent: :destroy
+  has_many_attached :legacy_documents
 
   validates :application_number, presence: true, uniqueness: { scope: :organization_id }
   validates :status, presence: true, inclusion: { in: %w[draft submitted under_review approved rejected] }
