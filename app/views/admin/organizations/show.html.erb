@@ -1,0 +1,287 @@
+<% content_for :title, @organization.name %>
+
+<div class="container mx-auto p-6">
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+    <div>
+      <div class="breadcrumbs text-sm">
+        <ul>
+          <li><%= link_to "Organizations", admin_organizations_path, class: "link" %></li>
+          <li><%= @organization.name %></li>
+        </ul>
+      </div>
+      <h1 class="text-3xl font-bold text-base-content flex items-center gap-3">
+        <div class="avatar placeholder">
+          <div class="bg-primary text-primary-content rounded-full w-12">
+            <span class="text-xl"><%= @organization.name.first.upcase %></span>
+          </div>
+        </div>
+        <%= @organization.name %>
+        <% if @organization.active? %>
+          <span class="badge badge-success gap-1">
+            <i class="ph ph-check-circle"></i>
+            Active
+          </span>
+        <% else %>
+          <span class="badge badge-warning gap-1">
+            <i class="ph ph-pause-circle"></i>
+            Inactive
+          </span>
+        <% end %>
+      </h1>
+    </div>
+    
+    <div class="flex gap-2 mt-4 md:mt-0">
+      <%= link_to edit_admin_organization_path(@organization), class: "btn btn-outline" do %>
+        <i class="ph ph-pencil"></i>
+        Edit
+      <% end %>
+      
+      <% if @organization.active? %>
+        <%= link_to deactivate_admin_organization_path(@organization), 
+                   method: :patch,
+                   class: "btn btn-warning",
+                   data: { 
+                     confirm: "Are you sure you want to deactivate #{@organization.name}?" 
+                   } do %>
+          <i class="ph ph-pause-circle"></i>
+          Deactivate
+        <% end %>
+      <% else %>
+        <%= link_to activate_admin_organization_path(@organization), 
+                   method: :patch,
+                   class: "btn btn-success" do %>
+          <i class="ph ph-play-circle"></i>
+          Activate
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+  
+  <!-- Overview Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="stat bg-base-100 rounded-lg shadow">
+      <div class="stat-figure text-primary">
+        <i class="ph ph-users text-3xl"></i>
+      </div>
+      <div class="stat-title">Total Users</div>
+      <div class="stat-value text-primary"><%= @users_count %></div>
+      <div class="stat-desc">
+        <% if @organization.max_users.present? %>
+          <%= @users_count %>/<%= @organization.max_users %> used
+        <% end %>
+      </div>
+    </div>
+    
+    <div class="stat bg-base-100 rounded-lg shadow">
+      <div class="stat-figure text-info">
+        <i class="ph ph-file-text text-3xl"></i>
+      </div>
+      <div class="stat-title">Applications</div>
+      <div class="stat-value text-info"><%= @applications_count %></div>
+      <div class="stat-desc">Total submitted</div>
+    </div>
+    
+    <div class="stat bg-base-100 rounded-lg shadow">
+      <div class="stat-figure text-secondary">
+        <i class="ph ph-currency-dollar text-3xl"></i>
+      </div>
+      <div class="stat-title">Quotes</div>
+      <div class="stat-value text-secondary"><%= @quotes_count %></div>
+      <div class="stat-desc">Total received</div>
+    </div>
+    
+    <div class="stat bg-base-100 rounded-lg shadow">
+      <div class="stat-figure text-accent">
+        <i class="ph ph-calendar text-3xl"></i>
+      </div>
+      <div class="stat-title">Created</div>
+      <div class="stat-value text-accent text-lg">
+        <%= @organization.created_at.strftime('%b %d, %Y') %>
+      </div>
+      <div class="stat-desc">
+        <%= time_ago_in_words(@organization.created_at) %> ago
+      </div>
+    </div>
+  </div>
+  
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Organization Details -->
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <h2 class="card-title">
+          <i class="ph ph-info"></i>
+          Organization Details
+        </h2>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="text-sm font-medium text-base-content/60">Name</label>
+            <p class="text-lg"><%= @organization.name %></p>
+          </div>
+          
+          <div>
+            <label class="text-sm font-medium text-base-content/60">Subdomain</label>
+            <p class="font-mono bg-base-200 px-2 py-1 rounded inline-block">
+              <%= @organization.subdomain %>
+            </p>
+          </div>
+          
+          <% if @organization.description.present? %>
+            <div>
+              <label class="text-sm font-medium text-base-content/60">Description</label>
+              <p><%= @organization.description %></p>
+            </div>
+          <% end %>
+          
+          <% if @organization.plan.present? %>
+            <div>
+              <label class="text-sm font-medium text-base-content/60">Plan</label>
+              <p class="capitalize"><%= @organization.plan %></p>
+            </div>
+          <% end %>
+          
+          <% if @organization.billing_email.present? %>
+            <div>
+              <label class="text-sm font-medium text-base-content/60">Billing Email</label>
+              <p>
+                <a href="mailto:<%= @organization.billing_email %>" class="link link-primary">
+                  <%= @organization.billing_email %>
+                </a>
+              </p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Contact Information -->
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <h2 class="card-title">
+          <i class="ph ph-address-book"></i>
+          Contact Information
+        </h2>
+        
+        <% if @organization.contact_info.present? %>
+          <div class="space-y-3">
+            <% if @organization.contact_info['address'].present? %>
+              <div>
+                <label class="text-sm font-medium text-base-content/60">Address</label>
+                <p>
+                  <%= @organization.contact_info['address'] %><br>
+                  <% if @organization.contact_info['city'].present? %>
+                    <%= @organization.contact_info['city'] %>,
+                  <% end %>
+                  <%= @organization.contact_info['state'] %>
+                  <%= @organization.contact_info['postal_code'] %><br>
+                  <%= @organization.contact_info['country'] %>
+                </p>
+              </div>
+            <% end %>
+            
+            <% if @organization.contact_info['phone'].present? %>
+              <div>
+                <label class="text-sm font-medium text-base-content/60">Phone</label>
+                <p>
+                  <a href="tel:<%= @organization.contact_info['phone'] %>" class="link link-primary">
+                    <%= @organization.contact_info['phone'] %>
+                  </a>
+                </p>
+              </div>
+            <% end %>
+            
+            <% if @organization.contact_info['website'].present? %>
+              <div>
+                <label class="text-sm font-medium text-base-content/60">Website</label>
+                <p>
+                  <a href="<%= @organization.contact_info['website'] %>" 
+                     target="_blank" 
+                     class="link link-primary">
+                    <%= @organization.contact_info['website'] %>
+                    <i class="ph ph-arrow-square-out text-xs"></i>
+                  </a>
+                </p>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="text-base-content/60 italic">No contact information provided</p>
+        <% end %>
+      </div>
+    </div>
+    
+    <!-- Recent Users -->
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <h2 class="card-title">
+          <i class="ph ph-users"></i>
+          Recent Users
+        </h2>
+        
+        <% if @recent_users.any? %>
+          <div class="space-y-3">
+            <% @recent_users.each do |user| %>
+              <div class="flex items-center gap-3 p-3 bg-base-200 rounded-lg">
+                <div class="avatar placeholder">
+                  <div class="bg-primary text-primary-content rounded-full w-10">
+                    <span class="text-sm">
+                      <%= user.first_name.first.upcase %><%= user.last_name.first.upcase %>
+                    </span>
+                  </div>
+                </div>
+                <div class="flex-1">
+                  <p class="font-medium"><%= user.full_name %></p>
+                  <p class="text-sm text-base-content/60">
+                    <%= user.role.humanize %> • 
+                    <%= time_ago_in_words(user.created_at) %> ago
+                  </p>
+                </div>
+                <span class="badge badge-outline badge-sm">
+                  <%= user.role.humanize %>
+                </span>
+              </div>
+            <% end %>
+          </div>
+          
+          <div class="card-actions justify-end mt-4">
+            <button class="btn btn-sm btn-outline">View All Users</button>
+          </div>
+        <% else %>
+          <p class="text-base-content/60 italic">No users yet</p>
+        <% end %>
+      </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <h2 class="card-title">
+          <i class="ph ph-activity"></i>
+          Recent Activity
+        </h2>
+        
+        <% if @recent_activity.any? %>
+          <div class="space-y-3">
+            <% @recent_activity.each do |activity| %>
+              <div class="flex items-start gap-3 p-3 bg-base-200 rounded-lg">
+                <div class="flex-shrink-0 w-8 h-8 bg-primary text-primary-content rounded-full flex items-center justify-center">
+                  <i class="<%= activity[:icon] %> text-sm"></i>
+                </div>
+                <div class="flex-1">
+                  <p class="font-medium"><%= activity[:title] %></p>
+                  <p class="text-sm text-base-content/60"><%= activity[:description] %></p>
+                  <p class="text-xs text-base-content/50 mt-1">
+                    <%= time_ago_in_words(activity[:timestamp]) %> ago
+                  </p>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="text-base-content/60 italic">No recent activity</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,324 @@
+<% content_for :title, "Create Organization" %>
+
+<div class="container mx-auto p-6 max-w-4xl">
+  <!-- Header -->
+  <div class="mb-8">
+    <div class="breadcrumbs text-sm">
+      <ul>
+        <li><%= link_to "Organizations", admin_organizations_path, class: "link" %></li>
+        <li>New Organization</li>
+      </ul>
+    </div>
+    <h1 class="text-3xl font-bold text-base-content">Create New Organization</h1>
+    <p class="text-base-content/60 mt-1">Set up a new organization with their initial configuration</p>
+  </div>
+  
+  <%= form_with model: [:admin, @organization], 
+                local: true, 
+                class: "space-y-6",
+                data: { controller: "organization-form" } do |form| %>
+    
+    <!-- Basic Information -->
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <h2 class="card-title mb-4">
+          <i class="ph ph-info"></i>
+          Basic Information
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Organization Name *</span>
+            </label>
+            <%= form.text_field :name,
+                               class: "input input-bordered #{'input-error' if @organization.errors[:name].any?}",
+                               placeholder: "Acme Insurance Brokerage",
+                               required: true,
+                               data: { action: "input->organization-form#generateSubdomain" } %>
+            <% if @organization.errors[:name].any? %>
+              <label class="label">
+                <span class="label-text-alt text-error"><%= @organization.errors[:name].first %></span>
+              </label>
+            <% end %>
+          </div>
+          
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Subdomain *</span>
+            </label>
+            <div class="join">
+              <%= form.text_field :subdomain,
+                                 class: "input input-bordered join-item flex-1 #{'input-error' if @organization.errors[:subdomain].any?}",
+                                 placeholder: "acme",
+                                 required: true,
+                                 data: { "organization-form-target": "subdomain" } %>
+              <span class="bg-base-200 join-item flex items-center px-3 text-sm text-base-content/60">
+                .brokersync.com
+              </span>
+            </div>
+            <% if @organization.errors[:subdomain].any? %>
+              <label class="label">
+                <span class="label-text-alt text-error"><%= @organization.errors[:subdomain].first %></span>
+              </label>
+            <% end %>
+          </div>
+        </div>
+        
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Description</span>
+          </label>
+          <%= form.textarea :description,
+                           class: "textarea textarea-bordered",
+                           placeholder: "Brief description of the organization...",
+                           rows: 3 %>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Plan</span>
+            </label>
+            <%= form.select :plan,
+                           options_for_select([
+                             ['Starter', 'starter'],
+                             ['Professional', 'professional'],
+                             ['Enterprise', 'enterprise']
+                           ], @organization.plan),
+                           { prompt: 'Select a plan' },
+                           { class: "select select-bordered" } %>
+          </div>
+          
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Billing Email</span>
+            </label>
+            <%= form.email_field :billing_email,
+                                class: "input input-bordered",
+                                placeholder: "billing@acme.com" %>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Contact Information -->
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <h2 class="card-title mb-4">
+          <i class="ph ph-address-book"></i>
+          Contact Information
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="form-control md:col-span-2">
+            <label class="label">
+              <span class="label-text">Address</span>
+            </label>
+            <%= form.text_field "contact_info[address]",
+                               class: "input input-bordered",
+                               placeholder: "123 Main Street" %>
+          </div>
+          
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">City</span>
+            </label>
+            <%= form.text_field "contact_info[city]",
+                               class: "input input-bordered",
+                               placeholder: "New York" %>
+          </div>
+          
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">State/Province</span>
+            </label>
+            <%= form.text_field "contact_info[state]",
+                               class: "input input-bordered",
+                               placeholder: "NY" %>
+          </div>
+          
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Postal Code</span>
+            </label>
+            <%= form.text_field "contact_info[postal_code]",
+                               class: "input input-bordered",
+                               placeholder: "10001" %>
+          </div>
+          
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Country</span>
+            </label>
+            <%= form.text_field "contact_info[country]",
+                               class: "input input-bordered",
+                               placeholder: "United States" %>
+          </div>
+          
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Phone</span>
+            </label>
+            <%= form.telephone_field "contact_info[phone]",
+                                    class: "input input-bordered",
+                                    placeholder: "+1 (555) 123-4567" %>
+          </div>
+          
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Website</span>
+            </label>
+            <%= form.url_field "contact_info[website]",
+                              class: "input input-bordered",
+                              placeholder: "https://acme.com" %>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Initial Admin User -->
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <h2 class="card-title mb-4">
+          <i class="ph ph-user-plus"></i>
+          Initial Admin User
+          <span class="badge badge-ghost">Optional</span>
+        </h2>
+        
+        <div class="alert alert-info mb-4">
+          <i class="ph ph-info"></i>
+          <div>
+            <p class="font-medium">Create an initial admin user for this organization</p>
+            <p class="text-sm">They will receive a welcome email with login credentials.</p>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Email</span>
+            </label>
+            <%= email_field_tag :admin_email,
+                               params[:admin_email],
+                               class: "input input-bordered",
+                               placeholder: "admin@acme.com" %>
+          </div>
+          
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">First Name</span>
+            </label>
+            <%= text_field_tag :admin_first_name,
+                              params[:admin_first_name],
+                              class: "input input-bordered",
+                              placeholder: "John" %>
+          </div>
+          
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Last Name</span>
+            </label>
+            <%= text_field_tag :admin_last_name,
+                              params[:admin_last_name],
+                              class: "input input-bordered",
+                              placeholder: "Doe" %>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Settings -->
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <h2 class="card-title mb-4">
+          <i class="ph ph-gear"></i>
+          Organization Settings
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Maximum Users</span>
+            </label>
+            <%= form.number_field :max_users,
+                                 class: "input input-bordered",
+                                 placeholder: "50",
+                                 min: 1 %>
+            <label class="label">
+              <span class="label-text-alt">Leave blank for unlimited</span>
+            </label>
+          </div>
+          
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Maximum Applications</span>
+            </label>
+            <%= form.number_field :max_applications,
+                                 class: "input input-bordered",
+                                 placeholder: "1000",
+                                 min: 1 %>
+            <label class="label">
+              <span class="label-text-alt">Leave blank for unlimited</span>
+            </label>
+          </div>
+        </div>
+        
+        <div class="form-control">
+          <label class="label cursor-pointer">
+            <span class="label-text">
+              <span class="font-medium">Active Organization</span>
+              <span class="text-sm text-base-content/60 block">Users can access this organization</span>
+            </span>
+            <%= form.check_box :active, 
+                              { checked: true }, 
+                              "true", "false",
+                              class: "toggle toggle-primary" %>
+          </label>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Actions -->
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <div class="card-actions justify-end gap-4">
+          <%= link_to admin_organizations_path, class: "btn btn-ghost" do %>
+            Cancel
+          <% end %>
+          
+          <%= form.submit "Create Organization", 
+                         class: "btn btn-primary",
+                         data: { disable_with: "Creating..." } %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const organizationForm = {
+      nameInput: document.querySelector('input[name="organization[name]"]'),
+      subdomainInput: document.querySelector('input[name="organization[subdomain]"]'),
+      
+      generateSubdomain(event) {
+        if (this.subdomainInput.value === '') {
+          const name = event.target.value;
+          const subdomain = name
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/g, '')
+            .replace(/\s+/g, '-')
+            .substring(0, 20);
+          this.subdomainInput.value = subdomain;
+        }
+      }
+    };
+    
+    if (organizationForm.nameInput) {
+      organizationForm.nameInput.addEventListener('input', function(e) {
+        organizationForm.generateSubdomain(e);
+      });
+    }
+  });
+</script>

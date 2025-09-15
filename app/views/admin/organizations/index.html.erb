@@ -1,0 +1,256 @@
+<% content_for :title, "Organizations Management" %>
+
+<div class="container mx-auto p-6">
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-base-content">Organizations</h1>
+      <p class="text-base-content/60 mt-1">Manage all organizations in the system</p>
+    </div>
+    
+    <%= link_to new_admin_organization_path, class: "btn btn-primary mt-4 md:mt-0" do %>
+      <i class="ph ph-plus"></i>
+      New Organization
+    <% end %>
+  </div>
+  
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="stat bg-base-100 rounded-lg shadow">
+      <div class="stat-figure text-primary">
+        <i class="ph ph-buildings text-3xl"></i>
+      </div>
+      <div class="stat-title">Total Organizations</div>
+      <div class="stat-value text-primary"><%= @stats[:total] %></div>
+    </div>
+    
+    <div class="stat bg-base-100 rounded-lg shadow">
+      <div class="stat-figure text-success">
+        <i class="ph ph-check-circle text-3xl"></i>
+      </div>
+      <div class="stat-title">Active</div>
+      <div class="stat-value text-success"><%= @stats[:active] %></div>
+    </div>
+    
+    <div class="stat bg-base-100 rounded-lg shadow">
+      <div class="stat-figure text-warning">
+        <i class="ph ph-pause-circle text-3xl"></i>
+      </div>
+      <div class="stat-title">Inactive</div>
+      <div class="stat-value text-warning"><%= @stats[:inactive] %></div>
+    </div>
+    
+    <div class="stat bg-base-100 rounded-lg shadow">
+      <div class="stat-figure text-info">
+        <i class="ph ph-calendar text-3xl"></i>
+      </div>
+      <div class="stat-title">This Month</div>
+      <div class="stat-value text-info"><%= @stats[:this_month] %></div>
+    </div>
+  </div>
+  
+  <!-- Filters and Search -->
+  <%= form_with url: admin_organizations_path, method: :get, local: true, class: "card bg-base-100 shadow mb-6" do |form| %>
+    <div class="card-body">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Search</span>
+          </label>
+          <%= form.text_field :search, 
+                             value: params[:search],
+                             placeholder: "Organization name or subdomain",
+                             class: "input input-bordered" %>
+        </div>
+        
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Status</span>
+          </label>
+          <%= form.select :status, 
+                         options_for_select([
+                           ['All', ''],
+                           ['Active', 'active'],
+                           ['Inactive', 'inactive']
+                         ], params[:status]),
+                         {},
+                         { class: "select select-bordered" } %>
+        </div>
+        
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">&nbsp;</span>
+          </label>
+          <div class="flex gap-2">
+            <%= form.submit "Filter", class: "btn btn-primary flex-1" %>
+            <%= link_to "Reset", admin_organizations_path, class: "btn btn-ghost" %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+  
+  <!-- Organizations Table -->
+  <div class="card bg-base-100 shadow">
+    <div class="card-body p-0">
+      <div class="overflow-x-auto">
+        <table class="table table-zebra">
+          <thead>
+            <tr>
+              <th>Organization</th>
+              <th>Subdomain</th>
+              <th>Users</th>
+              <th>Applications</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @organizations.each do |organization| %>
+              <tr>
+                <td>
+                  <div class="flex items-center gap-3">
+                    <div class="avatar placeholder">
+                      <div class="bg-primary text-primary-content rounded-full w-12">
+                        <span class="text-xl"><%= organization.name.first.upcase %></span>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="font-bold"><%= organization.name %></div>
+                      <div class="text-sm opacity-50">
+                        <%= truncate(organization.description, length: 50) %>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                
+                <td>
+                  <span class="badge badge-ghost font-mono">
+                    <%= organization.subdomain %>
+                  </span>
+                </td>
+                
+                <td>
+                  <span class="badge badge-info">
+                    <%= organization.users.count %>
+                  </span>
+                </td>
+                
+                <td>
+                  <span class="badge badge-secondary">
+                    <%= organization.insurance_applications.count %>
+                  </span>
+                </td>
+                
+                <td>
+                  <% if organization.active? %>
+                    <span class="badge badge-success gap-1">
+                      <i class="ph ph-check-circle"></i>
+                      Active
+                    </span>
+                  <% else %>
+                    <span class="badge badge-warning gap-1">
+                      <i class="ph ph-pause-circle"></i>
+                      Inactive
+                    </span>
+                  <% end %>
+                </td>
+                
+                <td>
+                  <div class="text-sm">
+                    <%= organization.created_at.strftime('%b %d, %Y') %>
+                  </div>
+                  <div class="text-xs opacity-50">
+                    <%= time_ago_in_words(organization.created_at) %> ago
+                  </div>
+                </td>
+                
+                <td>
+                  <div class="dropdown dropdown-end">
+                    <label tabindex="0" class="btn btn-ghost btn-sm">
+                      <i class="ph ph-dots-three-vertical"></i>
+                    </label>
+                    <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+                      <li>
+                        <%= link_to admin_organization_path(organization) do %>
+                          <i class="ph ph-eye"></i>
+                          View Details
+                        <% end %>
+                      </li>
+                      <li>
+                        <%= link_to edit_admin_organization_path(organization) do %>
+                          <i class="ph ph-pencil"></i>
+                          Edit
+                        <% end %>
+                      </li>
+                      <% if organization.active? %>
+                        <li>
+                          <%= link_to deactivate_admin_organization_path(organization), 
+                                     method: :patch,
+                                     data: { 
+                                       confirm: "Are you sure you want to deactivate #{organization.name}?" 
+                                     } do %>
+                            <i class="ph ph-pause-circle"></i>
+                            Deactivate
+                          <% end %>
+                        </li>
+                      <% else %>
+                        <li>
+                          <%= link_to activate_admin_organization_path(organization), 
+                                     method: :patch do %>
+                            <i class="ph ph-play-circle"></i>
+                            Activate
+                          <% end %>
+                        </li>
+                      <% end %>
+                      <li>
+                        <%= link_to admin_organization_path(organization), 
+                                   method: :delete,
+                                   data: { 
+                                     confirm: "Are you sure? This action cannot be undone." 
+                                   },
+                                   class: "text-error" do %>
+                          <i class="ph ph-trash"></i>
+                          Delete
+                        <% end %>
+                      </li>
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      
+      <% if @organizations.empty? %>
+        <div class="text-center py-12">
+          <i class="ph ph-buildings text-6xl text-base-content/20"></i>
+          <p class="text-lg font-medium mt-4">No organizations found</p>
+          <p class="text-base-content/60">
+            <% if params[:search].present? || params[:status].present? %>
+              Try adjusting your filters or 
+              <%= link_to "clear all filters", admin_organizations_path, class: "link link-primary" %>
+            <% else %>
+              Get started by creating your first organization
+            <% end %>
+          </p>
+          <% unless params[:search].present? || params[:status].present? %>
+            <%= link_to new_admin_organization_path, class: "btn btn-primary mt-4" do %>
+              <i class="ph ph-plus"></i>
+              Create Organization
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+  
+  <!-- Pagination -->
+  <% if @organizations.respond_to?(:current_page) %>
+    <div class="flex justify-center mt-6">
+      <!-- Add pagination here if using kaminari or similar -->
+    </div>
+  <% end %>
+</div>

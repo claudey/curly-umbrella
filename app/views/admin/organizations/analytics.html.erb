@@ -1,0 +1,245 @@
+<% content_for :title, "System Analytics" %>
+
+<div class="container mx-auto p-6">
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-base-content">System Analytics</h1>
+      <p class="text-base-content/60 mt-1">Overview of all organizations and system-wide metrics</p>
+    </div>
+    
+    <div class="flex gap-2 mt-4 md:mt-0">
+      <%= link_to admin_organizations_path, class: "btn btn-outline" do %>
+        <i class="ph ph-buildings"></i>
+        Organizations
+      <% end %>
+    </div>
+  </div>
+  
+  <!-- System Overview Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="stat bg-gradient-to-r from-primary to-primary-focus text-primary-content rounded-lg shadow">
+      <div class="stat-figure">
+        <i class="ph ph-buildings text-3xl opacity-80"></i>
+      </div>
+      <div class="stat-title text-primary-content/80">Organizations</div>
+      <div class="stat-value"><%= @analytics[:total_organizations] %></div>
+      <div class="stat-desc text-primary-content/60">
+        <%= @analytics[:active_organizations] %> active
+      </div>
+    </div>
+    
+    <div class="stat bg-gradient-to-r from-secondary to-secondary-focus text-secondary-content rounded-lg shadow">
+      <div class="stat-figure">
+        <i class="ph ph-users text-3xl opacity-80"></i>
+      </div>
+      <div class="stat-title text-secondary-content/80">Total Users</div>
+      <div class="stat-value"><%= @analytics[:total_users] %></div>
+      <div class="stat-desc text-secondary-content/60">
+        Across all organizations
+      </div>
+    </div>
+    
+    <div class="stat bg-gradient-to-r from-accent to-accent-focus text-accent-content rounded-lg shadow">
+      <div class="stat-figure">
+        <i class="ph ph-file-text text-3xl opacity-80"></i>
+      </div>
+      <div class="stat-title text-accent-content/80">Applications</div>
+      <div class="stat-value"><%= @analytics[:total_applications] %></div>
+      <div class="stat-desc text-accent-content/60">
+        Total submitted
+      </div>
+    </div>
+    
+    <div class="stat bg-gradient-to-r from-info to-info-focus text-info-content rounded-lg shadow">
+      <div class="stat-figure">
+        <i class="ph ph-currency-dollar text-3xl opacity-80"></i>
+      </div>
+      <div class="stat-title text-info-content/80">Quotes</div>
+      <div class="stat-value"><%= @analytics[:total_quotes] %></div>
+      <div class="stat-desc text-info-content/60">
+        Total generated
+      </div>
+    </div>
+  </div>
+  
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Monthly Growth Chart -->
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <h2 class="card-title">
+          <i class="ph ph-chart-line text-primary"></i>
+          Monthly Organization Growth
+        </h2>
+        
+        <div class="mt-4">
+          <% if @analytics[:monthly_growth].any? %>
+            <div class="space-y-3">
+              <% @analytics[:monthly_growth].each do |month_data| %>
+                <div class="flex items-center justify-between">
+                  <span class="text-sm font-medium"><%= month_data[:month] %></span>
+                  <div class="flex items-center gap-2">
+                    <div class="w-32 bg-base-300 rounded-full h-2">
+                      <% max_count = @analytics[:monthly_growth].map { |m| m[:count] }.max %>
+                      <% width = max_count > 0 ? (month_data[:count].to_f / max_count * 100) : 0 %>
+                      <div class="bg-primary h-2 rounded-full" style="width: <%= width %>%"></div>
+                    </div>
+                    <span class="badge badge-primary badge-sm"><%= month_data[:count] %></span>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-base-content/60 italic">No growth data available</p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Top Organizations -->
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <h2 class="card-title">
+          <i class="ph ph-trophy text-warning"></i>
+          Most Active Organizations
+        </h2>
+        
+        <div class="mt-4">
+          <% if @analytics[:top_organizations].any? %>
+            <div class="space-y-3">
+              <% @analytics[:top_organizations].each_with_index do |org, index| %>
+                <div class="flex items-center gap-3 p-3 bg-base-200 rounded-lg">
+                  <div class="flex-shrink-0">
+                    <% if index == 0 %>
+                      <div class="w-8 h-8 bg-warning text-warning-content rounded-full flex items-center justify-center">
+                        <i class="ph ph-crown text-sm"></i>
+                      </div>
+                    <% elsif index == 1 %>
+                      <div class="w-8 h-8 bg-base-300 text-base-content rounded-full flex items-center justify-center">
+                        <span class="text-sm font-bold">#2</span>
+                      </div>
+                    <% elsif index == 2 %>
+                      <div class="w-8 h-8 bg-orange-200 text-orange-800 rounded-full flex items-center justify-center">
+                        <span class="text-sm font-bold">#3</span>
+                      </div>
+                    <% else %>
+                      <div class="w-8 h-8 bg-base-200 text-base-content rounded-full flex items-center justify-center">
+                        <span class="text-sm">#<%= index + 1 %></span>
+                      </div>
+                    <% end %>
+                  </div>
+                  <div class="flex-1">
+                    <p class="font-medium"><%= org[:name] %></p>
+                    <p class="text-sm text-base-content/60">
+                      <%= pluralize(org[:applications], 'application') %>
+                    </p>
+                  </div>
+                  <div class="badge badge-primary">
+                    <%= org[:applications] %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-base-content/60 italic">No organization data available</p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Recent Signups -->
+    <div class="card bg-base-100 shadow lg:col-span-2">
+      <div class="card-body">
+        <h2 class="card-title">
+          <i class="ph ph-plus-circle text-success"></i>
+          Recent Organization Signups
+        </h2>
+        
+        <div class="mt-4">
+          <% if @analytics[:recent_signups].any? %>
+            <div class="overflow-x-auto">
+              <table class="table table-zebra">
+                <thead>
+                  <tr>
+                    <th>Organization</th>
+                    <th>Subdomain</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% @analytics[:recent_signups].each do |organization| %>
+                    <tr>
+                      <td>
+                        <div class="flex items-center gap-3">
+                          <div class="avatar placeholder">
+                            <div class="bg-primary text-primary-content rounded-full w-8">
+                              <span class="text-xs"><%= organization.name.first.upcase %></span>
+                            </div>
+                          </div>
+                          <div>
+                            <div class="font-bold"><%= organization.name %></div>
+                            <div class="text-sm opacity-50">
+                              <%= truncate(organization.description, length: 30) %>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      
+                      <td>
+                        <span class="badge badge-ghost font-mono text-xs">
+                          <%= organization.subdomain %>
+                        </span>
+                      </td>
+                      
+                      <td>
+                        <% if organization.active? %>
+                          <span class="badge badge-success badge-sm gap-1">
+                            <i class="ph ph-check-circle"></i>
+                            Active
+                          </span>
+                        <% else %>
+                          <span class="badge badge-warning badge-sm gap-1">
+                            <i class="ph ph-pause-circle"></i>
+                            Inactive
+                          </span>
+                        <% end %>
+                      </td>
+                      
+                      <td>
+                        <div class="text-sm">
+                          <%= organization.created_at.strftime('%b %d, %Y') %>
+                        </div>
+                        <div class="text-xs opacity-50">
+                          <%= time_ago_in_words(organization.created_at) %> ago
+                        </div>
+                      </td>
+                      
+                      <td>
+                        <%= link_to admin_organization_path(organization), 
+                                   class: "btn btn-ghost btn-xs" do %>
+                          <i class="ph ph-eye"></i>
+                          View
+                        <% end %>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          <% else %>
+            <p class="text-base-content/60 italic">No recent signups</p>
+          <% end %>
+        </div>
+        
+        <div class="card-actions justify-end mt-4">
+          <%= link_to admin_organizations_path, class: "btn btn-outline btn-sm" do %>
+            View All Organizations
+            <i class="ph ph-arrow-right"></i>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_15_124718) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_15_132052) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -354,8 +354,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_124718) do
     t.jsonb "settings", default: {}
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "subdomain"
+    t.text "description"
+    t.boolean "active", default: true, null: false
+    t.string "plan"
+    t.integer "max_users"
+    t.integer "max_applications"
+    t.string "billing_email"
+    t.index ["active"], name: "index_organizations_on_active"
     t.index ["license_number"], name: "index_organizations_on_license_number", unique: true
     t.index ["name"], name: "index_organizations_on_name"
+    t.index ["subdomain"], name: "index_organizations_on_subdomain", unique: true
   end
 
   create_table "permissions", force: :cascade do |t|

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Welcome to <%= @organization.name %></title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      line-height: 1.6;
+      color: #374151;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f9fafb;
+    }
+    .container {
+      background: white;
+      border-radius: 8px;
+      padding: 40px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 20px;
+    }
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      color: #1f2937;
+      margin-bottom: 10px;
+    }
+    .credentials {
+      background: #f3f4f6;
+      border-radius: 6px;
+      padding: 20px;
+      margin: 20px 0;
+      border-left: 4px solid #3b82f6;
+    }
+    .btn {
+      display: inline-block;
+      background: #3b82f6;
+      color: white;
+      text-decoration: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-weight: 500;
+      margin: 20px 0;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #e5e7eb;
+      font-size: 14px;
+      color: #6b7280;
+    }
+    .warning {
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      border-radius: 6px;
+      padding: 15px;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">BrokerSync</div>
+      <h1>Welcome to <%= @organization.name %></h1>
+    </div>
+    
+    <p>Hello <%= @admin_user.first_name %>,</p>
+    
+    <p>
+      Your organization <strong><%= @organization.name %></strong> has been successfully created on BrokerSync, 
+      and you have been set up as the administrator.
+    </p>
+    
+    <div class="credentials">
+      <h3 style="margin-top: 0;">Your Login Credentials</h3>
+      <p><strong>Email:</strong> <%= @admin_user.email %></p>
+      <p><strong>Temporary Password:</strong> <code><%= @temporary_password %></code></p>
+      <p><strong>Organization:</strong> <%= @organization.name %></p>
+      <p><strong>Subdomain:</strong> <%= @organization.subdomain %>.brokersync.com</p>
+    </div>
+    
+    <div class="warning">
+      <strong>Important:</strong> Please change your password immediately after logging in for security purposes.
+    </div>
+    
+    <div style="text-align: center;">
+      <a href="<%= @login_url %>" class="btn">Access Your Dashboard</a>
+    </div>
+    
+    <h3>Getting Started</h3>
+    <p>As an administrator, you can:</p>
+    <ul>
+      <li>Invite team members and assign roles</li>
+      <li>Configure organization settings</li>
+      <li>Manage insurance applications and quotes</li>
+      <li>Set up notification preferences</li>
+      <li>View analytics and reports</li>
+    </ul>
+    
+    <p>
+      If you have any questions or need assistance getting started, please don't hesitate to 
+      contact our support team.
+    </p>
+    
+    <div class="footer">
+      <p>
+        This email was sent to <%= @admin_user.email %> because you were added as an administrator 
+        for <%= @organization.name %> on BrokerSync.
+      </p>
+      <p>
+        © <%= Date.current.year %> BrokerSync. All rights reserved.
+      </p>
+    </div>
+  </div>
+</body>
+</html>

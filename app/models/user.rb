@@ -14,10 +14,8 @@ class User < ApplicationRecord
   has_many :sms_logs, dependent: :destroy
   has_many :whatsapp_logs, dependent: :destroy
 
-  attribute :role, :integer
-
   # User roles
-  enum role: {
+  enum :role, {
     super_admin: 0,
     brokerage_admin: 1,
     agent: 2,

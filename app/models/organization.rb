@@ -8,6 +8,8 @@ class Organization < ApplicationRecord
 
   validates :name, presence: true
   validates :license_number, presence: true, uniqueness: true
+  validates :subdomain, presence: true, uniqueness: true, format: { with: /\A[a-z0-9\-]+\z/, message: "can only contain lowercase letters, numbers, and hyphens" }
+  validates :billing_email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_blank: true
 
   # JSONB attributes are natively supported in PostgreSQL
   # No need for serialize with JSONB columns

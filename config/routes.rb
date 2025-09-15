@@ -24,6 +24,17 @@ Rails.application.routes.draw do
     get "roles/destroy"
     get "roles/assign_permissions"
     get "roles/revoke_permissions"
+    
+    resources :organizations do
+      member do
+        patch :activate
+        patch :deactivate
+      end
+      
+      collection do
+        get :analytics
+      end
+    end
   end
   namespace :insurance_companies do
     root "portal#dashboard"
