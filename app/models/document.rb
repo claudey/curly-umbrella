@@ -21,6 +21,11 @@ class Document < ApplicationRecord
   before_save :set_file_metadata, if: :file_attached?
   before_save :set_checksum, if: :file_attached?
   after_commit :ensure_single_current_version, on: [:create, :update]
+  
+  # Notification callbacks
+  after_create_commit :notify_document_uploaded
+  after_update_commit :notify_document_updated, if: :should_notify_update?
+  after_commit :notify_archive_status_change, if: :saved_change_to_is_archived?
 
   scope :current, -> { where(is_current: true) }
   scope :archived, -> { where(is_archived: true) }
@@ -248,6 +253,28 @@ class Document < ApplicationRecord
     else
       'ph-file'
     end
+  end
+
+  # Notification methods
+  def notify_document_uploaded
+    DocumentNotificationService.notify_document_uploaded(self)
+  end
+
+  def notify_document_updated
+    DocumentNotificationService.notify_document_updated(self)
+  end
+
+  def notify_archive_status_change
+    if is_archived?
+      DocumentNotificationService.notify_document_archived(self, archived_by)
+    else
+      DocumentNotificationService.notify_document_restored(self, user)
+    end
+  end
+
+  def should_notify_update?
+    # Only notify for significant updates, not metadata-only changes
+    saved_changes.keys.any? { |key| %w[name description file category access_level expires_at].include?(key) }
   end
 
   private

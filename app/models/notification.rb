@@ -8,7 +8,7 @@ class Notification < ApplicationRecord
   validates :title, presence: true
   validates :message, presence: true
   validates :notification_type, presence: true, inclusion: { 
-    in: %w[new_application status_update user_invitation system_alert] 
+    in: %w[new_application status_update user_invitation system_alert document_uploaded document_updated document_archived document_restored document_expiring document_expired document_shared document_version_created] 
   }
 
   scope :unread, -> { where(read_at: nil) }

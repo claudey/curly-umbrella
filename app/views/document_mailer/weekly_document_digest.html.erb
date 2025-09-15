@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Weekly Document Activity Digest</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    .content {
+      padding: 30px;
+    }
+    .section {
+      margin-bottom: 30px;
+    }
+    .section h2 {
+      color: #333;
+      font-size: 18px;
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e9ecef;
+    }
+    .document-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .document-item {
+      background: #f8f9fa;
+      border-left: 4px solid #007bff;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+    }
+    .document-name {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 5px;
+    }
+    .document-meta {
+      color: #666;
+      font-size: 14px;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 15px;
+      margin: 20px 0;
+    }
+    .stat-card {
+      background: #f8f9fa;
+      padding: 15px;
+      text-align: center;
+      border-radius: 6px;
+      border: 1px solid #e9ecef;
+    }
+    .stat-number {
+      font-size: 24px;
+      font-weight: 600;
+      color: #007bff;
+      margin-bottom: 5px;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      text-transform: uppercase;
+    }
+    .action-button {
+      display: inline-block;
+      background: #007bff;
+      color: white !important;
+      text-decoration: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-weight: 600;
+      text-align: center;
+      margin: 10px 5px;
+    }
+    .action-button:hover {
+      background: #0056b3;
+    }
+    .footer {
+      background: #f8f9fa;
+      padding: 20px;
+      text-align: center;
+      font-size: 12px;
+      color: #666;
+      border-top: 1px solid #e9ecef;
+    }
+    .no-activity {
+      text-align: center;
+      color: #666;
+      font-style: italic;
+      padding: 20px;
+    }
+    .alert-warning {
+      background-color: #fff3cd;
+      border: 1px solid #ffeaa7;
+      color: #856404;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 15px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1><%= @organization.name %></h1>
+      <p>Weekly Document Activity Digest</p>
+      <p style="font-size: 14px; opacity: 0.9;">
+        <%= Date.current.beginning_of_week.strftime('%B %d') %> - <%= Date.current.strftime('%B %d, %Y') %>
+      </p>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <p>Hello <%= @user.first_name %>,</p>
+      <p>Here's your weekly summary of document activity in your organization.</p>
+
+      <!-- Quick Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number"><%= @new_documents.count %></div>
+          <div class="stat-label">New Documents</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number"><%= @updated_documents.count %></div>
+          <div class="stat-label">Updated</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number"><%= @expiring_documents.count %></div>
+          <div class="stat-label">Expiring Soon</div>
+        </div>
+      </div>
+
+      <!-- New Documents -->
+      <% if @new_documents.any? %>
+        <div class="section">
+          <h2>📁 New Documents (<%= @new_documents.count %>)</h2>
+          <ul class="document-list">
+            <% @new_documents.each do |document| %>
+              <li class="document-item">
+                <div class="document-name"><%= document.name %></div>
+                <div class="document-meta">
+                  <%= document.document_type.humanize %> • 
+                  <%= document.human_file_size %> • 
+                  Added by <%= document.user.full_name %> • 
+                  <%= time_ago_in_words(document.created_at) %> ago
+                </div>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <!-- Updated Documents -->
+      <% if @updated_documents.any? %>
+        <div class="section">
+          <h2>📝 Updated Documents (<%= @updated_documents.count %>)</h2>
+          <ul class="document-list">
+            <% @updated_documents.each do |document| %>
+              <li class="document-item">
+                <div class="document-name"><%= document.name %></div>
+                <div class="document-meta">
+                  <%= document.document_type.humanize %> • 
+                  Version <%= document.version %> • 
+                  Updated by <%= document.user.full_name %> • 
+                  <%= time_ago_in_words(document.updated_at) %> ago
+                </div>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <!-- Expiring Documents -->
+      <% if @expiring_documents.any? %>
+        <div class="section">
+          <h2>⚠️ Documents Expiring Soon (<%= @expiring_documents.count %>)</h2>
+          <div class="alert-warning">
+            <strong>Action Required:</strong> The following documents will expire soon and may need your attention.
+          </div>
+          <ul class="document-list">
+            <% @expiring_documents.each do |document| %>
+              <li class="document-item">
+                <div class="document-name"><%= document.name %></div>
+                <div class="document-meta">
+                  <%= document.document_type.humanize %> • 
+                  Expires <%= document.expires_at.strftime('%B %d, %Y') %> • 
+                  Owned by <%= document.user.full_name %>
+                  <% days_until_expiry = (document.expires_at.to_date - Date.current).to_i %>
+                  <% if days_until_expiry <= 3 %>
+                    <strong style="color: #dc3545;"> • Expires in <%= pluralize(days_until_expiry, 'day') %>!</strong>
+                  <% elsif days_until_expiry <= 7 %>
+                    <strong style="color: #fd7e14;"> • Expires in <%= pluralize(days_until_expiry, 'day') %></strong>
+                  <% end %>
+                </div>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <!-- No Activity -->
+      <% unless @new_documents.any? || @updated_documents.any? || @expiring_documents.any? %>
+        <div class="no-activity">
+          <p>No document activity this week. Your document library is quiet!</p>
+        </div>
+      <% end %>
+
+      <!-- Action Buttons -->
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="<%= Rails.application.routes.url_helpers.documents_url(host: Rails.application.config.action_mailer.default_url_options[:host]) %>" class="action-button">
+          View All Documents
+        </a>
+        <a href="<%= Rails.application.routes.url_helpers.new_document_url(host: Rails.application.config.action_mailer.default_url_options[:host]) %>" class="action-button">
+          Upload Document
+        </a>
+        <% if @expiring_documents.any? %>
+          <a href="<%= Rails.application.routes.url_helpers.expiring_documents_url(host: Rails.application.config.action_mailer.default_url_options[:host]) %>" class="action-button">
+            Review Expiring
+          </a>
+        <% end %>
+      </div>
+
+      <p>
+        Best regards,<br>
+        <strong>BrokerSync Team</strong>
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>
+        This weekly digest was sent to <%= @user.email %> from <%= @organization.name %>.<br>
+        You can <a href="#" style="color: #007bff;">update your notification preferences</a> 
+        or <a href="#" style="color: #007bff;">unsubscribe from weekly digests</a>.
+      </p>
+      <p style="margin-top: 15px;">
+        <small>
+          © <%= Date.current.year %> BrokerSync. All rights reserved.<br>
+          Powered by BrokerSync Document Management System
+        </small>
+      </p>
+    </div>
+  </div>
+</body>
+</html>

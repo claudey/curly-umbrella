@@ -84,6 +84,8 @@ Rails.application.routes.draw do
       patch :mark_all_as_read
     end
   end
+  
+  resource :notification_preferences, only: [:show, :update]
   resources :motor_applications do
     member do
       patch :submit_application

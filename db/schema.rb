@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_15_170522) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_15_180637) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -363,6 +363,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_170522) do
     t.boolean "sms_status_updates", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "email_document_uploaded", default: true
+    t.boolean "email_document_updated", default: false
+    t.boolean "email_document_archived", default: false
+    t.boolean "email_document_restored", default: false
+    t.boolean "email_document_expiring", default: true
+    t.boolean "email_document_expired", default: true
+    t.boolean "email_document_shared", default: true
+    t.boolean "email_document_version_created", default: false
+    t.boolean "email_weekly_digest", default: true
+    t.boolean "sms_document_expiring", default: false
+    t.boolean "sms_document_expired", default: false
     t.index ["organization_id"], name: "index_notification_preferences_on_organization_id"
     t.index ["user_id", "organization_id"], name: "index_notification_preferences_on_user_id_and_organization_id", unique: true
     t.index ["user_id"], name: "index_notification_preferences_on_user_id"

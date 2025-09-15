@@ -134,6 +134,7 @@ class DocumentsController < ApplicationController
     )
 
     if new_document.persisted?
+      DocumentNotificationService.notify_new_version_created(new_document)
       redirect_to new_document, notice: 'New version created successfully.'
     else
       redirect_to @document, alert: 'Unable to create new version.'

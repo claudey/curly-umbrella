@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= @subject %></title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    .content {
+      padding: 30px;
+    }
+    .document-card {
+      background: #f8f9fa;
+      border-left: 4px solid #007bff;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    .document-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+    }
+    .document-meta {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    .document-description {
+      color: #555;
+      margin-top: 10px;
+    }
+    .action-button {
+      display: inline-block;
+      background: #007bff;
+      color: white !important;
+      text-decoration: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-weight: 600;
+      margin: 20px 0;
+      text-align: center;
+    }
+    .action-button:hover {
+      background: #0056b3;
+    }
+    .alert {
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    .alert-warning {
+      background-color: #fff3cd;
+      border: 1px solid #ffeaa7;
+      color: #856404;
+    }
+    .alert-danger {
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+    }
+    .alert-success {
+      background-color: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+    }
+    .footer {
+      background: #f8f9fa;
+      padding: 20px;
+      text-align: center;
+      font-size: 12px;
+      color: #666;
+      border-top: 1px solid #e9ecef;
+    }
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      margin: 20px 0;
+      text-align: center;
+    }
+    .stat {
+      flex: 1;
+    }
+    .stat-value {
+      font-size: 20px;
+      font-weight: 600;
+      color: #007bff;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1><%= @organization.name %></h1>
+      <p>Document Management System</p>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <h2><%= @subject %></h2>
+
+      <p>Hello <%= @user.first_name %>,</p>
+
+      <% case @event_type %>
+      <% when :document_uploaded %>
+        <p>A new document has been uploaded to your organization's document library.</p>
+        
+      <% when :document_updated %>
+        <p>A document in your organization has been updated.</p>
+        
+      <% when :document_archived %>
+        <p>A document has been archived and is no longer active.</p>
+        <div class="alert alert-warning">
+          <strong>Archive Notice:</strong> This document is no longer active but can be restored if needed.
+        </div>
+        
+      <% when :document_restored %>
+        <p>An archived document has been restored and is now active again.</p>
+        <div class="alert alert-success">
+          <strong>Restoration Notice:</strong> This document is now active and available for use.
+        </div>
+        
+      <% when :document_expiring %>
+        <p>One of your documents is expiring soon and may require your attention.</p>
+        <div class="alert alert-warning">
+          <strong>⚠️ Expiration Warning:</strong> This document will expire on <%= @document.expires_at.strftime('%B %d, %Y') %>.
+        </div>
+        
+      <% when :document_expired %>
+        <p>A document has expired and may need immediate attention.</p>
+        <div class="alert alert-danger">
+          <strong>🚨 Document Expired:</strong> This document expired on <%= @document.expires_at.strftime('%B %d, %Y') %> and requires review.
+        </div>
+        
+      <% when :document_shared %>
+        <p>A document has been shared with you.</p>
+        <div class="alert alert-success">
+          <strong>Document Shared:</strong> You now have access to this document.
+        </div>
+        
+      <% when :document_version_created %>
+        <p>A new version of a document is now available.</p>
+        <div class="alert alert-success">
+          <strong>New Version:</strong> Version <%= @document.version %> is now available.
+        </div>
+        
+      <% else %>
+        <p>There has been activity on a document in your organization.</p>
+      <% end %>
+
+      <!-- Document Details Card -->
+      <div class="document-card">
+        <div class="document-name">
+          <i class="icon">📄</i> <%= @document.name %>
+        </div>
+        
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-value"><%= @document.document_type.humanize %></div>
+            <div class="stat-label">Type</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">v<%= @document.version %></div>
+            <div class="stat-label">Version</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value"><%= @document.human_file_size %></div>
+            <div class="stat-label">Size</div>
+          </div>
+        </div>
+
+        <div class="document-meta">
+          <strong>Created by:</strong> <%= @document.user.full_name %>
+        </div>
+        <div class="document-meta">
+          <strong>Created:</strong> <%= @document.created_at.strftime('%B %d, %Y at %I:%M %p') %>
+        </div>
+        <% if @document.category.present? %>
+          <div class="document-meta">
+            <strong>Category:</strong> <%= @document.category.humanize %>
+          </div>
+        <% end %>
+        <% if @document.expires_at %>
+          <div class="document-meta">
+            <strong>Expires:</strong> <%= @document.expires_at.strftime('%B %d, %Y') %>
+          </div>
+        <% end %>
+
+        <% if @document.description.present? %>
+          <div class="document-description">
+            <strong>Description:</strong><br>
+            <%= simple_format(@document.description) %>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- Action Button -->
+      <div style="text-align: center;">
+        <a href="<%= @action_url %>" class="action-button">
+          <% case @event_type %>
+          <% when :document_expiring, :document_expired %>
+            Review Document
+          <% when :document_shared %>
+            View Shared Document
+          <% when :document_version_created %>
+            View New Version
+          <% else %>
+            View Document
+          <% end %>
+        </a>
+      </div>
+
+      <% if [:document_expiring, :document_expired].include?(@event_type) %>
+        <p><strong>What you can do:</strong></p>
+        <ul>
+          <li>Review the document to determine if it needs to be renewed</li>
+          <li>Update the expiration date if the document is still valid</li>
+          <li>Archive the document if it's no longer needed</li>
+          <li>Contact the relevant parties for document renewal</li>
+        </ul>
+      <% end %>
+
+      <p>
+        Best regards,<br>
+        <strong>BrokerSync Team</strong>
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>
+        This email was sent to <%= @user.email %> from <%= @organization.name %>.<br>
+        If you no longer wish to receive these notifications, you can update your 
+        <a href="#" style="color: #007bff;">notification preferences</a>.
+      </p>
+      <p style="margin-top: 15px;">
+        <small>
+          © <%= Date.current.year %> BrokerSync. All rights reserved.<br>
+          Powered by BrokerSync Document Management System
+        </small>
+      </p>
+    </div>
+  </div>
+</body>
+</html>
