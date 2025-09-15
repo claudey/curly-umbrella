@@ -10,9 +10,86 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_15_010426) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_15_071501) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "api_keys", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "organization_id"
+    t.string "name", null: false
+    t.string "key", null: false
+    t.string "access_level", default: "read_only"
+    t.json "scopes", default: []
+    t.integer "rate_limit"
+    t.datetime "expires_at"
+    t.boolean "active", default: true
+    t.datetime "last_used_at"
+    t.datetime "last_rotated_at"
+    t.datetime "revoked_at"
+    t.text "revoked_reason"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["expires_at"], name: "index_api_keys_on_expires_at"
+    t.index ["key"], name: "index_api_keys_on_key", unique: true
+    t.index ["last_used_at"], name: "index_api_keys_on_last_used_at"
+    t.index ["organization_id", "active"], name: "index_api_keys_on_organization_id_and_active"
+    t.index ["organization_id"], name: "index_api_keys_on_organization_id"
+    t.index ["user_id", "active"], name: "index_api_keys_on_user_id_and_active"
+    t.index ["user_id"], name: "index_api_keys_on_user_id"
+  end
+
+  create_table "application_distributions", force: :cascade do |t|
+    t.bigint "motor_application_id", null: false
+    t.bigint "insurance_company_id", null: false
+    t.bigint "distributed_by_id"
+    t.string "status", default: "pending", null: false
+    t.string "distribution_method", default: "automatic", null: false
+    t.decimal "match_score", precision: 5, scale: 2, default: "0.0"
+    t.datetime "viewed_at"
+    t.datetime "quoted_at"
+    t.datetime "ignored_at"
+    t.datetime "expired_at"
+    t.text "ignore_reason"
+    t.json "distribution_criteria", default: {}
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_application_distributions_on_created_at"
+    t.index ["distributed_by_id"], name: "index_application_distributions_on_distributed_by_id"
+    t.index ["distribution_method"], name: "index_application_distributions_on_distribution_method"
+    t.index ["insurance_company_id"], name: "index_application_distributions_on_insurance_company_id"
+    t.index ["match_score"], name: "index_application_distributions_on_match_score"
+    t.index ["motor_application_id", "insurance_company_id"], name: "idx_unique_app_company_distribution", unique: true
+    t.index ["motor_application_id"], name: "index_application_distributions_on_motor_application_id"
+    t.index ["status"], name: "index_application_distributions_on_status"
+  end
+
+  create_table "audit_logs", force: :cascade do |t|
+    t.bigint "user_id"
+    t.string "auditable_type"
+    t.bigint "auditable_id"
+    t.bigint "organization_id"
+    t.string "action", null: false
+    t.string "category", default: "system_access", null: false
+    t.string "severity", default: "info", null: false
+    t.string "resource_type", null: false
+    t.bigint "resource_id"
+    t.inet "ip_address"
+    t.text "user_agent"
+    t.json "details", default: {}
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["action", "created_at"], name: "index_audit_logs_on_action_and_created_at"
+    t.index ["auditable_type", "auditable_id"], name: "index_audit_logs_on_auditable"
+    t.index ["auditable_type", "auditable_id"], name: "index_audit_logs_on_auditable_type_and_auditable_id"
+    t.index ["category", "severity"], name: "index_audit_logs_on_category_and_severity"
+    t.index ["created_at"], name: "index_audit_logs_on_created_at"
+    t.index ["ip_address"], name: "index_audit_logs_on_ip_address"
+    t.index ["organization_id", "created_at"], name: "index_audit_logs_on_organization_id_and_created_at"
+    t.index ["organization_id"], name: "index_audit_logs_on_organization_id"
+    t.index ["user_id", "created_at"], name: "index_audit_logs_on_user_id_and_created_at"
+    t.index ["user_id"], name: "index_audit_logs_on_user_id"
+  end
 
   create_table "brokerage_agents", force: :cascade do |t|
     t.bigint "user_id", null: false
@@ -64,6 +141,37 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_010426) do
     t.index ["id_number"], name: "index_clients_on_id_number"
     t.index ["organization_id"], name: "index_clients_on_organization_id"
     t.index ["phone"], name: "index_clients_on_phone"
+  end
+
+  create_table "company_preferences", force: :cascade do |t|
+    t.bigint "insurance_company_id", null: false
+    t.json "coverage_types", default: {}
+    t.json "vehicle_categories", default: {}
+    t.json "risk_appetite", default: {}
+    t.json "sum_insured_ranges", default: {}
+    t.json "driver_age_preferences", default: {}
+    t.json "geographical_preferences", default: {}
+    t.json "distribution_settings", default: {}
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["insurance_company_id"], name: "index_company_preferences_on_insurance_company_id", unique: true
+  end
+
+  create_table "distribution_analytics", force: :cascade do |t|
+    t.bigint "motor_application_id", null: false
+    t.bigint "insurance_company_id"
+    t.string "event_type", null: false
+    t.json "event_data", default: {}
+    t.datetime "occurred_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_type"], name: "index_distribution_analytics_on_event_type"
+    t.index ["insurance_company_id", "event_type"], name: "idx_on_insurance_company_id_event_type_0f00fb5043"
+    t.index ["insurance_company_id"], name: "index_distribution_analytics_on_insurance_company_id"
+    t.index ["motor_application_id", "event_type"], name: "idx_on_motor_application_id_event_type_67d69fb2df"
+    t.index ["motor_application_id"], name: "index_distribution_analytics_on_motor_application_id"
+    t.index ["occurred_at", "event_type"], name: "index_distribution_analytics_on_occurred_at_and_event_type"
+    t.index ["occurred_at"], name: "index_distribution_analytics_on_occurred_at"
   end
 
   create_table "insurance_companies", force: :cascade do |t|
@@ -204,6 +312,22 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_010426) do
     t.index ["name"], name: "index_organizations_on_name"
   end
 
+  create_table "permissions", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "display_name", null: false
+    t.text "description"
+    t.string "resource", null: false
+    t.string "action", null: false
+    t.boolean "system_permission", default: false, null: false
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_permissions_on_active"
+    t.index ["name"], name: "index_permissions_on_name", unique: true
+    t.index ["resource", "action"], name: "index_permissions_on_resource_and_action"
+    t.index ["system_permission"], name: "index_permissions_on_system_permission"
+  end
+
   create_table "quotes", force: :cascade do |t|
     t.bigint "motor_application_id", null: false
     t.bigint "insurance_company_id", null: false
@@ -235,6 +359,57 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_010426) do
     t.index ["quoted_by_id"], name: "index_quotes_on_quoted_by_id"
   end
 
+  create_table "role_permissions", force: :cascade do |t|
+    t.bigint "role_id", null: false
+    t.bigint "permission_id", null: false
+    t.datetime "granted_at", null: false
+    t.bigint "granted_by_id"
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["granted_by_id"], name: "index_role_permissions_on_granted_by_id"
+    t.index ["permission_id"], name: "idx_role_permissions_permission_id"
+    t.index ["permission_id"], name: "index_role_permissions_on_permission_id"
+    t.index ["role_id", "permission_id"], name: "idx_role_permission_unique", unique: true
+    t.index ["role_id"], name: "index_role_permissions_on_role_id"
+  end
+
+  create_table "roles", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "display_name", null: false
+    t.text "description"
+    t.integer "level", default: 1, null: false
+    t.boolean "active", default: true, null: false
+    t.bigint "organization_id"
+    t.boolean "system_role", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["level"], name: "index_roles_on_level"
+    t.index ["name", "organization_id"], name: "index_roles_on_name_and_organization_id", unique: true
+    t.index ["organization_id", "active"], name: "index_roles_on_organization_id_and_active"
+    t.index ["organization_id"], name: "index_roles_on_organization_id"
+    t.index ["system_role"], name: "index_roles_on_system_role"
+  end
+
+  create_table "user_roles", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "role_id", null: false
+    t.boolean "active", default: true, null: false
+    t.datetime "granted_at", null: false
+    t.bigint "granted_by_id"
+    t.datetime "expires_at"
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["expires_at"], name: "index_user_roles_on_expires_at"
+    t.index ["granted_by_id"], name: "index_user_roles_on_granted_by_id"
+    t.index ["role_id", "active"], name: "index_user_roles_on_role_id_and_active"
+    t.index ["role_id"], name: "index_user_roles_on_role_id"
+    t.index ["user_id", "active"], name: "index_user_roles_on_user_id_and_active"
+    t.index ["user_id", "role_id"], name: "index_user_roles_on_user_id_and_role_id", unique: true
+    t.index ["user_id"], name: "index_user_roles_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -253,9 +428,19 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_010426) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "api_keys", "organizations"
+  add_foreign_key "api_keys", "users"
+  add_foreign_key "application_distributions", "insurance_companies"
+  add_foreign_key "application_distributions", "motor_applications"
+  add_foreign_key "application_distributions", "users", column: "distributed_by_id"
+  add_foreign_key "audit_logs", "organizations"
+  add_foreign_key "audit_logs", "users"
   add_foreign_key "brokerage_agents", "organizations"
   add_foreign_key "brokerage_agents", "users"
   add_foreign_key "clients", "organizations"
+  add_foreign_key "company_preferences", "insurance_companies"
+  add_foreign_key "distribution_analytics", "insurance_companies"
+  add_foreign_key "distribution_analytics", "motor_applications"
   add_foreign_key "insurance_companies", "users", column: "approved_by_id"
   add_foreign_key "motor_applications", "clients"
   add_foreign_key "motor_applications", "organizations"
@@ -270,5 +455,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_010426) do
   add_foreign_key "quotes", "motor_applications"
   add_foreign_key "quotes", "organizations"
   add_foreign_key "quotes", "users", column: "quoted_by_id"
+  add_foreign_key "role_permissions", "permissions"
+  add_foreign_key "role_permissions", "roles"
+  add_foreign_key "role_permissions", "users", column: "granted_by_id"
+  add_foreign_key "roles", "organizations"
+  add_foreign_key "user_roles", "roles"
+  add_foreign_key "user_roles", "users"
+  add_foreign_key "user_roles", "users", column: "granted_by_id"
   add_foreign_key "users", "organizations"
 end

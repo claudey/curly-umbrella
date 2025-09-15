@@ -1,4 +1,15 @@
 Rails.application.routes.draw do
+  namespace :admin do
+    get "roles/index"
+    get "roles/show"
+    get "roles/new"
+    get "roles/create"
+    get "roles/edit"
+    get "roles/update"
+    get "roles/destroy"
+    get "roles/assign_permissions"
+    get "roles/revoke_permissions"
+  end
   namespace :insurance_companies do
     root "portal#dashboard"
     get "dashboard", to: "portal#dashboard"
