@@ -2,6 +2,8 @@ class InsuranceCompany < ApplicationRecord
   include Discard::Model
   
   belongs_to :approved_by, class_name: 'User', optional: true
+  
+  has_many :quotes, dependent: :destroy
 
   validates :name, presence: true, length: { minimum: 2, maximum: 100 }
   validates :business_registration_number, presence: true, uniqueness: { case_sensitive: false }

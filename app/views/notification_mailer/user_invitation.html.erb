@@ -1,0 +1,73 @@
+<h1 class="email-title">You're Invited to Join BrokerSync</h1>
+
+<p class="email-text">
+  Hello <%= @user.full_name %>,
+</p>
+
+<p class="email-text">
+  <strong><%= @inviter.full_name %></strong> has invited you to join <strong><%= @organization.name %></strong> on BrokerSync.
+</p>
+
+<div class="alert alert-info">
+  <strong>Organization Details:</strong>
+  <br>
+  Name: <%= @organization.name %>
+  <br>
+  Type: <%= @organization.organization_type&.humanize %>
+  <% if @organization.description.present? %>
+    <br>
+    Description: <%= @organization.description %>
+  <% end %>
+</div>
+
+<table class="details-table">
+  <tr>
+    <th>Field</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>Organization</td>
+    <td><%= @organization.name %></td>
+  </tr>
+  <tr>
+    <td>Invited By</td>
+    <td><%= @inviter.full_name %> (<%= @inviter.email %>)</td>
+  </tr>
+  <tr>
+    <td>Your Email</td>
+    <td><%= @user.email %></td>
+  </tr>
+  <tr>
+    <td>Invitation Date</td>
+    <td><%= Time.current.strftime("%B %d, %Y") %></td>
+  </tr>
+</table>
+
+<a href="<%= root_url %>" class="btn">Accept Invitation</a>
+
+<div class="email-divider"></div>
+
+<p class="email-text">
+  BrokerSync is a comprehensive insurance brokerage management platform that helps organizations streamline their insurance operations, manage applications, and collaborate effectively.
+</p>
+
+<p class="email-text">
+  <strong>What you can do with BrokerSync:</strong>
+</p>
+
+<ul class="email-text">
+  <li>Manage motor insurance applications</li>
+  <li>Track application status and updates</li>
+  <li>Collaborate with team members</li>
+  <li>Generate reports and analytics</li>
+  <li>Manage client relationships</li>
+</ul>
+
+<p class="email-text">
+  If you have any questions about this invitation, please contact <%= @inviter.full_name %> directly or reach out to our support team.
+</p>
+
+<p class="email-text">
+  Welcome to BrokerSync!<br>
+  The BrokerSync Team
+</p>

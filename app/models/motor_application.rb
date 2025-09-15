@@ -8,6 +8,7 @@ class MotorApplication < ApplicationRecord
   belongs_to :approved_by, class_name: 'User', optional: true
   belongs_to :rejected_by, class_name: 'User', optional: true
 
+  has_many :quotes, dependent: :destroy
   has_many_attached :documents
 
   validates :application_number, presence: true, uniqueness: { scope: :organization_id }
@@ -78,41 +79,67 @@ class MotorApplication < ApplicationRecord
   def submit!
     return false unless can_submit?
 
-    update!(
-      status: 'submitted',
-      submitted_at: Time.current
-    )
+    transaction do
+      update!(
+        status: 'submitted',
+        submitted_at: Time.current
+      )
+      
+      # Send notification for new application
+      NotificationService.new_application_submitted(self)
+    end
   end
 
   def start_review!(user)
     return false unless can_review?
 
-    update!(
-      status: 'under_review',
-      reviewed_at: Time.current,
-      reviewed_by: user
-    )
+    old_status = status
+    
+    transaction do
+      update!(
+        status: 'under_review',
+        reviewed_at: Time.current,
+        reviewed_by: user
+      )
+      
+      # Send status update notification
+      NotificationService.application_status_updated(self, old_status, 'under_review')
+    end
   end
 
   def approve!(user)
     return false unless under_review?
 
-    update!(
-      status: 'approved',
-      approved_at: Time.current,
-      approved_by: user
-    )
+    old_status = status
+    
+    transaction do
+      update!(
+        status: 'approved',
+        approved_at: Time.current,
+        approved_by: user
+      )
+      
+      # Send status update notification
+      NotificationService.application_status_updated(self, old_status, 'approved')
+    end
   end
 
   def reject!(user, reason)
     return false unless under_review?
 
-    update!(
-      status: 'rejected',
-      rejected_at: Time.current,
-      rejected_by: user,
-      rejection_reason: reason
-    )
+    old_status = status
+    
+    transaction do
+      update!(
+        status: 'rejected',
+        rejected_at: Time.current,
+        rejected_by: user,
+        rejection_reason: reason
+      )
+      
+      # Send status update notification
+      NotificationService.application_status_updated(self, old_status, 'rejected')
+    end
   end
 
   def status_badge_class

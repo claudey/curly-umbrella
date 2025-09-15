@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_14_232854) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_15_010426) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -160,6 +160,39 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_14_232854) do
     t.index ["vehicle_registration_number"], name: "index_motor_applications_on_vehicle_registration_number"
   end
 
+  create_table "notification_preferences", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "organization_id", null: false
+    t.boolean "email_new_applications", default: true, null: false
+    t.boolean "email_status_updates", default: true, null: false
+    t.boolean "email_user_invitations", default: true, null: false
+    t.boolean "email_marketing", default: false, null: false
+    t.boolean "sms_new_applications", default: false, null: false
+    t.boolean "sms_status_updates", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_notification_preferences_on_organization_id"
+    t.index ["user_id", "organization_id"], name: "index_notification_preferences_on_user_id_and_organization_id", unique: true
+    t.index ["user_id"], name: "index_notification_preferences_on_user_id"
+  end
+
+  create_table "notifications", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "organization_id", null: false
+    t.string "title", null: false
+    t.text "message", null: false
+    t.string "notification_type", null: false
+    t.datetime "read_at"
+    t.json "data"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_notifications_on_created_at"
+    t.index ["organization_id", "notification_type"], name: "index_notifications_on_organization_id_and_notification_type"
+    t.index ["organization_id"], name: "index_notifications_on_organization_id"
+    t.index ["user_id", "read_at"], name: "index_notifications_on_user_id_and_read_at"
+    t.index ["user_id"], name: "index_notifications_on_user_id"
+  end
+
   create_table "organizations", force: :cascade do |t|
     t.string "name", null: false
     t.string "license_number", null: false
@@ -169,6 +202,37 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_14_232854) do
     t.datetime "updated_at", null: false
     t.index ["license_number"], name: "index_organizations_on_license_number", unique: true
     t.index ["name"], name: "index_organizations_on_name"
+  end
+
+  create_table "quotes", force: :cascade do |t|
+    t.bigint "motor_application_id", null: false
+    t.bigint "insurance_company_id", null: false
+    t.bigint "organization_id", null: false
+    t.bigint "quoted_by_id", null: false
+    t.string "quote_number", null: false
+    t.decimal "premium_amount", precision: 12, scale: 2
+    t.decimal "coverage_amount", precision: 15, scale: 2
+    t.decimal "commission_rate", precision: 5, scale: 2
+    t.decimal "commission_amount", precision: 12, scale: 2
+    t.json "coverage_details"
+    t.text "terms_conditions"
+    t.integer "validity_period", default: 30
+    t.string "status", default: "draft", null: false
+    t.datetime "quoted_at"
+    t.datetime "accepted_at"
+    t.datetime "rejected_at"
+    t.datetime "expires_at"
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["expires_at"], name: "index_quotes_on_expires_at"
+    t.index ["insurance_company_id"], name: "index_quotes_on_insurance_company_id"
+    t.index ["motor_application_id", "insurance_company_id"], name: "index_quotes_on_motor_application_id_and_insurance_company_id"
+    t.index ["motor_application_id"], name: "index_quotes_on_motor_application_id"
+    t.index ["organization_id", "status"], name: "index_quotes_on_organization_id_and_status"
+    t.index ["organization_id"], name: "index_quotes_on_organization_id"
+    t.index ["quote_number"], name: "index_quotes_on_quote_number", unique: true
+    t.index ["quoted_by_id"], name: "index_quotes_on_quoted_by_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -198,5 +262,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_14_232854) do
   add_foreign_key "motor_applications", "users", column: "approved_by_id"
   add_foreign_key "motor_applications", "users", column: "rejected_by_id"
   add_foreign_key "motor_applications", "users", column: "reviewed_by_id"
+  add_foreign_key "notification_preferences", "organizations"
+  add_foreign_key "notification_preferences", "users"
+  add_foreign_key "notifications", "organizations"
+  add_foreign_key "notifications", "users"
+  add_foreign_key "quotes", "insurance_companies"
+  add_foreign_key "quotes", "motor_applications"
+  add_foreign_key "quotes", "organizations"
+  add_foreign_key "quotes", "users", column: "quoted_by_id"
   add_foreign_key "users", "organizations"
 end

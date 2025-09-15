@@ -1,0 +1,51 @@
+<h1 class="email-title">System Alert: <%= @title %></h1>
+
+<p class="email-text">
+  Hello <%= @user.full_name %>,
+</p>
+
+<div class="alert alert-warning">
+  <strong>System Alert:</strong>
+  <br>
+  <%= simple_format(@message) %>
+</div>
+
+<table class="details-table">
+  <tr>
+    <th>Field</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>Alert Type</td>
+    <td>System Alert</td>
+  </tr>
+  <tr>
+    <td>Organization</td>
+    <td><%= @organization.name %></td>
+  </tr>
+  <tr>
+    <td>Recipient</td>
+    <td><%= @user.full_name %> (<%= @user.email %>)</td>
+  </tr>
+  <tr>
+    <td>Alert Time</td>
+    <td><%= Time.current.strftime("%B %d, %Y at %I:%M %p") %></td>
+  </tr>
+</table>
+
+<a href="<%= root_url %>" class="btn">Access Dashboard</a>
+
+<div class="email-divider"></div>
+
+<p class="email-text">
+  This is an automated system alert from BrokerSync. Please review the information above and take any necessary actions.
+</p>
+
+<p class="email-text">
+  If you believe this alert was sent in error or if you need assistance, please contact our support team immediately.
+</p>
+
+<p class="email-text">
+  Best regards,<br>
+  The BrokerSync Team
+</p>

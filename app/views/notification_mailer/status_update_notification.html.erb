@@ -1,0 +1,75 @@
+<h1 class="email-title">Application Status Update</h1>
+
+<p class="email-text">
+  Hello <%= @user.full_name %>,
+</p>
+
+<p class="email-text">
+  The status of motor insurance application <strong><%= @application.policy_number %></strong> has been updated.
+</p>
+
+<div class="alert alert-<%= @new_status == 'approved' ? 'success' : @new_status == 'rejected' ? 'warning' : 'info' %>">
+  <strong>Status Change:</strong>
+  <br>
+  From: <%= @old_status.humanize %>
+  <br>
+  To: <%= @new_status.humanize %>
+</div>
+
+<table class="details-table">
+  <tr>
+    <th>Field</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>Policy Number</td>
+    <td><%= @application.policy_number %></td>
+  </tr>
+  <tr>
+    <td>Client Name</td>
+    <td><%= @application.client_name %></td>
+  </tr>
+  <tr>
+    <td>Vehicle</td>
+    <td><%= @application.vehicle_make %> <%= @application.vehicle_model %> (<%= @application.vehicle_year %>)</td>
+  </tr>
+  <tr>
+    <td>Previous Status</td>
+    <td><%= @old_status.humanize %></td>
+  </tr>
+  <tr>
+    <td>Current Status</td>
+    <td><%= @new_status.humanize %></td>
+  </tr>
+  <tr>
+    <td>Updated At</td>
+    <td><%= @application.updated_at.strftime("%B %d, %Y at %I:%M %p") %></td>
+  </tr>
+</table>
+
+<% if @application.notes.present? %>
+  <div class="alert alert-info">
+    <strong>Notes:</strong>
+    <br>
+    <%= simple_format(@application.notes) %>
+  </div>
+<% end %>
+
+<a href="<%= root_url %>" class="btn">View Application</a>
+
+<div class="email-divider"></div>
+
+<p class="email-text">
+  <% if @new_status == 'approved' %>
+    Congratulations! Your application has been approved. You can now proceed with the next steps.
+  <% elsif @new_status == 'rejected' %>
+    Unfortunately, your application has been rejected. Please review the notes above for more information.
+  <% else %>
+    Your application is currently under review. We will notify you of any further updates.
+  <% end %>
+</p>
+
+<p class="email-text">
+  Best regards,<br>
+  The BrokerSync Team
+</p>

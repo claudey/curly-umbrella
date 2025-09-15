@@ -39,8 +39,12 @@
           <div class="flex-1 px-2 mx-2">
             <%= link_to "BrokerSync", root_path, class: "text-lg font-bold" %>
           </div>
-          <div class="flex-none">
+          <div class="flex-none gap-2">
             <% if user_signed_in? %>
+              <!-- Notifications -->
+              <%= render 'shared/notification_dropdown' %>
+              
+              <!-- User Menu -->
               <div class="dropdown dropdown-end">
                 <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
                   <div class="w-10 rounded-full">
@@ -51,6 +55,7 @@
                 </div>
                 <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
                   <li><a href="#" class="justify-between">Profile</a></li>
+                  <li><%= link_to "Notifications", notifications_path %></li>
                   <li><a href="#">Settings</a></li>
                   <li><%= link_to "Logout", destroy_user_session_path, method: :delete %></li>
                 </ul>

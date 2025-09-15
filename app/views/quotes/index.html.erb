@@ -1,0 +1,219 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">Insurance Quotes</h1>
+      <p class="text-gray-600 mt-2">
+        Manage and track insurance quotes for motor applications
+      </p>
+    </div>
+    
+    <%= link_to new_quote_path, class: "btn btn-primary" do %>
+      <%= icon("plus") %>
+      New Quote
+    <% end %>
+  </div>
+
+  <!-- Filters -->
+  <div class="card bg-base-100 shadow-sm mb-6">
+    <div class="card-body p-4">
+      <%= form_with url: quotes_path, method: :get, local: true, class: "flex flex-wrap gap-4 items-end" do |form| %>
+        <div class="form-control w-full max-w-xs">
+          <%= form.label :status, class: "label" %>
+          <%= form.select :status, 
+                         options_for_select([
+                           ['All Statuses', ''],
+                           ['Draft', 'draft'],
+                           ['Submitted', 'submitted'],
+                           ['Pending Review', 'pending_review'],
+                           ['Approved', 'approved'],
+                           ['Accepted', 'accepted'],
+                           ['Rejected', 'rejected'],
+                           ['Expired', 'expired']
+                         ], params[:status]),
+                         {}, 
+                         { class: "select select-bordered" } %>
+        </div>
+        
+        <div class="form-control w-full max-w-xs">
+          <%= form.label :insurance_company_id, "Insurance Company", class: "label" %>
+          <%= form.select :insurance_company_id,
+                         options_for_select([['All Companies', '']] + @insurance_companies, params[:insurance_company_id]),
+                         {},
+                         { class: "select select-bordered" } %>
+        </div>
+        
+        <div class="form-control">
+          <%= form.submit "Filter", class: "btn btn-outline" %>
+        </div>
+        
+        <% if params[:status].present? || params[:insurance_company_id].present? %>
+          <%= link_to "Clear", quotes_path, class: "btn btn-ghost" %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="stat bg-base-100 shadow-sm rounded-lg">
+      <div class="stat-figure text-primary">
+        <%= icon("clipboard-document-list", class: "w-8 h-8") %>
+      </div>
+      <div class="stat-title">Total Quotes</div>
+      <div class="stat-value text-primary"><%= @quotes.count %></div>
+    </div>
+    
+    <div class="stat bg-base-100 shadow-sm rounded-lg">
+      <div class="stat-figure text-warning">
+        <%= icon("clock", class: "w-8 h-8") %>
+      </div>
+      <div class="stat-title">Pending</div>
+      <div class="stat-value text-warning"><%= @quotes.pending.count %></div>
+    </div>
+    
+    <div class="stat bg-base-100 shadow-sm rounded-lg">
+      <div class="stat-figure text-success">
+        <%= icon("check-circle", class: "w-8 h-8") %>
+      </div>
+      <div class="stat-title">Approved</div>
+      <div class="stat-value text-success"><%= @quotes.approved.count %></div>
+    </div>
+    
+    <div class="stat bg-base-100 shadow-sm rounded-lg">
+      <div class="stat-figure text-info">
+        <%= icon("banknotes", class: "w-8 h-8") %>
+      </div>
+      <div class="stat-title">Total Value</div>
+      <div class="stat-value text-info">
+        $<%= number_with_delimiter(@quotes.sum(:premium_amount)) %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quotes Table -->
+  <div class="card bg-base-100 shadow-sm">
+    <div class="card-body p-0">
+      <% if @quotes.any? %>
+        <div class="overflow-x-auto">
+          <table class="table w-full">
+            <thead>
+              <tr>
+                <th>Quote Number</th>
+                <th>Application</th>
+                <th>Insurance Company</th>
+                <th>Premium Amount</th>
+                <th>Status</th>
+                <th>Expires</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @quotes.each do |quote| %>
+                <tr class="hover">
+                  <td>
+                    <div class="font-medium">
+                      <%= link_to quote.quote_number, quote, class: "link link-primary" %>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                      by <%= quote.quoted_by.full_name %>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="font-medium">
+                      <%= quote.motor_application.application_number %>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                      <%= quote.motor_application.client_name %>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="font-medium">
+                      <%= quote.insurance_company.name %>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                      Commission: <%= number_to_percentage(quote.commission_rate || 0, precision: 1) %>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="font-medium">
+                      $<%= number_with_delimiter(quote.premium_amount) %>
+                    </div>
+                    <% if quote.commission_amount %>
+                      <div class="text-sm text-gray-500">
+                        +$<%= number_with_delimiter(quote.commission_amount) %> commission
+                      </div>
+                    <% end %>
+                  </td>
+                  <td>
+                    <span class="badge <%= quote.status_badge_class %>">
+                      <%= quote.status.humanize %>
+                    </span>
+                    <% if quote.expired? %>
+                      <span class="badge badge-error badge-sm ml-1">Expired</span>
+                    <% elsif quote.expires_in_days && quote.expires_in_days <= 3 %>
+                      <span class="badge badge-warning badge-sm ml-1">
+                        <%= quote.expires_in_days %>d left
+                      </span>
+                    <% end %>
+                  </td>
+                  <td>
+                    <% if quote.expires_at %>
+                      <div class="text-sm">
+                        <%= quote.expires_at.strftime("%b %d, %Y") %>
+                      </div>
+                      <div class="text-xs text-gray-500">
+                        <%= time_ago_in_words(quote.expires_at) %> 
+                        <%= quote.expires_at > Time.current ? 'left' : 'ago' %>
+                      </div>
+                    <% else %>
+                      <span class="text-gray-400">—</span>
+                    <% end %>
+                  </td>
+                  <td>
+                    <div class="flex gap-2">
+                      <%= link_to quote, class: "btn btn-ghost btn-sm" do %>
+                        <%= icon("eye", class: "w-4 h-4") %>
+                      <% end %>
+                      
+                      <% if quote.draft? %>
+                        <%= link_to edit_quote_path(quote), class: "btn btn-ghost btn-sm" do %>
+                          <%= icon("pencil", class: "w-4 h-4") %>
+                        <% end %>
+                      <% end %>
+                      
+                      <% if quote.draft? %>
+                        <%= link_to submit_quote_path(quote), method: :patch, 
+                                    class: "btn btn-primary btn-sm",
+                                    data: { confirm: "Submit this quote?" } do %>
+                          <%= icon("paper-airplane", class: "w-4 h-4") %>
+                        <% end %>
+                      <% end %>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="text-center py-12">
+          <div class="w-16 h-16 mx-auto mb-4 text-gray-400">
+            <%= icon("clipboard-document-list", class: "w-16 h-16") %>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">No quotes found</h3>
+          <p class="text-gray-600 mb-4">
+            <%= params[:status].present? || params[:insurance_company_id].present? ? 
+                "No quotes match your current filters." : 
+                "Get started by creating your first quote." %>
+          </p>
+          <% unless params[:status].present? || params[:insurance_company_id].present? %>
+            <%= link_to new_quote_path, class: "btn btn-primary" do %>
+              <%= icon("plus") %>
+              Create Quote
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

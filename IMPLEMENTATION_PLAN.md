@@ -78,14 +78,14 @@
 - [x] Create application management dashboard
 
 ### 1.7 Basic Notification System
-- [ ] Set up ActionMailer with Brevo integration
-- [ ] Create email templates using DaisyUI styling
-- [ ] Implement notification preferences model
-- [ ] Create notification center in UI
-- [ ] Add basic email notifications for:
-  - [ ] New application submissions
-  - [ ] Application status updates
-  - [ ] User invitations
+- [x] Set up ActionMailer with Brevo integration
+- [x] Create email templates using DaisyUI styling
+- [x] Implement notification preferences model
+- [x] Create notification center in UI
+- [x] Add basic email notifications for:
+  - [x] New application submissions
+  - [x] Application status updates
+  - [x] User invitations
 
 **Phase 1 Deliverables:**
 - Functional multi-tenant Rails application

@@ -1,5 +1,7 @@
 class Organization < ApplicationRecord
   has_many :users, dependent: :destroy
+  has_many :quotes, dependent: :destroy
+  has_many :motor_applications, dependent: :destroy
 
   validates :name, presence: true
   validates :license_number, presence: true, uniqueness: true

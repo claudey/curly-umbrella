@@ -1,4 +1,24 @@
 Rails.application.routes.draw do
+  resources :quotes do
+    member do
+      patch :submit
+      patch :approve
+      patch :reject
+      patch :accept
+      patch :withdraw
+    end
+    
+    collection do
+      get :pending
+      get :expiring_soon
+    end
+  end
+  resources :notifications, only: [:index, :show, :update] do
+    collection do
+      get :unread_count
+      patch :mark_all_as_read
+    end
+  end
   resources :motor_applications do
     member do
       patch :submit_application

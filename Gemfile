@@ -65,6 +65,10 @@ gem "aws-sdk-s3", "~> 1.199"
 gem "acts_as_tenant", "~> 1.0"
 
 gem "devise", "~> 4.9"
-gem 'discard', '~> 1.3'
-gem 'phosphor_icons', '~> 0.3'
-gem 'view_component', '~> 3.0'
+gem "discard", "~> 1.3"
+gem "phosphor_icons", "~> 0.3"
+gem "view_component", "~> 3.0"
+
+# Email delivery
+gem "brevo", "~> 2.0"
+gem "enum_help", "~> 0.0.17"

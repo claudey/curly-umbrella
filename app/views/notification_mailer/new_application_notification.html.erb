@@ -1,0 +1,67 @@
+<h1 class="email-title">New Motor Insurance Application</h1>
+
+<p class="email-text">
+  Hello <%= @user.full_name %>,
+</p>
+
+<p class="email-text">
+  A new motor insurance application has been submitted in your organization.
+</p>
+
+<div class="alert alert-info">
+  <strong>Application Details:</strong>
+  <br>
+  Policy Number: <%= @application.policy_number %>
+  <br>
+  Client: <%= @application.client_name %>
+  <br>
+  Vehicle: <%= @application.vehicle_make %> <%= @application.vehicle_model %> (<%= @application.vehicle_year %>)
+</div>
+
+<table class="details-table">
+  <tr>
+    <th>Field</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>Policy Number</td>
+    <td><%= @application.policy_number %></td>
+  </tr>
+  <tr>
+    <td>Client Name</td>
+    <td><%= @application.client_name %></td>
+  </tr>
+  <tr>
+    <td>Vehicle</td>
+    <td><%= @application.vehicle_make %> <%= @application.vehicle_model %> (<%= @application.vehicle_year %>)</td>
+  </tr>
+  <tr>
+    <td>Coverage Type</td>
+    <td><%= @application.coverage_type&.humanize %></td>
+  </tr>
+  <tr>
+    <td>Annual Premium</td>
+    <td>$<%= number_with_delimiter(@application.annual_premium) if @application.annual_premium %></td>
+  </tr>
+  <tr>
+    <td>Status</td>
+    <td><%= @application.status&.humanize %></td>
+  </tr>
+  <tr>
+    <td>Submitted At</td>
+    <td><%= @application.submitted_at&.strftime("%B %d, %Y at %I:%M %p") %></td>
+  </tr>
+</table>
+
+<a href="<%= root_url %>" class="btn">View Application</a>
+
+<div class="email-divider"></div>
+
+<p class="email-text">
+  Please review this application and take appropriate action.
+</p>
+
+<p class="email-text">
+  Best regards,<br>
+  The BrokerSync Team
+</p>

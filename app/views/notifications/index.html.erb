@@ -1,0 +1,95 @@
+<div class="container mx-auto px-4 py-8" data-controller="notifications">
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">Notifications</h1>
+      <p class="text-gray-600 mt-2">
+        <%= pluralize(@unread_count, 'unread notification') %>
+      </p>
+    </div>
+    
+    <% if @unread_count > 0 %>
+      <%= link_to mark_all_as_read_notifications_path, method: :patch, 
+                  class: "btn btn-outline btn-sm",
+                  data: { confirm: "Mark all notifications as read?" } do %>
+        <%= icon("check-circle") %>
+        Mark All Read
+      <% end %>
+    <% end %>
+  </div>
+
+  <% if @notifications.any? %>
+    <div class="space-y-4">
+      <% @notifications.each do |notification| %>
+        <div class="card bg-base-100 shadow-sm <%= 'border-l-4 border-l-primary' if notification.unread? %>">
+          <div class="card-body p-4">
+            <div class="flex justify-between items-start">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-2">
+                  <h3 class="font-semibold text-gray-900">
+                    <%= notification.title %>
+                  </h3>
+                  
+                  <% if notification.unread? %>
+                    <span class="badge badge-primary badge-sm">New</span>
+                  <% end %>
+                  
+                  <span class="badge badge-ghost badge-sm">
+                    <%= notification.notification_type.humanize %>
+                  </span>
+                </div>
+                
+                <p class="text-gray-600 mb-3">
+                  <%= truncate(notification.message, length: 150) %>
+                </p>
+                
+                <div class="flex items-center gap-4 text-sm text-gray-500">
+                  <span>
+                    <%= icon("clock") %>
+                    <%= time_ago_in_words(notification.created_at) %> ago
+                  </span>
+                  
+                  <span>
+                    <%= icon("building") %>
+                    <%= notification.organization.name %>
+                  </span>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-2 ml-4">
+                <%= link_to notification_path(notification), 
+                            class: "btn btn-ghost btn-sm" do %>
+                  <%= icon("eye") %>
+                  View
+                <% end %>
+                
+                <% if notification.unread? %>
+                  <%= link_to notification_path(notification), 
+                              method: :patch,
+                              params: { action_type: 'mark_as_read' },
+                              class: "btn btn-outline btn-sm" do %>
+                    <%= icon("check") %>
+                    Mark Read
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+    
+    <% if respond_to?(:paginate) %>
+      <div class="mt-8 flex justify-center">
+        <%= paginate @notifications %>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="text-center py-12">
+      <div class="w-16 h-16 mx-auto mb-4 text-gray-400">
+        <%= icon("bell-slash", class: "w-16 h-16") %>
+      </div>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">No notifications</h3>
+      <p class="text-gray-600">You're all caught up! No notifications to display.</p>
+    </div>
+  <% end %>
+</div>

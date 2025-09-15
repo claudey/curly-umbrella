@@ -1,0 +1,91 @@
+<div class="dropdown dropdown-end" 
+     data-controller="notifications"
+     data-notifications-update-url-value="<%= unread_count_notifications_path %>"
+     data-notifications-mark-all-read-url-value="<%= mark_all_as_read_notifications_path %>">
+     
+  <!-- Notification Bell Button -->
+  <div tabindex="0" 
+       role="button" 
+       class="btn btn-ghost btn-circle"
+       data-action="click->notifications#toggle">
+    <div class="indicator">
+      <%= icon("bell", class: "w-5 h-5") %>
+      <span class="badge badge-primary badge-sm indicator-item hidden"
+            data-notifications-target="badge">0</span>
+    </div>
+  </div>
+  
+  <!-- Notification Dropdown -->
+  <div class="dropdown-content hidden mt-3 z-[1] card card-compact w-80 bg-base-100 shadow-xl"
+       data-notifications-target="dropdown">
+    <div class="card-body">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-semibold text-lg">Notifications</h3>
+        <span class="text-sm text-gray-500">
+          <span data-notifications-target="count">0</span> unread
+        </span>
+      </div>
+      
+      <!-- Recent Notifications -->
+      <div class="space-y-3 max-h-80 overflow-y-auto">
+        <% current_user.notifications.recent.limit(5).each do |notification| %>
+          <div class="notification-item <%= 'unread' if notification.unread? %> p-3 rounded-lg <%= 'bg-blue-50 border border-blue-200' if notification.unread? %>">
+            <div class="flex justify-between items-start">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <h4 class="font-medium text-sm">
+                    <%= truncate(notification.title, length: 30) %>
+                  </h4>
+                  <% if notification.unread? %>
+                    <span class="badge badge-primary badge-xs">New</span>
+                  <% end %>
+                </div>
+                
+                <p class="text-xs text-gray-600 mb-2">
+                  <%= truncate(notification.message, length: 60) %>
+                </p>
+                
+                <p class="text-xs text-gray-500">
+                  <%= time_ago_in_words(notification.created_at) %> ago
+                </p>
+              </div>
+              
+              <% if notification.unread? %>
+                <button class="btn btn-ghost btn-xs"
+                        data-action="click->notifications#markAsRead"
+                        data-notification-id="<%= notification.id %>">
+                  <%= icon("check", class: "w-3 h-3") %>
+                </button>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+        
+        <% if current_user.notifications.count == 0 %>
+          <div class="text-center py-6 text-gray-500">
+            <%= icon("bell-slash", class: "w-8 h-8 mx-auto mb-2 text-gray-400") %>
+            <p class="text-sm">No notifications yet</p>
+          </div>
+        <% end %>
+      </div>
+      
+      <!-- Dropdown Actions -->
+      <div class="divider my-3"></div>
+      
+      <div class="flex justify-between items-center">
+        <%= link_to notifications_path, 
+                    class: "btn btn-ghost btn-sm",
+                    data: { action: "click->notifications#close" } do %>
+          View All
+        <% end %>
+        
+        <% if current_user.notifications.unread.any? %>
+          <button class="btn btn-outline btn-sm"
+                  data-action="click->notifications#markAllAsRead">
+            Mark All Read
+          </button>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
