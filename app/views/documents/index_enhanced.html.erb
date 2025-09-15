@@ -1,0 +1,325 @@
+<% content_for :title, "Documents" %>
+
+<div class="min-h-screen bg-gray-50" data-controller="document-search">
+  <!-- Header -->
+  <div class="bg-white shadow">
+    <div class="px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">
+            <i class="ph-files text-blue-600 mr-2"></i>
+            <%= params[:action] == 'archived' ? 'Archived Documents' : 
+                params[:action] == 'expiring' ? 'Expiring Documents' : 
+                'Documents' %>
+          </h1>
+          <p class="text-gray-600 mt-1">
+            <%= pluralize(@documents.total_count, 'document') %> found
+          </p>
+        </div>
+        
+        <div class="flex items-center space-x-3">
+          <!-- View Toggle -->
+          <div class="flex bg-gray-200 rounded-lg p-1" data-controller="tabs">
+            <button data-action="click->tabs#switch" data-tabs-target="grid" 
+                    class="px-3 py-1 rounded text-sm font-medium bg-white text-gray-900 shadow-sm">
+              <i class="ph-grid-four"></i>
+            </button>
+            <button data-action="click->tabs#switch" data-tabs-target="list"
+                    class="px-3 py-1 rounded text-sm font-medium text-gray-600 hover:text-gray-900">
+              <i class="ph-list"></i>
+            </button>
+          </div>
+          
+          <%= link_to new_document_path, class: "btn-primary" do %>
+            <i class="ph-upload-simple mr-2"></i>
+            Upload Document
+          <% end %>
+          
+          <!-- Export Dropdown -->
+          <div class="relative" data-controller="dropdown">
+            <button data-action="click->dropdown#toggle" 
+                    class="btn-secondary flex items-center">
+              <i class="ph-download mr-2"></i>
+              Export
+              <i class="ph-caret-down ml-1"></i>
+            </button>
+            
+            <div data-dropdown-target="menu" 
+                 class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 hidden z-50">
+              <div class="py-1">
+                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <i class="ph-file-pdf mr-2"></i>Export as PDF
+                </a>
+                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <i class="ph-file-csv mr-2"></i>Export as CSV
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex">
+    <!-- Sidebar Filters -->
+    <div class="w-80 bg-white shadow-sm border-r border-gray-200 min-h-screen">
+      <div class="p-6">
+        <!-- Search -->
+        <div class="mb-6">
+          <%= form_with url: request.path, method: :get, local: true, 
+                       data: { 'document-search-target': 'form', 'action': 'submit->document-search#search' },
+                       class: "space-y-4" do |form| %>
+            
+            <!-- Main Search -->
+            <div class="relative">
+              <%= form.text_field :search, 
+                                 placeholder: "Search documents...",
+                                 value: params[:search],
+                                 data: { 'document-search-target': 'searchInput', 'action': 'input->document-search#suggest' },
+                                 class: "w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" %>
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="ph-magnifying-glass text-gray-400"></i>
+              </div>
+              
+              <!-- Search Suggestions -->
+              <div data-document-search-target="suggestions" 
+                   class="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 hidden">
+                <div class="py-2 max-h-64 overflow-y-auto">
+                  <!-- Suggestions will be populated here -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Filters -->
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" data-action="click->document-search#addFilter" 
+                      data-filter-type="date_range" data-filter-value="week"
+                      class="text-xs px-3 py-1 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200">
+                This Week
+              </button>
+              <button type="button" data-action="click->document-search#addFilter"
+                      data-filter-type="status" data-filter-value="expiring"
+                      class="text-xs px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full hover:bg-yellow-200">
+                Expiring Soon
+              </button>
+              <button type="button" data-action="click->document-search#addFilter"
+                      data-filter-type="file_type" data-filter-value="pdfs"
+                      class="text-xs px-3 py-1 bg-red-100 text-red-700 rounded-full hover:bg-red-200">
+                PDFs Only
+              </button>
+              <button type="button" data-action="click->document-search#addFilter"
+                      data-filter-type="file_type" data-filter-value="images"
+                      class="text-xs px-3 py-1 bg-green-100 text-green-700 rounded-full hover:bg-green-200">
+                Images Only
+              </button>
+            </div>
+
+            <!-- Active Filters -->
+            <div data-document-search-target="activeFilters" class="space-y-2">
+              <!-- Active filters will be shown here -->
+            </div>
+
+            <!-- Advanced Filters -->
+            <div class="space-y-4">
+              <!-- Category -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <%= form.select :category, 
+                               options_for_select([['All Categories', '']] + @categories.map { |cat| [cat.humanize, cat] }, params[:category]),
+                               {}, { class: "w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500" } %>
+              </div>
+
+              <!-- Document Type -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Document Type</label>
+                <%= form.select :document_type, 
+                               options_for_select([['All Types', '']] + @document_types.map { |type| [type.humanize, type] }, params[:document_type]),
+                               {}, { class: "w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500" } %>
+              </div>
+
+              <!-- File Type -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">File Type</label>
+                <%= form.select :file_type, 
+                               options_for_select([
+                                 ['All Files', ''],
+                                 ['Images', 'images'],
+                                 ['PDFs', 'pdfs'],
+                                 ['Documents', 'documents'],
+                                 ['Spreadsheets', 'spreadsheets']
+                               ], params[:file_type]),
+                               {}, { class: "w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500" } %>
+              </div>
+
+              <!-- Status -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <%= form.select :status, 
+                               options_for_select([
+                                 ['All Documents', ''],
+                                 ['Active', 'active'],
+                                 ['Archived', 'archived'],
+                                 ['Expiring Soon', 'expiring'],
+                                 ['Expired', 'expired']
+                               ], params[:status]),
+                               {}, { class: "w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500" } %>
+              </div>
+
+              <!-- Date Range -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Upload Date</label>
+                <div class="grid grid-cols-2 gap-2">
+                  <%= form.date_field :uploaded_after, 
+                                     value: params[:uploaded_after],
+                                     placeholder: "From",
+                                     class: "border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 text-sm" %>
+                  <%= form.date_field :uploaded_before, 
+                                     value: params[:uploaded_before],
+                                     placeholder: "To",
+                                     class: "border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 text-sm" %>
+                </div>
+              </div>
+
+              <!-- File Size -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">File Size</label>
+                <%= form.select :size_range, 
+                               options_for_select([
+                                 ['Any Size', ''],
+                                 ['Small (< 1MB)', 'small'],
+                                 ['Medium (1-10MB)', 'medium'],
+                                 ['Large (> 10MB)', 'large']
+                               ], params[:size_range]),
+                               {}, { class: "w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500" } %>
+              </div>
+
+              <!-- Sort -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+                <%= form.select :sort, 
+                               options_for_select([
+                                 ['Newest First', 'created_desc'],
+                                 ['Oldest First', 'created_asc'],
+                                 ['Name A-Z', 'name_asc'],
+                                 ['Name Z-A', 'name_desc'],
+                                 ['Largest First', 'size_desc'],
+                                 ['Smallest First', 'size_asc']
+                               ], params[:sort]),
+                               {}, { class: "w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500" } %>
+              </div>
+            </div>
+
+            <!-- Filter Actions -->
+            <div class="flex space-x-2">
+              <%= form.submit "Apply Filters", class: "flex-1 btn-primary text-sm" %>
+              <%= link_to "Clear All", request.path, class: "flex-1 btn-secondary text-sm text-center" %>
+            </div>
+          <% end %>
+        </div>
+
+        <!-- Facets -->
+        <% if @facets && @facets.any? { |k, v| v.any? } %>
+          <div class="border-t border-gray-200 pt-6">
+            <h3 class="text-sm font-semibold text-gray-900 mb-4">Filter by</h3>
+            
+            <% @facets.each do |facet_type, facets| %>
+              <% if facets.any? %>
+                <div class="mb-4">
+                  <h4 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+                    <%= facet_type.to_s.humanize %>
+                  </h4>
+                  <div class="space-y-1">
+                    <% facets.first(5).each do |facet| %>
+                      <button type="button" 
+                              data-action="click->document-search#applyFacet"
+                              data-facet-type="<%= facet_type %>"
+                              data-facet-value="<%= facet[:value] %>"
+                              class="w-full text-left text-sm text-gray-600 hover:text-gray-900 flex items-center justify-between">
+                        <span><%= facet[:label] %></span>
+                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                          <%= facet[:count] %>
+                        </span>
+                      </button>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 p-6">
+      <!-- Documents Grid/List -->
+      <div data-tabs-target="grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <% @documents.each do |document| %>
+          <%= render 'document_card', document: document %>
+        <% end %>
+      </div>
+
+      <!-- Documents List (hidden by default) -->
+      <div data-tabs-target="list" class="hidden">
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Document
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Type & Category
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Size
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Uploaded
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <% @documents.each do |document| %>
+                <%= render 'document_row', document: document %>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <% if @documents.empty? %>
+        <div class="text-center py-12">
+          <i class="ph-files text-gray-400 text-6xl mb-4"></i>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">No documents found</h3>
+          <p class="text-gray-500 mb-6">
+            <% if params[:search].present? || params.except(:controller, :action, :page).any? %>
+              Try adjusting your search or filters.
+            <% else %>
+              Get started by uploading your first document.
+            <% end %>
+          </p>
+          
+          <% unless params[:search].present? || params.except(:controller, :action, :page).any? %>
+            <%= link_to new_document_path, class: "btn-primary" do %>
+              <i class="ph-upload-simple mr-2"></i>
+              Upload Document
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <!-- Pagination -->
+      <% if @documents.respond_to?(:total_pages) && @documents.total_pages > 1 %>
+        <div class="mt-8 flex justify-center">
+          <%= paginate @documents, theme: 'twitter_bootstrap_4' %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

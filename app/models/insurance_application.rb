@@ -3,6 +3,7 @@ class InsuranceApplication < ApplicationRecord
   include Auditable
   include Encryptable
   acts_as_tenant :organization
+  audited except: [:application_data]
 
   belongs_to :organization
   belongs_to :client

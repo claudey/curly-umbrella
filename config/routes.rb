@@ -12,6 +12,7 @@ Rails.application.routes.draw do
     collection do
       get :archived
       get :expiring
+      get :search_suggestions
     end
   end
   namespace :insurance_company do
@@ -124,6 +125,15 @@ Rails.application.routes.draw do
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
+  # Audit logging routes
+  resources :audits, only: [:index, :show] do
+    collection do
+      get :dashboard
+      get :export
+      get :compliance_report
+    end
+  end
+  
   # Root route
   root "home#index"
 end

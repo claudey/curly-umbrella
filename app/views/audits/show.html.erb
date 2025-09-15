@@ -1,0 +1,307 @@
+<% content_for :title, "Audit Log Details" %>
+
+<div class="min-h-screen bg-gray-50">
+  <!-- Header -->
+  <div class="bg-white shadow">
+    <div class="px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <%= link_to audits_path, class: "text-gray-500 hover:text-gray-700 mr-4" do %>
+            <i class="ph-arrow-left text-xl"></i>
+          <% end %>
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900">
+              <i class="ph-info text-blue-600 mr-2"></i>
+              Audit Log Details
+            </h1>
+            <p class="text-gray-600 mt-1">
+              Activity ID: <%= @audit_log.id %>
+            </p>
+          </div>
+        </div>
+        
+        <div class="flex items-center space-x-2">
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium <%= severity_badge_class(@audit_log.severity) %>">
+            <%= @audit_log.display_severity %>
+          </span>
+          
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium <%= category_badge_class(@audit_log.category) %>">
+            <%= @audit_log.display_category %>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="px-6 py-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Main Details -->
+      <div class="lg:col-span-2">
+        <div class="bg-white rounded-lg shadow">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">Activity Information</h3>
+          </div>
+          
+          <div class="p-6">
+            <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+              <div>
+                <dt class="text-sm font-medium text-gray-500">Timestamp</dt>
+                <dd class="mt-1 text-sm text-gray-900">
+                  <%= l(@audit_log.created_at, format: :long) %>
+                </dd>
+              </div>
+              
+              <div>
+                <dt class="text-sm font-medium text-gray-500">Action</dt>
+                <dd class="mt-1 text-sm text-gray-900">
+                  <%= @audit_log.display_action %>
+                </dd>
+              </div>
+              
+              <div>
+                <dt class="text-sm font-medium text-gray-500">Resource Type</dt>
+                <dd class="mt-1 text-sm text-gray-900">
+                  <%= @audit_log.resource_type %>
+                </dd>
+              </div>
+              
+              <div>
+                <dt class="text-sm font-medium text-gray-500">Resource ID</dt>
+                <dd class="mt-1 text-sm text-gray-900">
+                  <%= @audit_log.resource_id || 'N/A' %>
+                </dd>
+              </div>
+              
+              <div>
+                <dt class="text-sm font-medium text-gray-500">IP Address</dt>
+                <dd class="mt-1 text-sm text-gray-900">
+                  <%= @audit_log.ip_address || 'N/A' %>
+                </dd>
+              </div>
+              
+              <div>
+                <dt class="text-sm font-medium text-gray-500">Organization</dt>
+                <dd class="mt-1 text-sm text-gray-900">
+                  <%= @audit_log.organization&.name || 'N/A' %>
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+        
+        <!-- Additional Details -->
+        <% if @audit_log.details.present? %>
+          <div class="bg-white rounded-lg shadow mt-6">
+            <div class="px-6 py-4 border-b border-gray-200">
+              <h3 class="text-lg font-semibold text-gray-900">Additional Details</h3>
+            </div>
+            
+            <div class="p-6">
+              <% @audit_log.formatted_details.each do |key, value| %>
+                <div class="mb-4 pb-4 border-b border-gray-100 last:border-b-0">
+                  <dt class="text-sm font-medium text-gray-500 mb-1"><%= key %></dt>
+                  <dd class="text-sm text-gray-900">
+                    <% if value.is_a?(Hash) || value.is_a?(Array) %>
+                      <pre class="bg-gray-50 p-3 rounded text-xs overflow-x-auto"><%= JSON.pretty_generate(value) %></pre>
+                    <% else %>
+                      <%= value %>
+                    <% end %>
+                  </dd>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+        
+        <!-- Related Resource -->
+        <% if @audit_log.auditable %>
+          <div class="bg-white rounded-lg shadow mt-6">
+            <div class="px-6 py-4 border-b border-gray-200">
+              <h3 class="text-lg font-semibold text-gray-900">Related Resource</h3>
+            </div>
+            
+            <div class="p-6">
+              <div class="flex items-center">
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <i class="ph-database text-blue-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                  <h4 class="text-lg font-medium text-gray-900">
+                    <%= @audit_log.resource_type %> #<%= @audit_log.resource_id %>
+                  </h4>
+                  <p class="text-sm text-gray-500">
+                    <%= @audit_log.auditable.try(:name) || 
+                        @audit_log.auditable.try(:title) || 
+                        @audit_log.auditable.try(:email) || 
+                        'Resource details unavailable' %>
+                  </p>
+                </div>
+              </div>
+              
+              <% if @audit_log.auditable.respond_to?(:to_param) %>
+                <div class="mt-4">
+                  <%= link_to "View Resource", 
+                             polymorphic_path(@audit_log.auditable),
+                             class: "btn-primary text-sm",
+                             target: "_blank" %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+      
+      <!-- Sidebar -->
+      <div>
+        <!-- User Information -->
+        <div class="bg-white rounded-lg shadow">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">User Information</h3>
+          </div>
+          
+          <div class="p-6">
+            <% if @audit_log.user %>
+              <div class="flex items-center">
+                <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+                  <i class="ph-user text-gray-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                  <h4 class="text-lg font-medium text-gray-900">
+                    <%= @audit_log.user.display_name %>
+                  </h4>
+                  <p class="text-sm text-gray-500">
+                    <%= @audit_log.user.email %>
+                  </p>
+                  <p class="text-xs text-gray-400">
+                    <%= @audit_log.user.role.humanize %>
+                  </p>
+                </div>
+              </div>
+              
+              <div class="mt-4 pt-4 border-t border-gray-200">
+                <dl class="space-y-2">
+                  <div>
+                    <dt class="text-xs font-medium text-gray-500">Organization</dt>
+                    <dd class="text-sm text-gray-900">
+                      <%= @audit_log.user.organization.name %>
+                    </dd>
+                  </div>
+                  
+                  <div>
+                    <dt class="text-xs font-medium text-gray-500">Phone</dt>
+                    <dd class="text-sm text-gray-900">
+                      <%= @audit_log.user.phone || 'N/A' %>
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            <% else %>
+              <div class="text-center">
+                <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mx-auto">
+                  <i class="ph-robot text-gray-600 text-xl"></i>
+                </div>
+                <h4 class="text-lg font-medium text-gray-900 mt-2">System Action</h4>
+                <p class="text-sm text-gray-500">
+                  This action was performed automatically by the system
+                </p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+        
+        <!-- Timeline Context -->
+        <div class="bg-white rounded-lg shadow mt-6">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">Timeline Context</h3>
+          </div>
+          
+          <div class="p-6">
+            <% 
+              # Get related activities around this time
+              related_activities = AuditLog.for_organization(Current.organization)
+                                          .where(created_at: (@audit_log.created_at - 10.minutes)..(@audit_log.created_at + 10.minutes))
+                                          .where.not(id: @audit_log.id)
+                                          .limit(5)
+                                          .order(:created_at)
+            %>
+            
+            <% if related_activities.any? %>
+              <div class="space-y-3">
+                <% related_activities.each do |activity| %>
+                  <div class="flex items-start">
+                    <div class="w-2 h-2 bg-gray-300 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm text-gray-900">
+                        <%= activity.display_action %>
+                      </p>
+                      <p class="text-xs text-gray-500">
+                        <%= activity.user&.display_name || 'System' %> • 
+                        <%= time_ago_in_words(activity.created_at) %> ago
+                      </p>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            <% else %>
+              <p class="text-sm text-gray-500">
+                No related activities found in the surrounding timeframe.
+              </p>
+            <% end %>
+          </div>
+        </div>
+        
+        <!-- Actions -->
+        <div class="bg-white rounded-lg shadow mt-6">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">Actions</h3>
+          </div>
+          
+          <div class="p-6 space-y-3">
+            <button onclick="window.print()" 
+                    class="w-full btn-secondary text-left flex items-center">
+              <i class="ph-printer mr-2"></i>
+              Print Details
+            </button>
+            
+            <button onclick="copyToClipboard('<%= @audit_log.to_compliance_hash.to_json %>')"
+                    class="w-full btn-secondary text-left flex items-center">
+              <i class="ph-copy mr-2"></i>
+              Copy JSON
+            </button>
+            
+            <%= link_to audits_path(user_id: @audit_log.user_id),
+                       class: "w-full btn-secondary text-left flex items-center" do %>
+              <i class="ph-magnifying-glass mr-2"></i>
+              View User's Activities
+            <% end %>
+            
+            <% if @audit_log.auditable %>
+              <%= link_to audits_path(resource_type: @audit_log.resource_type, resource_id: @audit_log.resource_id),
+                         class: "w-full btn-secondary text-left flex items-center" do %>
+                <i class="ph-database mr-2"></i>
+                View Resource Activities
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(function() {
+    // Show a temporary success message
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="ph-check mr-2"></i>Copied!';
+    button.classList.add('bg-green-100', 'text-green-700');
+    
+    setTimeout(() => {
+      button.innerHTML = originalText;
+      button.classList.remove('bg-green-100', 'text-green-700');
+    }, 2000);
+  });
+}
+</script>

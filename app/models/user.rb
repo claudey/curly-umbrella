@@ -1,4 +1,6 @@
 class User < ApplicationRecord
+  audited except: [:encrypted_password, :mfa_secret, :backup_codes]
+
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_15_180637) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_15_184743) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -93,6 +93,31 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_180637) do
     t.index ["organization_id"], name: "index_audit_logs_on_organization_id"
     t.index ["user_id", "created_at"], name: "index_audit_logs_on_user_id_and_created_at"
     t.index ["user_id"], name: "index_audit_logs_on_user_id"
+  end
+
+  create_table "audits", force: :cascade do |t|
+    t.integer "auditable_id"
+    t.string "auditable_type"
+    t.integer "associated_id"
+    t.string "associated_type"
+    t.integer "user_id"
+    t.string "user_type"
+    t.string "username"
+    t.string "action"
+    t.text "audited_changes"
+    t.integer "version", default: 0
+    t.string "comment"
+    t.string "remote_address"
+    t.string "request_uuid"
+    t.datetime "created_at"
+    t.bigint "organization_id"
+    t.index ["associated_type", "associated_id"], name: "associated_index"
+    t.index ["auditable_type", "auditable_id", "version"], name: "auditable_index"
+    t.index ["created_at"], name: "index_audits_on_created_at"
+    t.index ["organization_id", "created_at"], name: "index_audits_on_organization_id_and_created_at"
+    t.index ["organization_id"], name: "index_audits_on_organization_id"
+    t.index ["request_uuid"], name: "index_audits_on_request_uuid"
+    t.index ["user_id", "user_type"], name: "user_index"
   end
 
   create_table "brokerage_agents", force: :cascade do |t|
@@ -595,6 +620,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_180637) do
   add_foreign_key "application_distributions", "users", column: "distributed_by_id"
   add_foreign_key "audit_logs", "organizations"
   add_foreign_key "audit_logs", "users"
+  add_foreign_key "audits", "organizations"
   add_foreign_key "brokerage_agents", "organizations"
   add_foreign_key "brokerage_agents", "users"
   add_foreign_key "clients", "organizations"

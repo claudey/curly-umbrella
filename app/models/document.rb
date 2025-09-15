@@ -1,6 +1,7 @@
 class Document < ApplicationRecord
   include Discard::Model
   acts_as_tenant :organization
+  audited except: [:checksum, :file_size]
 
   belongs_to :organization
   belongs_to :user

@@ -1,0 +1,267 @@
+<% content_for :title, "Compliance Report" %>
+
+<div class="min-h-screen bg-gray-50">
+  <!-- Header -->
+  <div class="bg-white shadow">
+    <div class="px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">
+            <i class="ph-certificate text-blue-600 mr-2"></i>
+            Compliance Report
+          </h1>
+          <p class="text-gray-600 mt-1">
+            Period: <%= @date_range[:start].strftime('%B %d, %Y') %> - <%= @date_range[:end].strftime('%B %d, %Y') %>
+          </p>
+        </div>
+        
+        <div class="flex items-center space-x-2">
+          <%= link_to audits_path, class: "btn-secondary" do %>
+            <i class="ph-arrow-left mr-2"></i>
+            Back to Audit Logs
+          <% end %>
+          
+          <%= link_to compliance_report_audits_path(format: 'pdf', start_date: @date_range[:start], end_date: @date_range[:end]),
+                     class: "btn-primary" do %>
+            <i class="ph-file-pdf mr-2"></i>
+            Export PDF
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="px-6 py-6">
+    <!-- Executive Summary -->
+    <div class="bg-white rounded-lg shadow mb-6">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-900">Executive Summary</h2>
+      </div>
+      
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div class="text-center">
+            <div class="text-3xl font-bold text-blue-600 mb-2">
+              <%= number_with_delimiter(@report_data[:total_activities]) %>
+            </div>
+            <div class="text-sm text-gray-600">Total Activities</div>
+          </div>
+          
+          <div class="text-center">
+            <div class="text-3xl font-bold text-yellow-600 mb-2">
+              <%= @report_data[:suspicious_activities] %>
+            </div>
+            <div class="text-sm text-gray-600">Suspicious Activities</div>
+          </div>
+          
+          <div class="text-3xl font-bold text-red-600 mb-2">
+            <%= @report_data[:failed_authorizations] %>
+          </div>
+          <div class="text-sm text-gray-600">Authorization Failures</div>
+          
+          <div class="text-center">
+            <div class="text-3xl font-bold text-green-600 mb-2">
+              <%= @report_data[:authentication_events] %>
+            </div>
+            <div class="text-sm text-gray-600">Authentication Events</div>
+          </div>
+        </div>
+        
+        <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+          <h3 class="text-lg font-semibold text-blue-900 mb-2">Compliance Status</h3>
+          <p class="text-blue-800">
+            <% if @report_data[:suspicious_activities] == 0 && @report_data[:failed_authorizations] < 5 %>
+              ✅ <strong>Compliant:</strong> No significant security concerns detected during this period.
+            <% elsif @report_data[:suspicious_activities] < 10 %>
+              ⚠️ <strong>Review Required:</strong> Some suspicious activities detected. Please review the details below.
+            <% else %>
+              🚨 <strong>Attention Required:</strong> High number of suspicious activities detected. Immediate review recommended.
+            <% end %>
+          </p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Activity Breakdown -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <!-- By Category -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">Activities by Category</h3>
+        </div>
+        
+        <div class="p-6">
+          <div class="space-y-4">
+            <% @report_data[:by_category].each do |category, count| %>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <div class="w-4 h-4 rounded-full mr-3 <%= category_color_class(category) %>"></div>
+                  <span class="text-sm font-medium text-gray-900">
+                    <%= category.humanize %>
+                  </span>
+                </div>
+                <div class="flex items-center">
+                  <span class="text-sm text-gray-600 mr-2"><%= count %></span>
+                  <div class="w-20 bg-gray-200 rounded-full h-2">
+                    <div class="bg-blue-600 h-2 rounded-full" 
+                         style="width: <%= (count.to_f / @report_data[:total_activities] * 100).round(1) %>%"></div>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+      
+      <!-- By Severity -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">Activities by Severity</h3>
+        </div>
+        
+        <div class="p-6">
+          <div class="space-y-4">
+            <% @report_data[:by_severity].each do |severity, count| %>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <div class="w-4 h-4 rounded-full mr-3 <%= severity_color_class(severity) %>"></div>
+                  <span class="text-sm font-medium text-gray-900">
+                    <%= severity.humanize %>
+                  </span>
+                </div>
+                <div class="flex items-center">
+                  <span class="text-sm text-gray-600 mr-2"><%= count %></span>
+                  <div class="w-20 bg-gray-200 rounded-full h-2">
+                    <div class="<%= severity_bar_class(severity) %> h-2 rounded-full" 
+                         style="width: <%= (count.to_f / @report_data[:total_activities] * 100).round(1) %>%"></div>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- User Activity Summary -->
+    <div class="bg-white rounded-lg shadow mb-6">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">User Activity Summary</h3>
+      </div>
+      
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h4 class="text-md font-semibold text-gray-900 mb-4">Most Active Users</h4>
+            <div class="space-y-3">
+              <% @report_data[:by_user].sort_by { |k, v| -v }.first(5).each do |user_email, count| %>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                      <i class="ph-user text-gray-600 text-sm"></i>
+                    </div>
+                    <span class="ml-3 text-sm text-gray-900"><%= user_email %></span>
+                  </div>
+                  <span class="text-sm text-gray-600"><%= pluralize(count, 'activity') %></span>
+                </div>
+              <% end %>
+            </div>
+          </div>
+          
+          <div>
+            <h4 class="text-md font-semibold text-gray-900 mb-4">Activity Distribution</h4>
+            <div class="space-y-2">
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Data Access:</span>
+                <span class="font-medium"><%= @report_data[:data_access_count] %></span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Authentication Events:</span>
+                <span class="font-medium"><%= @report_data[:authentication_events] %></span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Failed Authorizations:</span>
+                <span class="font-medium text-red-600"><%= @report_data[:failed_authorizations] %></span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Suspicious Activities:</span>
+                <span class="font-medium text-yellow-600"><%= @report_data[:suspicious_activities] %></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Recommendations -->
+    <div class="bg-white rounded-lg shadow">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">Security Recommendations</h3>
+      </div>
+      
+      <div class="p-6">
+        <div class="space-y-4">
+          <% if @report_data[:failed_authorizations] > 10 %>
+            <div class="flex items-start p-4 bg-red-50 rounded-lg">
+              <i class="ph-warning-circle text-red-500 text-xl mt-1 mr-3"></i>
+              <div>
+                <h4 class="font-semibold text-red-900">High Authorization Failures</h4>
+                <p class="text-red-800 text-sm mt-1">
+                  <%= @report_data[:failed_authorizations] %> authorization failures detected. 
+                  Review user permissions and consider implementing additional access controls.
+                </p>
+              </div>
+            </div>
+          <% end %>
+          
+          <% if @report_data[:suspicious_activities] > 5 %>
+            <div class="flex items-start p-4 bg-yellow-50 rounded-lg">
+              <i class="ph-shield-warning text-yellow-500 text-xl mt-1 mr-3"></i>
+              <div>
+                <h4 class="font-semibold text-yellow-900">Suspicious Activity Alert</h4>
+                <p class="text-yellow-800 text-sm mt-1">
+                  <%= @report_data[:suspicious_activities] %> suspicious activities detected. 
+                  Review the audit logs for potential security concerns.
+                </p>
+              </div>
+            </div>
+          <% end %>
+          
+          <div class="flex items-start p-4 bg-blue-50 rounded-lg">
+            <i class="ph-info text-blue-500 text-xl mt-1 mr-3"></i>
+            <div>
+              <h4 class="font-semibold text-blue-900">Regular Monitoring</h4>
+              <p class="text-blue-800 text-sm mt-1">
+                Continue regular monitoring of audit logs. Consider implementing automated alerts 
+                for critical security events.
+              </p>
+            </div>
+          </div>
+          
+          <div class="flex items-start p-4 bg-green-50 rounded-lg">
+            <i class="ph-check-circle text-green-500 text-xl mt-1 mr-3"></i>
+            <div>
+              <h4 class="font-semibold text-green-900">Best Practices</h4>
+              <p class="text-green-800 text-sm mt-1">
+                Maintain current security practices: regular password updates, 
+                multi-factor authentication where enabled, and user access reviews.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Report Footer -->
+    <div class="mt-8 text-center text-sm text-gray-500">
+      <p>
+        This report was generated on <%= Date.current.strftime('%B %d, %Y') %> 
+        for <%= Current.organization.name %>
+      </p>
+      <p>
+        Report covers the period from <%= @date_range[:start].strftime('%B %d, %Y') %> 
+        to <%= @date_range[:end].strftime('%B %d, %Y') %>
+      </p>
+    </div>
+  </div>
+</div>

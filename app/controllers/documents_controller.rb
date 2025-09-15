@@ -6,34 +6,68 @@ class DocumentsController < ApplicationController
   before_action :authorize_delete, only: [:destroy, :archive, :restore]
 
   def index
-    @documents = current_tenant_documents
-    @documents = apply_filters(@documents)
-    @documents = @documents.includes(:user, :archived_by, file_attachment: :blob)
-                            .page(params[:page])
-                            .per(20)
+    search_service = DocumentSearchService.new(current_tenant_documents, params, current_user)
+    @documents = search_service.search
+                               .includes(:user, :archived_by, file_attachment: :blob)
+                               .page(params[:page])
+                               .per(20)
+    
+    @facets = search_service.facets
+    @search_suggestions = search_service.search_suggestions if params[:search].present?
     
     @categories = Document::CATEGORIES
     @document_types = Document::DOCUMENT_TYPES
+    
+    respond_to do |format|
+      format.html
+      format.json do
+        render json: {
+          documents: @documents.map { |doc| document_json(doc) },
+          facets: @facets,
+          suggestions: @search_suggestions,
+          pagination: {
+            current_page: @documents.current_page,
+            total_pages: @documents.total_pages,
+            total_count: @documents.total_count
+          }
+        }
+      end
+    end
   end
 
   def archived
-    @documents = current_tenant_documents.archived
-    @documents = apply_filters(@documents)
-    @documents = @documents.includes(:user, :archived_by, file_attachment: :blob)
-                            .page(params[:page])
-                            .per(20)
+    search_service = DocumentSearchService.new(current_tenant_documents.archived, params, current_user)
+    @documents = search_service.search
+                               .includes(:user, :archived_by, file_attachment: :blob)
+                               .page(params[:page])
+                               .per(20)
+    
+    @facets = search_service.facets
+    @categories = Document::CATEGORIES
+    @document_types = Document::DOCUMENT_TYPES
     
     render :index
   end
 
   def expiring
-    @documents = current_tenant_documents.expiring_soon(30)
-    @documents = apply_filters(@documents)
-    @documents = @documents.includes(:user, :archived_by, file_attachment: :blob)
-                            .page(params[:page])
-                            .per(20)
+    search_service = DocumentSearchService.new(current_tenant_documents.expiring_soon(30), params, current_user)
+    @documents = search_service.search
+                               .includes(:user, :archived_by, file_attachment: :blob)
+                               .page(params[:page])
+                               .per(20)
+    
+    @facets = search_service.facets
+    @categories = Document::CATEGORIES
+    @document_types = Document::DOCUMENT_TYPES
     
     render :index
+  end
+
+  def search_suggestions
+    search_service = DocumentSearchService.new(current_tenant_documents, params, current_user)
+    suggestions = search_service.search_suggestions
+    
+    render json: { suggestions: suggestions }
   end
 
   def show
@@ -255,5 +289,33 @@ class DocumentsController < ApplicationController
       :is_public, :expires_at, :file, :documentable_type, :documentable_id,
       tags: [], metadata: {}
     )
+  end
+
+  def document_json(document)
+    {
+      id: document.id,
+      name: document.name,
+      description: document.description,
+      document_type: document.document_type,
+      category: document.category,
+      access_level: document.access_level,
+      file_size: document.human_file_size,
+      content_type: document.content_type,
+      created_at: document.created_at.strftime('%B %d, %Y'),
+      updated_at: document.updated_at.strftime('%B %d, %Y'),
+      expires_at: document.expires_at&.strftime('%B %d, %Y'),
+      is_archived: document.is_archived?,
+      is_current: document.is_current?,
+      tags: document.tags,
+      user: {
+        name: document.user.display_name,
+        email: document.user.email
+      },
+      urls: {
+        show: document_path(document),
+        download: document.file_attached? ? download_document_path(document) : nil,
+        edit: document.can_be_edited_by?(current_user) ? edit_document_path(document) : nil
+      }
+    }
   end
 end

@@ -91,3 +91,9 @@ gem "rqrcode", "~> 2.2"
 # SMS and communication
 gem "twilio-ruby", "~> 7.3"
 gem "httparty", "~> 0.22"
+
+# Audit logging (using audited instead of paper_trail for Rails 8 compatibility)
+gem "audited", "~> 5.8"
+
+# Pagination
+gem "kaminari", "~> 1.2"

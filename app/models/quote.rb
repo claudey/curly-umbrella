@@ -1,6 +1,7 @@
 class Quote < ApplicationRecord
   include Discard::Model
   acts_as_tenant :organization
+  audited
 
   belongs_to :insurance_application
   belongs_to :insurance_company

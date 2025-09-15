@@ -1,4 +1,6 @@
 class Organization < ApplicationRecord
+  audited
+
   has_many :users, dependent: :destroy
   has_many :quotes, dependent: :destroy
   has_many :motor_applications, dependent: :destroy

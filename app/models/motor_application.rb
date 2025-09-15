@@ -1,6 +1,7 @@
 class MotorApplication < ApplicationRecord
   include Discard::Model
   acts_as_tenant :organization
+  audited
 
   belongs_to :organization
   belongs_to :client
