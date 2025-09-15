@@ -13,36 +13,36 @@
         line-height: 1.6;
         color: #1f2937;
       }
-      
+
       .email-header {
         background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
         padding: 32px 24px;
         text-align: center;
       }
-      
+
       .email-logo {
         font-size: 24px;
         font-weight: bold;
         color: white;
         margin: 0;
       }
-      
+
       .email-content {
         padding: 32px 24px;
       }
-      
+
       .email-title {
         font-size: 24px;
         font-weight: 600;
         margin-bottom: 16px;
         color: #1f2937;
       }
-      
+
       .email-text {
         margin-bottom: 16px;
         color: #4b5563;
       }
-      
+
       .btn {
         display: inline-block;
         padding: 12px 24px;
@@ -53,73 +53,73 @@
         font-weight: 500;
         margin: 16px 0;
       }
-      
+
       .btn:hover {
         background-color: #2563eb;
       }
-      
+
       .alert {
         padding: 16px;
         border-radius: 8px;
         margin: 16px 0;
       }
-      
+
       .alert-info {
         background-color: #dbeafe;
         border-left: 4px solid #3b82f6;
         color: #1e40af;
       }
-      
+
       .alert-success {
         background-color: #dcfce7;
         border-left: 4px solid #16a34a;
         color: #166534;
       }
-      
+
       .alert-warning {
         background-color: #fef3c7;
         border-left: 4px solid #d97706;
         color: #92400e;
       }
-      
+
       .email-footer {
         background-color: #f9fafb;
         padding: 24px;
         text-align: center;
         border-top: 1px solid #e5e7eb;
       }
-      
+
       .email-footer-text {
         font-size: 14px;
         color: #6b7280;
         margin: 4px 0;
       }
-      
+
       .email-divider {
         height: 1px;
         background-color: #e5e7eb;
         margin: 24px 0;
       }
-      
+
       .details-table {
         width: 100%;
         border-collapse: collapse;
         margin: 16px 0;
       }
-      
+
       .details-table th,
       .details-table td {
         padding: 12px;
         text-align: left;
         border-bottom: 1px solid #e5e7eb;
       }
-      
+
       .details-table th {
         background-color: #f9fafb;
         font-weight: 600;
         color: #374151;
       }
-      
+
       .details-table td {
         color: #4b5563;
       }
@@ -131,17 +131,17 @@
       <div class="email-header">
         <h1 class="email-logo">BrokerSync</h1>
       </div>
-      
+
       <div class="email-content">
         <%= yield %>
       </div>
-      
+
       <div class="email-footer">
         <p class="email-footer-text">
           This email was sent by BrokerSync. If you have any questions, please contact our support team.
         </p>
         <p class="email-footer-text">
-          © 2025 BrokerSync. All rights reserved.
+          © <%= Time.current.year %> BrokerSync. All rights reserved.
         </p>
       </div>
     </div>
