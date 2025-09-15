@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_15_084448) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_15_124718) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -441,6 +441,25 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_084448) do
     t.index ["system_role"], name: "index_roles_on_system_role"
   end
 
+  create_table "sms_logs", force: :cascade do |t|
+    t.string "to", null: false
+    t.string "from"
+    t.text "body", null: false
+    t.string "status", default: "pending", null: false
+    t.string "external_id"
+    t.text "error_message"
+    t.datetime "sent_at"
+    t.bigint "organization_id", null: false
+    t.bigint "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id", "sent_at"], name: "index_sms_logs_on_organization_id_and_sent_at"
+    t.index ["organization_id"], name: "index_sms_logs_on_organization_id"
+    t.index ["sent_at"], name: "index_sms_logs_on_sent_at"
+    t.index ["status"], name: "index_sms_logs_on_status"
+    t.index ["user_id"], name: "index_sms_logs_on_user_id"
+  end
+
   create_table "user_roles", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "role_id", null: false
@@ -478,10 +497,36 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_084448) do
     t.text "backup_codes"
     t.datetime "mfa_setup_at"
     t.datetime "last_mfa_code_used_at"
+    t.string "phone_number"
+    t.boolean "sms_enabled", default: false, null: false
+    t.string "whatsapp_number"
+    t.boolean "whatsapp_enabled", default: false, null: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["mfa_secret"], name: "index_users_on_mfa_secret"
     t.index ["organization_id"], name: "index_users_on_organization_id"
+    t.index ["phone_number"], name: "index_users_on_phone_number"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+    t.index ["whatsapp_number"], name: "index_users_on_whatsapp_number"
+  end
+
+  create_table "whatsapp_logs", force: :cascade do |t|
+    t.string "to", null: false
+    t.text "message", null: false
+    t.string "message_type", default: "text", null: false
+    t.string "status", default: "pending", null: false
+    t.string "external_id"
+    t.text "error_message"
+    t.datetime "sent_at"
+    t.bigint "organization_id", null: false
+    t.bigint "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["external_id"], name: "index_whatsapp_logs_on_external_id"
+    t.index ["organization_id", "sent_at"], name: "index_whatsapp_logs_on_organization_id_and_sent_at"
+    t.index ["organization_id"], name: "index_whatsapp_logs_on_organization_id"
+    t.index ["sent_at"], name: "index_whatsapp_logs_on_sent_at"
+    t.index ["status"], name: "index_whatsapp_logs_on_status"
+    t.index ["user_id"], name: "index_whatsapp_logs_on_user_id"
   end
 
   add_foreign_key "api_keys", "organizations"
@@ -523,8 +568,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_084448) do
   add_foreign_key "role_permissions", "roles"
   add_foreign_key "role_permissions", "users", column: "granted_by_id"
   add_foreign_key "roles", "organizations"
+  add_foreign_key "sms_logs", "organizations"
+  add_foreign_key "sms_logs", "users"
   add_foreign_key "user_roles", "roles"
   add_foreign_key "user_roles", "users"
   add_foreign_key "user_roles", "users", column: "granted_by_id"
   add_foreign_key "users", "organizations"
+  add_foreign_key "whatsapp_logs", "organizations"
+  add_foreign_key "whatsapp_logs", "users"
 end

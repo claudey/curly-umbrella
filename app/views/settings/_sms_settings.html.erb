@@ -1,0 +1,155 @@
+<div class="card bg-base-100 shadow">
+  <div class="card-body">
+    <h3 class="card-title flex items-center gap-2">
+      <i class="ph ph-device-mobile text-primary"></i>
+      SMS Notifications
+    </h3>
+    
+    <%= form_with model: current_user, url: settings_path, method: :patch, class: "space-y-4", data: { turbo_frame: "sms_settings" } do |form| %>
+      <div class="form-control">
+        <label class="label">
+          <span class="label-text">Phone Number</span>
+          <span class="label-text-alt">Required for SMS notifications</span>
+        </label>
+        <%= form.telephone_field :phone_number,
+                                 placeholder: "+1 (555) 123-4567",
+                                 class: "input input-bordered",
+                                 data: { 
+                                   phone_mask: true,
+                                   action: "input->phone-mask#formatPhone" 
+                                 } %>
+        <% if current_user.phone_number.present? %>
+          <label class="label">
+            <span class="label-text-alt text-success">
+              <i class="ph ph-check-circle"></i>
+              Phone number verified
+            </span>
+          </label>
+        <% end %>
+      </div>
+      
+      <div class="form-control">
+        <label class="label cursor-pointer">
+          <span class="label-text">Enable SMS Notifications</span>
+          <%= form.check_box :sms_enabled, 
+                            class: "toggle toggle-primary",
+                            data: { action: "change->sms-settings#toggleSms" } %>
+        </label>
+        <label class="label">
+          <span class="label-text-alt">
+            Receive important notifications via SMS
+          </span>
+        </label>
+      </div>
+      
+      <% if current_user.sms_enabled? %>
+        <div class="bg-base-200 p-4 rounded-lg" data-sms-settings-target="preferences">
+          <h4 class="font-medium mb-3">SMS Notification Types</h4>
+          
+          <div class="space-y-2">
+            <% notification_types = [
+              { key: 'application_submitted', label: 'New Applications', description: 'When a new insurance application is submitted' },
+              { key: 'quote_received', label: 'Quote Updates', description: 'When quotes are received or updated' },
+              { key: 'quote_deadline_reminder', label: 'Deadline Reminders', description: 'Reminders about upcoming quote deadlines' },
+              { key: 'application_status_updated', label: 'Status Changes', description: 'When application status changes' },
+              { key: 'urgent_notification', label: 'Urgent Alerts', description: 'Critical notifications requiring immediate attention' }
+            ] %>
+            
+            <% notification_types.each do |notification| %>
+              <div class="form-control">
+                <label class="label cursor-pointer justify-start gap-3">
+                  <%= check_box_tag "sms_notifications[#{notification[:key]}]",
+                                   "1",
+                                   current_user.notification_preferences&.send_sms_for?(notification[:key]) || false,
+                                   class: "checkbox checkbox-sm checkbox-primary" %>
+                  <div class="flex-1">
+                    <div class="font-medium text-sm"><%= notification[:label] %></div>
+                    <div class="text-xs text-base-content/60"><%= notification[:description] %></div>
+                  </div>
+                </label>
+              </div>
+            <% end %>
+          </div>
+          
+          <div class="alert alert-info mt-4">
+            <i class="ph ph-info"></i>
+            <div class="text-sm">
+              <p class="font-medium">SMS Usage Guidelines</p>
+              <ul class="list-disc list-inside text-xs mt-1 text-base-content/70">
+                <li>Standard messaging rates may apply</li>
+                <li>Messages are sent only during business hours (8 AM - 8 PM)</li>
+                <li>You can opt out at any time by replying STOP</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      <% end %>
+      
+      <div class="card-actions justify-end">
+        <%= form.submit "Save SMS Settings", 
+                       class: "btn btn-primary",
+                       data: { disable_with: "Saving..." } %>
+      </div>
+    <% end %>
+    
+    <% if current_user.phone_number.present? && !current_user.phone_verified? %>
+      <div class="divider">Verification</div>
+      
+      <%= form_with url: send_phone_verification_path, method: :post, class: "flex gap-2" do |form| %>
+        <%= form.submit "Send Verification Code", 
+                       class: "btn btn-outline btn-sm",
+                       data: { disable_with: "Sending..." } %>
+      <% end %>
+      
+      <div class="text-xs text-base-content/60 mt-2">
+        Click to send a verification code to your phone number
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Phone number formatting
+    const phoneInput = document.querySelector('input[data-phone-mask]');
+    if (phoneInput) {
+      phoneInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        
+        if (value.length > 0) {
+          if (value.length <= 3) {
+            value = `(${value}`;
+          } else if (value.length <= 6) {
+            value = `(${value.slice(0, 3)}) ${value.slice(3)}`;
+          } else {
+            value = `(${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6, 10)}`;
+          }
+          
+          // Add country code if not present
+          if (!e.target.value.startsWith('+1')) {
+            value = '+1 ' + value;
+          }
+        }
+        
+        e.target.value = value;
+      });
+    }
+    
+    // SMS settings toggle
+    const smsToggle = document.querySelector('input[name="user[sms_enabled]"]');
+    const smsPreferences = document.querySelector('[data-sms-settings-target="preferences"]');
+    
+    if (smsToggle && smsPreferences) {
+      function togglePreferences() {
+        if (smsToggle.checked) {
+          smsPreferences.style.display = 'block';
+        } else {
+          smsPreferences.style.display = 'none';
+        }
+      }
+      
+      smsToggle.addEventListener('change', togglePreferences);
+      togglePreferences(); // Initialize
+    }
+  });
+</script>
