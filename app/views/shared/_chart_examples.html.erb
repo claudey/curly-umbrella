@@ -1,0 +1,274 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="text-center mb-12">
+    <h1 class="text-4xl font-bold text-gray-900 mb-4">Advanced Chart Components</h1>
+    <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+      Comprehensive data visualization components built with D3.js, providing interactive and responsive charts for analytics and reporting.
+    </p>
+  </div>
+
+  <!-- Chart Features Overview -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+    <div class="text-center p-6 bg-blue-50 rounded-lg">
+      <div class="w-12 h-12 mx-auto mb-4 text-blue-600">
+        <%= icon("chart-bar", class: "w-12 h-12") %>
+      </div>
+      <h3 class="font-semibold text-gray-900 mb-2">Interactive Charts</h3>
+      <p class="text-sm text-gray-600">Hover effects, tooltips, and click events</p>
+    </div>
+    
+    <div class="text-center p-6 bg-green-50 rounded-lg">
+      <div class="w-12 h-12 mx-auto mb-4 text-green-600">
+        <%= icon("device-phone-mobile", class: "w-12 h-12") %>
+      </div>
+      <h3 class="font-semibold text-gray-900 mb-2">Responsive Design</h3>
+      <p class="text-sm text-gray-600">Adapts to all screen sizes automatically</p>
+    </div>
+    
+    <div class="text-center p-6 bg-purple-50 rounded-lg">
+      <div class="w-12 h-12 mx-auto mb-4 text-purple-600">
+        <%= icon("sparkles", class: "w-12 h-12") %>
+      </div>
+      <h3 class="font-semibold text-gray-900 mb-2">Smooth Animations</h3>
+      <p class="text-sm text-gray-600">Engaging transitions and loading effects</p>
+    </div>
+    
+    <div class="text-center p-6 bg-orange-50 rounded-lg">
+      <div class="w-12 h-12 mx-auto mb-4 text-orange-600">
+        <%= icon("cog-6-tooth", class: "w-12 h-12") %>
+      </div>
+      <h3 class="font-semibold text-gray-900 mb-2">Highly Configurable</h3>
+      <p class="text-sm text-gray-600">Extensive customization options</p>
+    </div>
+  </div>
+
+  <!-- Sample Data for Examples -->
+  <%
+    # Sample data for demonstrations
+    sample_trend_data = [
+      { date: '2024-01-01', value: 12500 },
+      { date: '2024-01-02', value: 15200 },
+      { date: '2024-01-03', value: 14800 },
+      { date: '2024-01-04', value: 16700 },
+      { date: '2024-01-05', value: 18200 },
+      { date: '2024-01-06', value: 17900 },
+      { date: '2024-01-07', value: 19400 }
+    ]
+    
+    sample_comparison_data = [
+      { label: 'Fire Insurance', value: 45000 },
+      { label: 'Motor Insurance', value: 78000 },
+      { label: 'Liability Insurance', value: 32000 },
+      { label: 'General Accident', value: 23000 },
+      { label: 'Bonds', value: 18000 }
+    ]
+    
+    sample_distribution_data = [
+      { label: 'Approved', value: 65 },
+      { label: 'Pending', value: 25 },
+      { label: 'Rejected', value: 8 },
+      { label: 'Expired', value: 2 }
+    ]
+    
+    sample_volume_data = [
+      { date: '2024-01-01', value: 8500 },
+      { date: '2024-01-02', value: 12200 },
+      { date: '2024-01-03', value: 15800 },
+      { date: '2024-01-04', value: 18700 },
+      { date: '2024-01-05', value: 21200 },
+      { date: '2024-01-06', value: 19900 },
+      { date: '2024-01-07', value: 23400 }
+    ]
+  %>
+
+  <!-- Chart Examples Grid -->
+  <%= dashboard_chart_grid(columns: 2) do %>
+    <!-- Line Chart Example -->
+    <div class="chart-container animate">
+      <%= chart_title_and_subtitle("Line Chart", "Trend analysis with smooth curves and interactive points") %>
+      <%= line_chart sample_trend_data, 
+          timeline_chart_options(
+            height: 300,
+            show_points: true,
+            show_grid: true,
+            animate: true,
+            curve: 'curveMonotoneX'
+          ) %>
+      <div class="mt-4 p-3 bg-gray-50 rounded text-sm text-gray-600">
+        <strong>Use case:</strong> Time series data, performance trends, growth metrics
+      </div>
+    </div>
+
+    <!-- Bar Chart Example -->
+    <div class="chart-container animate">
+      <%= chart_title_and_subtitle("Bar Chart", "Comparison of different categories with value labels") %>
+      <%= bar_chart sample_comparison_data, 
+          currency_chart_options(
+            height: 300,
+            orientation: 'vertical',
+            show_values: true,
+            show_grid: true,
+            color_scheme: 'primary'
+          ) %>
+      <div class="mt-4 p-3 bg-gray-50 rounded text-sm text-gray-600">
+        <strong>Use case:</strong> Category comparisons, rankings, performance by group
+      </div>
+    </div>
+
+    <!-- Pie Chart Example -->
+    <div class="chart-container animate">
+      <%= chart_title_and_subtitle("Pie Chart", "Distribution analysis with percentages and legend") %>
+      <%= pie_chart sample_distribution_data, 
+          percentage_chart_options(
+            height: 300,
+            show_legend: true,
+            show_percentages: true,
+            show_labels: true,
+            color_scheme: 'pastel'
+          ) %>
+      <div class="mt-4 p-3 bg-gray-50 rounded text-sm text-gray-600">
+        <strong>Use case:</strong> Part-to-whole relationships, status distributions, market share
+      </div>
+    </div>
+
+    <!-- Area Chart Example -->
+    <div class="chart-container animate">
+      <%= chart_title_and_subtitle("Area Chart", "Volume visualization with gradient fill and line overlay") %>
+      <%= area_chart sample_volume_data, 
+          timeline_chart_options(
+            height: 300,
+            show_line: true,
+            show_points: false,
+            gradient: true,
+            fill_opacity: 0.4,
+            curve: 'curveCardinal'
+          ) %>
+      <div class="mt-4 p-3 bg-gray-50 rounded text-sm text-gray-600">
+        <strong>Use case:</strong> Volume trends, cumulative data, stacked metrics
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Advanced Examples -->
+  <div class="mt-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-8 text-center">Advanced Configurations</h2>
+    
+    <%= dashboard_chart_grid(columns: 1) do %>
+      <!-- Horizontal Bar Chart -->
+      <div class="chart-container animate">
+        <%= chart_title_and_subtitle("Horizontal Bar Chart", "Alternative layout for better label readability") %>
+        <%= bar_chart sample_comparison_data, 
+            currency_chart_options(
+              height: 400,
+              orientation: 'horizontal',
+              show_values: true,
+              show_grid: true,
+              color_scheme: 'primary'
+            ) %>
+      </div>
+
+      <!-- Donut Chart -->
+      <div class="chart-container animate">
+        <%= chart_title_and_subtitle("Donut Chart", "Pie chart variation with center space for additional info") %>
+        <%= pie_chart sample_distribution_data, 
+            percentage_chart_options(
+              height: 400,
+              inner_radius: 80,
+              show_legend: true,
+              show_percentages: true,
+              color_scheme: 'categorical'
+            ) %>
+      </div>
+
+      <!-- Multi-Series Line Chart (Simulated with overlapping) -->
+      <div class="chart-container animate">
+        <%= chart_title_and_subtitle("Advanced Area Chart", "Enhanced styling with custom gradients and smooth animations") %>
+        <%= area_chart sample_volume_data, 
+            timeline_chart_options(
+              height: 400,
+              show_line: true,
+              show_points: true,
+              gradient: true,
+              fill_opacity: 0.3,
+              curve: 'curveBasis',
+              animate: true
+            ) %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Implementation Examples -->
+  <div class="mt-12 bg-gray-50 rounded-lg p-8">
+    <h2 class="text-2xl font-bold text-gray-900 mb-6">Implementation Examples</h2>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- HTML Usage -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">HTML Helper Usage</h3>
+        <pre class="bg-white rounded border p-4 text-sm overflow-x-auto"><code>&lt;%= line_chart data, 
+    timeline_chart_options(
+      height: 300,
+      show_points: true,
+      animate: true
+    ) %&gt;
+
+&lt;%= bar_chart comparison_data,
+    currency_chart_options(
+      orientation: 'vertical',
+      show_values: true
+    ) %&gt;</code></pre>
+      </div>
+      
+      <!-- Data Format -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Expected Data Format</h3>
+        <pre class="bg-white rounded border p-4 text-sm overflow-x-auto"><code># Line/Area Charts
+[
+  { date: "2024-01-01", value: 1250 },
+  { date: "2024-01-02", value: 1520 }
+]
+
+# Bar/Pie Charts  
+[
+  { label: "Category A", value: 4500 },
+  { label: "Category B", value: 7800 }
+]</code></pre>
+      </div>
+    </div>
+    
+    <!-- Configuration Options -->
+    <div class="mt-8">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Common Configuration Options</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="bg-white rounded border p-4">
+          <h4 class="font-medium text-gray-900 mb-2">Appearance</h4>
+          <ul class="text-sm text-gray-600 space-y-1">
+            <li>• <code>height</code>: Chart height</li>
+            <li>• <code>color_scheme</code>: Color palette</li>
+            <li>• <code>gradient</code>: Enable gradients</li>
+            <li>• <code>animate</code>: Animation effects</li>
+          </ul>
+        </div>
+        
+        <div class="bg-white rounded border p-4">
+          <h4 class="font-medium text-gray-900 mb-2">Features</h4>
+          <ul class="text-sm text-gray-600 space-y-1">
+            <li>• <code>show_grid</code>: Grid lines</li>
+            <li>• <code>show_points</code>: Data points</li>
+            <li>• <code>show_legend</code>: Legend display</li>
+            <li>• <code>responsive</code>: Auto-resize</li>
+          </ul>
+        </div>
+        
+        <div class="bg-white rounded border p-4">
+          <h4 class="font-medium text-gray-900 mb-2">Data Keys</h4>
+          <ul class="text-sm text-gray-600 space-y-1">
+            <li>• <code>x_key</code>: X-axis field</li>
+            <li>• <code>y_key</code>: Y-axis field</li>
+            <li>• <code>label_key</code>: Category field</li>
+            <li>• <code>value_key</code>: Value field</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -204,8 +204,83 @@
     </div>
   <% end %>
 
+  <!-- Analytics Charts -->
+  <div class="mt-8">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-2xl font-bold text-gray-900">Analytics Dashboard</h2>
+      <div class="text-sm text-gray-500">
+        Data reflects your company's activity
+      </div>
+    </div>
+    
+    <!-- Chart Grid -->
+    <%= dashboard_chart_grid(columns: 2) do %>
+      <!-- Quote Volume Trend -->
+      <div class="chart-container">
+        <%= chart_title_and_subtitle("Quote Volume Trend", "Premium amounts over the last 30 days") %>
+        <%= area_chart @quote_volume_data, 
+            timeline_chart_options(
+              height: 300,
+              show_line: true,
+              show_points: false,
+              gradient: true,
+              fill_opacity: 0.4
+            ) %>
+      </div>
+      
+      <!-- Quote Status Distribution -->
+      <div class="chart-container">
+        <%= chart_title_and_subtitle("Quote Status Distribution", "Breakdown of quote statuses") %>
+        <%= pie_chart @quote_status_data, 
+            percentage_chart_options(
+              height: 300,
+              show_legend: true,
+              show_percentages: true,
+              color_scheme: 'primary'
+            ) %>
+      </div>
+      
+      <!-- Coverage Type Breakdown -->
+      <div class="chart-container">
+        <%= chart_title_and_subtitle("Coverage Type Analysis", "Applications by coverage type") %>
+        <%= bar_chart @coverage_type_data, 
+            currency_chart_options(
+              height: 300,
+              orientation: 'vertical',
+              show_values: true,
+              color_scheme: 'pastel'
+            ) %>
+      </div>
+      
+      <!-- Acceptance Rate Trend -->
+      <div class="chart-container">
+        <%= chart_title_and_subtitle("Quote Acceptance Rate", "Weekly acceptance rate percentage") %>
+        <%= line_chart @acceptance_rate_data, 
+            timeline_chart_options(
+              height: 300,
+              show_points: true,
+              show_grid: true,
+              curve: 'curveMonotoneX'
+            ) %>
+      </div>
+    <% end %>
+    
+    <!-- Monthly Premium Comparison -->
+    <div class="chart-container mt-6">
+      <%= chart_title_and_subtitle("Monthly Premium Volume", "Premium amounts comparison over the last 6 months") %>
+      <%= bar_chart @monthly_premium_data, 
+          currency_chart_options(
+            height: 350,
+            orientation: 'vertical',
+            show_values: true,
+            show_grid: true,
+            color_scheme: 'primary'
+          ) %>
+    </div>
+  </div>
+
   <!-- Quick Actions -->
-  <div class="card bg-base-100 shadow-sm mt-6">
+  <div class="card bg-base-100 shadow-sm mt-8">
     <div class="card-body">
       <h3 class="card-title mb-4">Quick Actions</h3>
       
@@ -233,11 +308,11 @@
         </div>
         
         <div class="text-center p-4 border-2 border-dashed border-base-300 rounded-lg hover:border-info transition-colors">
-          <a href="#" class="block text-decoration-none">
+          <a href="#analytics-section" class="block text-decoration-none" onclick="document.getElementById('analytics-section').scrollIntoView({behavior: 'smooth'});">
             <div class="w-12 h-12 mx-auto mb-2 text-info">
               <%= icon("chart-bar", class: "w-12 h-12") %>
             </div>
-            <div class="font-medium">View Reports</div>
+            <div class="font-medium">View Analytics</div>
             <div class="text-sm text-gray-600">Analyze performance</div>
           </a>
         </div>

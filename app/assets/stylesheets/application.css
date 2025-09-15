@@ -11,3 +11,6 @@
 
 /* Print styles */
 @import "print.css";
+
+/* Chart styles */
+@import "charts.css";

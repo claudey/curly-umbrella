@@ -18,6 +18,9 @@ class InsuranceCompanies::PortalController < ApplicationController
     @recent_applications = pending_applications.limit(5)
     @recent_quotes = current_company_quotes.recent.limit(5)
     @expiring_quotes = current_company_quotes.expiring_soon.limit(3)
+    
+    # Analytics data for charts
+    prepare_analytics_data
   end
 
   def applications
@@ -98,6 +101,52 @@ class InsuranceCompanies::PortalController < ApplicationController
   end
 
   private
+
+  def prepare_analytics_data
+    # Quote volume trend (last 30 days)
+    @quote_volume_data = current_company_quotes
+      .where(created_at: 30.days.ago..Time.current)
+      .group_by_day(:created_at)
+      .sum(:premium_amount)
+      .map { |date, amount| { date: date.strftime("%Y-%m-%d"), value: amount.to_f } }
+    
+    # Quote status distribution
+    @quote_status_data = current_company_quotes
+      .group(:status)
+      .count
+      .map { |status, count| { label: status.humanize, value: count.to_f } }
+    
+    # Coverage type breakdown
+    @coverage_type_data = current_company_quotes
+      .joins(:motor_application)
+      .group('motor_applications.coverage_type')
+      .count
+      .map { |type, count| { label: type&.humanize || 'Unknown', value: count.to_f } }
+    
+    # Monthly premium comparison (last 6 months)
+    @monthly_premium_data = current_company_quotes
+      .where(created_at: 6.months.ago..Time.current)
+      .group_by_month(:created_at)
+      .sum(:premium_amount)
+      .map { |month, amount| { label: month.strftime("%b %Y"), value: amount.to_f } }
+    
+    # Quote acceptance rate trend (last 12 weeks)
+    @acceptance_rate_data = []
+    12.times do |i|
+      week_start = (11 - i).weeks.ago.beginning_of_week
+      week_end = week_start.end_of_week
+      
+      total_quotes = current_company_quotes.where(created_at: week_start..week_end).count
+      accepted_quotes = current_company_quotes.where(created_at: week_start..week_end, status: 'accepted').count
+      
+      rate = total_quotes > 0 ? (accepted_quotes.to_f / total_quotes * 100) : 0
+      
+      @acceptance_rate_data << {
+        date: week_start.strftime("%Y-%m-%d"),
+        value: rate.round(1)
+      }
+    end
+  end
 
   def ensure_insurance_company_user
     unless current_user.insurance_company?

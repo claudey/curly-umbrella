@@ -8,5 +8,9 @@ pin_all_from "app/javascript/controllers", under: "controllers"
 
 # Pin Lexxy for rich text editing
 pin "lexxy", to: "https://cdn.jsdelivr.net/npm/lexxy@latest/dist/lexxy.js"
+
+# Pin D3.js for data visualization
+pin "d3", to: "https://cdn.jsdelivr.net/npm/d3@7/+esm"
+
 pin "@rails/actioncable", to: "actioncable.esm.js"
 pin_all_from "app/javascript/channels", under: "channels"
