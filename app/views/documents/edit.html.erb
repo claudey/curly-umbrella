@@ -1,4 +1,250 @@
-<div>
-  <h1 class="font-bold text-4xl">Documents#edit</h1>
-  <p>Find me in app/views/documents/edit.html.erb</p>
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h1 class="h3 mb-1">Edit Document</h1>
+        <p class="text-muted mb-0"><%= @document.name %></p>
+      </div>
+      <%= link_to "Cancel", @document, class: "btn btn-outline-secondary" %>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <%= form_with model: @document, local: true, multipart: true, class: "needs-validation", novalidate: true do |form| %>
+          <% if @document.errors.any? %>
+            <div class="alert alert-danger" role="alert">
+              <h6 class="alert-heading">Please correct the following errors:</h6>
+              <ul class="mb-0">
+                <% @document.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <!-- Current File Information -->
+          <div class="alert alert-info mb-4">
+            <div class="d-flex align-items-center">
+              <i class="<%= document_icon_class(@document.document_type) %> fa-2x me-3"></i>
+              <div>
+                <strong>Current File:</strong> <%= @document.name %> (v<%= @document.version %>)<br>
+                <small class="text-muted">
+                  <%= @document.human_file_size %> • 
+                  <%= @document.content_type || 'Unknown type' %> • 
+                  Created <%= @document.created_at.strftime('%B %d, %Y') %>
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <!-- File Replacement -->
+          <div class="card bg-light mb-4">
+            <div class="card-header">
+              <h6 class="card-title mb-0">
+                <i class="fas fa-upload me-2"></i>Replace File (Optional)
+              </h6>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <%= form.file_field :file, class: "form-control", 
+                                   accept: ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif" %>
+                <div class="form-text">
+                  <strong>Note:</strong> Uploading a new file will create a new version (v<%= @document.version + 1 %>). 
+                  Leave blank to keep the current file and only update document information.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Document Information -->
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="document_name" class="form-label">Document Name <span class="text-danger">*</span></label>
+                <%= form.text_field :name, class: "form-control", required: true, 
+                                   placeholder: "Enter a descriptive name for the document" %>
+                <div class="invalid-feedback">
+                  Document name is required.
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="document_document_type" class="form-label">Document Type <span class="text-danger">*</span></label>
+                <%= form.select :document_type, 
+                               options_for_select(Document::DOCUMENT_TYPES.map { |type| [type.humanize, type] }, @document.document_type),
+                               { prompt: "Select document type" }, 
+                               { class: "form-select", required: true } %>
+                <div class="invalid-feedback">
+                  Please select a document type.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="document_category" class="form-label">Category</label>
+                <%= form.select :category, 
+                               options_for_select([['Select category', '']] + Document::CATEGORIES.map { |cat| [cat.humanize, cat] }, @document.category),
+                               {}, { class: "form-select" } %>
+                <div class="form-text">Optional: Categorize the document for better organization.</div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="document_access_level" class="form-label">Access Level <span class="text-danger">*</span></label>
+                <%= form.select :access_level, 
+                               options_for_select([
+                                 ['Private', 'private'],
+                                 ['Organization', 'organization'],
+                                 ['Public', 'public']
+                               ], @document.access_level),
+                               {}, { class: "form-select", required: true } %>
+                <div class="form-text">
+                  Private: Only you can access • Organization: Your organization members • Public: Everyone
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="mb-3">
+            <label for="document_description" class="form-label">Description</label>
+            <%= form.text_area :description, class: "form-control", rows: 4, 
+                              placeholder: "Optional: Describe the contents or purpose of this document" %>
+            <div class="form-text">A brief description helps others understand the document's content and purpose.</div>
+          </div>
+
+          <!-- Tags -->
+          <div class="mb-3">
+            <label for="document_tags" class="form-label">Tags</label>
+            <%= form.text_field :tags, class: "form-control", 
+                               value: (@document.tags || []).join(', '),
+                               placeholder: "Enter tags separated by commas (e.g., contract, legal, insurance)" %>
+            <div class="form-text">Add tags to make the document easier to find. Separate multiple tags with commas.</div>
+          </div>
+
+          <!-- Advanced Options -->
+          <div class="card bg-light mb-4">
+            <div class="card-header">
+              <h6 class="card-title mb-0">
+                <button class="btn btn-link p-0 text-decoration-none" type="button" data-bs-toggle="collapse" 
+                        data-bs-target="#advancedOptions" aria-expanded="false">
+                  <i class="fas fa-chevron-right me-1"></i> Advanced Options
+                </button>
+              </h6>
+            </div>
+            
+            <div class="collapse" id="advancedOptions">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="document_expires_at" class="form-label">Expiration Date</label>
+                      <%= form.date_field :expires_at, class: "form-control", min: Date.current %>
+                      <div class="form-text">Optional: Set when this document should expire.</div>
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-6">
+                    <div class="form-check mt-4">
+                      <%= form.check_box :is_public, class: "form-check-input" %>
+                      <label class="form-check-label" for="document_is_public">
+                        Make this document publicly accessible
+                      </label>
+                      <div class="form-text">When checked, this document can be accessed without authentication.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Archive Status -->
+          <% if @document.is_archived? %>
+            <div class="alert alert-warning mb-4">
+              <div class="d-flex align-items-center">
+                <i class="fas fa-archive fa-2x me-3"></i>
+                <div>
+                  <strong>This document is archived.</strong><br>
+                  <small>
+                    Archived on <%= @document.archived_at&.strftime('%B %d, %Y') %> 
+                    by <%= @document.archived_by&.full_name %>
+                    <% if @document.archive_reason.present? %>
+                      <br>Reason: <%= @document.archive_reason %>
+                    <% end %>
+                  </small>
+                </div>
+              </div>
+            </div>
+          <% end %>
+
+          <!-- Version Information -->
+          <div class="alert alert-light border mb-4">
+            <div class="row">
+              <div class="col-md-6">
+                <strong>Version Information:</strong><br>
+                <small class="text-muted">
+                  Current Version: <%= @document.version %><br>
+                  Last Updated: <%= @document.updated_at.strftime('%B %d, %Y at %I:%M %p') %>
+                </small>
+              </div>
+              <div class="col-md-6 text-end">
+                <%= link_to "View Version History", versions_document_path(@document), 
+                           class: "btn btn-sm btn-outline-info" %>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="d-flex justify-content-between">
+            <%= link_to "Cancel", @document, class: "btn btn-outline-secondary" %>
+            
+            <div class="d-flex gap-2">
+              <%= form.submit "Update Document", class: "btn btn-primary" %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
 </div>
+
+<script>
+  // Bootstrap form validation
+  (function() {
+    'use strict';
+    window.addEventListener('load', function() {
+      var forms = document.getElementsByClassName('needs-validation');
+      var validation = Array.prototype.filter.call(forms, function(form) {
+        form.addEventListener('submit', function(event) {
+          if (form.checkValidity() === false) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add('was-validated');
+        }, false);
+      });
+    }, false);
+  })();
+
+  // Convert tags string to array format expected by the model
+  document.querySelector('form').addEventListener('submit', function(e) {
+    const tagsField = document.querySelector('input[name="document[tags]"]');
+    if (tagsField.value) {
+      const tagsArray = tagsField.value.split(',').map(tag => tag.trim()).filter(tag => tag);
+      tagsField.value = JSON.stringify(tagsArray);
+    }
+  });
+
+  // Advanced options toggle
+  document.querySelector('[data-bs-target="#advancedOptions"]').addEventListener('click', function() {
+    const icon = this.querySelector('i');
+    icon.classList.toggle('fa-chevron-right');
+    icon.classList.toggle('fa-chevron-down');
+  });
+</script>

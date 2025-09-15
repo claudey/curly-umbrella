@@ -1,4 +1,205 @@
-<div>
-  <h1 class="font-bold text-4xl">Documents#new</h1>
-  <p>Find me in app/views/documents/new.html.erb</p>
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="h3 mb-0">Upload New Document</h1>
+      <%= link_to "Cancel", documents_path, class: "btn btn-outline-secondary" %>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <%= form_with model: @document, local: true, multipart: true, class: "needs-validation", novalidate: true do |form| %>
+          <% if @document.errors.any? %>
+            <div class="alert alert-danger" role="alert">
+              <h6 class="alert-heading">Please correct the following errors:</h6>
+              <ul class="mb-0">
+                <% @document.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <!-- File Upload -->
+          <div class="mb-4">
+            <label for="document_file" class="form-label">File <span class="text-danger">*</span></label>
+            <%= form.file_field :file, class: "form-control", required: true, 
+                               accept: ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif" %>
+            <div class="form-text">
+              Supported formats: PDF, Word documents, Excel files, PowerPoint presentations, images, and text files.
+              Maximum file size: 50MB.
+            </div>
+            <div class="invalid-feedback">
+              Please select a file to upload.
+            </div>
+          </div>
+
+          <!-- Document Information -->
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="document_name" class="form-label">Document Name <span class="text-danger">*</span></label>
+                <%= form.text_field :name, class: "form-control", required: true, 
+                                   placeholder: "Enter a descriptive name for the document" %>
+                <div class="invalid-feedback">
+                  Document name is required.
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="document_document_type" class="form-label">Document Type <span class="text-danger">*</span></label>
+                <%= form.select :document_type, 
+                               options_for_select(Document::DOCUMENT_TYPES.map { |type| [type.humanize, type] }),
+                               { prompt: "Select document type" }, 
+                               { class: "form-select", required: true } %>
+                <div class="invalid-feedback">
+                  Please select a document type.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="document_category" class="form-label">Category</label>
+                <%= form.select :category, 
+                               options_for_select([['Select category', '']] + Document::CATEGORIES.map { |cat| [cat.humanize, cat] }),
+                               {}, { class: "form-select" } %>
+                <div class="form-text">Optional: Categorize the document for better organization.</div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="document_access_level" class="form-label">Access Level <span class="text-danger">*</span></label>
+                <%= form.select :access_level, 
+                               options_for_select([
+                                 ['Private', 'private'],
+                                 ['Organization', 'organization'],
+                                 ['Public', 'public']
+                               ], 'organization'),
+                               {}, { class: "form-select", required: true } %>
+                <div class="form-text">
+                  Private: Only you can access • Organization: Your organization members • Public: Everyone
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="mb-3">
+            <label for="document_description" class="form-label">Description</label>
+            <%= form.text_area :description, class: "form-control", rows: 4, 
+                              placeholder: "Optional: Describe the contents or purpose of this document" %>
+            <div class="form-text">A brief description helps others understand the document's content and purpose.</div>
+          </div>
+
+          <!-- Tags -->
+          <div class="mb-3">
+            <label for="document_tags" class="form-label">Tags</label>
+            <%= form.text_field :tags, class: "form-control", 
+                               placeholder: "Enter tags separated by commas (e.g., contract, legal, insurance)" %>
+            <div class="form-text">Add tags to make the document easier to find. Separate multiple tags with commas.</div>
+          </div>
+
+          <!-- Advanced Options -->
+          <div class="card bg-light mb-4">
+            <div class="card-header">
+              <h6 class="card-title mb-0">
+                <button class="btn btn-link p-0 text-decoration-none" type="button" data-bs-toggle="collapse" 
+                        data-bs-target="#advancedOptions" aria-expanded="false">
+                  <i class="fas fa-chevron-right me-1"></i> Advanced Options
+                </button>
+              </h6>
+            </div>
+            
+            <div class="collapse" id="advancedOptions">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="document_expires_at" class="form-label">Expiration Date</label>
+                      <%= form.date_field :expires_at, class: "form-control", min: Date.current %>
+                      <div class="form-text">Optional: Set when this document should expire.</div>
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-6">
+                    <div class="form-check mt-4">
+                      <%= form.check_box :is_public, class: "form-check-input" %>
+                      <label class="form-check-label" for="document_is_public">
+                        Make this document publicly accessible
+                      </label>
+                      <div class="form-text">When checked, this document can be accessed without authentication.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hidden fields for documentable -->
+          <% if params[:documentable_type] && params[:documentable_id] %>
+            <%= form.hidden_field :documentable_type, value: params[:documentable_type] %>
+            <%= form.hidden_field :documentable_id, value: params[:documentable_id] %>
+            
+            <div class="alert alert-info mb-4">
+              <i class="fas fa-link me-2"></i>
+              This document will be associated with 
+              <strong><%= params[:documentable_type].humanize %> #<%= params[:documentable_id] %></strong>
+            </div>
+          <% end %>
+
+          <!-- Form Actions -->
+          <div class="d-flex justify-content-between">
+            <%= link_to "Cancel", documents_path, class: "btn btn-outline-secondary" %>
+            
+            <div class="d-flex gap-2">
+              <%= form.submit "Upload Document", class: "btn btn-primary" %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
 </div>
+
+<script>
+  // Bootstrap form validation
+  (function() {
+    'use strict';
+    window.addEventListener('load', function() {
+      var forms = document.getElementsByClassName('needs-validation');
+      var validation = Array.prototype.filter.call(forms, function(form) {
+        form.addEventListener('submit', function(event) {
+          if (form.checkValidity() === false) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add('was-validated');
+        }, false);
+      });
+    }, false);
+  })();
+
+  // Auto-populate document name from file name
+  document.getElementById('document_file').addEventListener('change', function(e) {
+    const nameField = document.getElementById('document_name');
+    if (!nameField.value && e.target.files.length > 0) {
+      const fileName = e.target.files[0].name;
+      const nameWithoutExtension = fileName.replace(/\.[^/.]+$/, "");
+      nameField.value = nameWithoutExtension;
+    }
+  });
+
+  // Convert tags string to array format expected by the model
+  document.querySelector('form').addEventListener('submit', function(e) {
+    const tagsField = document.querySelector('input[name="document[tags]"]');
+    if (tagsField.value) {
+      const tagsArray = tagsField.value.split(',').map(tag => tag.trim()).filter(tag => tag);
+      tagsField.value = JSON.stringify(tagsArray);
+    }
+  });
+</script>

@@ -76,6 +76,10 @@ gem "discard", "~> 1.3"
 gem "phosphor_icons", "~> 0.3"
 gem "view_component", "~> 3.0"
 
+# PDF generation
+gem "wicked_pdf", "~> 2.8"
+gem "wkhtmltopdf-binary", "~> 0.12"
+
 # Email delivery
 gem "brevo", "~> 2.0"
 gem "enum_help", "~> 0.0.17"

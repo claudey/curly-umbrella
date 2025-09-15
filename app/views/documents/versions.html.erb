@@ -1,0 +1,275 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-1">Version History</h1>
+    <p class="text-muted mb-0">
+      <%= link_to @document.name, @document, class: "text-decoration-none" %>
+    </p>
+  </div>
+  
+  <div class="d-flex gap-2">
+    <%= link_to "Back to Document", @document, class: "btn btn-outline-secondary" %>
+    <% if @document.can_be_edited_by?(current_user) %>
+      <%= link_to "Upload New Version", "#", class: "btn btn-primary", 
+                 data: { bs_toggle: "modal", bs_target: "#newVersionModal" } %>
+    <% end %>
+  </div>
+</div>
+
+<!-- Current Document Info -->
+<div class="card mb-4">
+  <div class="card-body">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <div class="d-flex align-items-center">
+          <i class="<%= document_icon_class(@document.document_type) %> fa-2x me-3"></i>
+          <div>
+            <h5 class="mb-1"><%= @document.name %></h5>
+            <div class="text-muted">
+              <%= @document.document_type.humanize %> • 
+              Current Version: <%= @document.version %> • 
+              <%= @document.human_file_size %>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 text-end">
+        <%= document_status_badge(@document) %>
+        <%= access_level_badge(@document.access_level) %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Version History Table -->
+<div class="card">
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <h5 class="card-title mb-0">All Versions (<%= @version_history.count %>)</h5>
+      <small class="text-muted">Showing all document versions from newest to oldest</small>
+    </div>
+  </div>
+  
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 10%;">Version</th>
+          <th style="width: 15%;">File Size</th>
+          <th style="width: 20%;">Created</th>
+          <th style="width: 15%;">Created By</th>
+          <th style="width: 25%;">Description</th>
+          <th style="width: 10%;">Status</th>
+          <th style="width: 5%;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @version_history.each do |version| %>
+          <tr class="<%= 'table-primary' if version.is_current? %>">
+            <td>
+              <span class="fw-bold">v<%= version.version %></span>
+              <% if version.is_current? %>
+                <br><span class="badge bg-primary mt-1">Current</span>
+              <% end %>
+            </td>
+            
+            <td>
+              <%= version.human_file_size %>
+              <% if version.content_type %>
+                <br><small class="text-muted"><%= version.content_type %></small>
+              <% end %>
+            </td>
+            
+            <td>
+              <%= version.created_at.strftime('%B %d, %Y') %>
+              <br><small class="text-muted"><%= version.created_at.strftime('%I:%M %p') %></small>
+            </td>
+            
+            <td>
+              <%= version.user.full_name %>
+              <% if version.user == current_user %>
+                <br><small class="text-muted">(You)</small>
+              <% end %>
+            </td>
+            
+            <td>
+              <% if version.description.present? %>
+                <%= truncate(version.description, length: 100) %>
+              <% else %>
+                <span class="text-muted fst-italic">No description</span>
+              <% end %>
+            </td>
+            
+            <td>
+              <% if version.is_current? %>
+                <span class="badge bg-success">Current</span>
+              <% else %>
+                <span class="badge bg-secondary">Previous</span>
+              <% end %>
+            </td>
+            
+            <td>
+              <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" 
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <% if version.is_current? %>
+                    <li><%= link_to "View Document", @document, class: "dropdown-item" %></li>
+                  <% end %>
+                  <li><%= link_to "Download", download_document_path(version), class: "dropdown-item" %></li>
+                  <% if version.content_type&.include?('image') %>
+                    <li><%= link_to "Preview", "#", class: "dropdown-item", 
+                                   data: { bs_toggle: "modal", bs_target: "#previewModal#{version.id}" } %></li>
+                  <% end %>
+                  <% unless version.is_current? %>
+                    <li><hr class="dropdown-divider"></li>
+                    <% if @document.can_be_edited_by?(current_user) %>
+                      <li>
+                        <%= link_to "Restore as New Version", "#", class: "dropdown-item text-warning",
+                                   data: { bs_toggle: "modal", bs_target: "#restoreModal#{version.id}" } %>
+                      </li>
+                    <% end %>
+                  <% end %>
+                </ul>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  
+  <% if @version_history.empty? %>
+    <div class="card-body text-center py-5">
+      <i class="fas fa-history fa-3x text-muted mb-3"></i>
+      <h5 class="text-muted">No Version History</h5>
+      <p class="text-muted">This document doesn't have any previous versions.</p>
+    </div>
+  <% end %>
+</div>
+
+<!-- Version Statistics -->
+<% if @version_history.any? %>
+  <div class="row mt-4">
+    <div class="col-md-4">
+      <div class="card text-center">
+        <div class="card-body">
+          <h3 class="text-primary"><%= @version_history.count %></h3>
+          <p class="card-text text-muted">Total Versions</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div class="card text-center">
+        <div class="card-body">
+          <h3 class="text-success">
+            <%= format_file_size(@version_history.sum(&:file_size)) %>
+          </h3>
+          <p class="card-text text-muted">Total Size</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div class="card text-center">
+        <div class="card-body">
+          <h3 class="text-info">
+            <%= @version_history.map(&:user).uniq.count %>
+          </h3>
+          <p class="card-text text-muted">Contributors</p>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<!-- New Version Modal -->
+<% if @document.can_be_edited_by?(current_user) %>
+  <div class="modal fade" id="newVersionModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <%= form_with url: new_version_document_path(@document), method: :post, 
+                     multipart: true, local: true do |form| %>
+          <div class="modal-header">
+            <h5 class="modal-title">Upload New Version</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <%= form.file_field :file, class: "form-control", required: true %>
+              <div class="form-text">Select a file to upload as version <%= @document.version + 1 %></div>
+            </div>
+            <div class="mb-3">
+              <%= form.text_area :description, class: "form-control", rows: 3, 
+                                placeholder: "Describe the changes in this version..." %>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <%= form.submit "Upload Version", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<!-- Restore Version Modals -->
+<% @version_history.each do |version| %>
+  <% unless version.is_current? %>
+    <div class="modal fade" id="restoreModal<%= version.id %>" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Restore Version <%= version.version %></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <p>This will create a new version (<%= @document.version + 1 %>) using the file from version <%= version.version %>.</p>
+            <div class="alert alert-info">
+              <strong>Note:</strong> This does not replace the current version. Instead, it creates a new version 
+              with the same file content as version <%= version.version %>.
+            </div>
+            <%= form_with url: new_version_document_path(@document), method: :post, local: true do |form| %>
+              <%= form.hidden_field :restore_from_version, value: version.id %>
+              <div class="mb-3">
+                <%= form.text_area :description, class: "form-control", rows: 3, 
+                                  placeholder: "Optional: Describe why you're restoring this version...",
+                                  value: "Restored from version #{version.version}" %>
+              </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <%= form.submit "Restore as New Version", class: "btn btn-warning" %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>
+
+<!-- Image Preview Modals -->
+<% @version_history.each do |version| %>
+  <% if version.content_type&.include?('image') %>
+    <div class="modal fade" id="previewModal<%= version.id %>" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Preview - Version <%= version.version %></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body text-center">
+            <%= image_tag version.file, class: "img-fluid rounded" if version.file_attached? %>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <%= link_to "Download", download_document_path(version), class: "btn btn-primary" %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>

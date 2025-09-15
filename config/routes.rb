@@ -6,6 +6,7 @@ Rails.application.routes.draw do
       patch :restore
       get :versions
       post :new_version
+      get :generate_pdf
     end
     
     collection do

@@ -140,6 +140,37 @@ class DocumentsController < ApplicationController
     end
   end
 
+  def generate_pdf
+    case params[:template]
+    when 'document_info'
+      result = PdfGenerationService.new(
+        render_to_string(
+          template: 'documents/pdf_templates/document_info',
+          layout: 'pdf',
+          locals: { document: @document }
+        ),
+        "document_info_#{@document.id}.pdf"
+      ).stream_download
+    when 'document_list'
+      documents = [@document]
+      result = PdfGenerationService.generate_document_list_pdf(documents, "Document: #{@document.name}")
+    else
+      redirect_to @document, alert: 'Invalid PDF template specified.'
+      return
+    end
+
+    send_file result[:file_path],
+              filename: result[:filename],
+              type: result[:content_type],
+              disposition: 'attachment'
+              
+    # Clean up after sending
+    Thread.new { sleep(5); result[:cleanup].call }
+
+  rescue PdfGenerationService::PdfGenerationError => e
+    redirect_to @document, alert: "PDF generation failed: #{e.message}"
+  end
+
   private
 
   def set_document

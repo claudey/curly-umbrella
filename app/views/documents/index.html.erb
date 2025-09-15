@@ -1,4 +1,261 @@
-<div>
-  <h1 class="font-bold text-4xl">Documents#index</h1>
-  <p>Find me in app/views/documents/index.html.erb</p>
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h3 mb-0">
+    <%= params[:action] == 'archived' ? 'Archived Documents' : 
+        params[:action] == 'expiring' ? 'Expiring Documents' : 
+        'Documents' %>
+  </h1>
+  
+  <div class="d-flex gap-2">
+    <%= link_to "Upload Document", new_document_path, class: "btn btn-primary" %>
+    
+    <div class="dropdown">
+      <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+        Export
+      </button>
+      <ul class="dropdown-menu">
+        <li><%= link_to "Export PDF Report", "#", class: "dropdown-item" %></li>
+        <li><%= link_to "Export CSV", "#", class: "dropdown-item" %></li>
+      </ul>
+    </div>
+  </div>
 </div>
+
+<!-- Filters -->
+<div class="card mb-4">
+  <div class="card-body">
+    <%= form_with url: request.path, method: :get, local: true, class: "row g-3" do |form| %>
+      <div class="col-md-3">
+        <%= form.text_field :search, placeholder: "Search documents...", 
+                           value: params[:search], class: "form-control" %>
+      </div>
+      
+      <div class="col-md-2">
+        <%= form.select :category, 
+                       options_for_select([['All Categories', '']] + @categories.map { |cat| [cat.humanize, cat] }, params[:category]),
+                       {}, { class: "form-select" } %>
+      </div>
+      
+      <div class="col-md-2">
+        <%= form.select :document_type, 
+                       options_for_select([['All Types', '']] + @document_types.map { |type| [type.humanize, type] }, params[:document_type]),
+                       {}, { class: "form-select" } %>
+      </div>
+      
+      <div class="col-md-2">
+        <%= form.select :status, 
+                       options_for_select([
+                         ['Active', ''],
+                         ['Archived', 'archived'],
+                         ['Expiring Soon', 'expiring'],
+                         ['Expired', 'expired']
+                       ], params[:status]),
+                       {}, { class: "form-select" } %>
+      </div>
+      
+      <div class="col-md-2">
+        <%= form.select :sort, 
+                       options_for_select([
+                         ['Recent', ''],
+                         ['Name', 'name'],
+                         ['Type', 'type'],
+                         ['Size', 'size'],
+                         ['Date Created', 'created_at']
+                       ], params[:sort]),
+                       {}, { class: "form-select" } %>
+      </div>
+      
+      <div class="col-md-1">
+        <%= form.submit "Filter", class: "btn btn-outline-primary w-100" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Document Grid -->
+<% if @documents.any? %>
+  <div class="row">
+    <% @documents.each do |document| %>
+      <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 document-card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+              <i class="<%= document_icon_class(document.document_type) %> me-2"></i>
+              <small class="text-muted"><%= document.document_type.humanize %></small>
+            </div>
+            
+            <div class="dropdown">
+              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-ellipsis-v"></i>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><%= link_to "View", document_path(document), class: "dropdown-item" %></li>
+                <li><%= link_to "Download", download_document_path(document), class: "dropdown-item" %></li>
+                <% if document.can_be_edited_by?(current_user) %>
+                  <li><%= link_to "Edit", edit_document_path(document), class: "dropdown-item" %></li>
+                  <li><%= link_to "New Version", "#", class: "dropdown-item", 
+                                  data: { bs_toggle: "modal", bs_target: "#newVersionModal#{document.id}" } %></li>
+                <% end %>
+                <li><hr class="dropdown-divider"></li>
+                <li><%= link_to "Generate PDF", generate_pdf_document_path(document, template: 'document_info'), 
+                               class: "dropdown-item" %></li>
+                <% if document.can_be_deleted_by?(current_user) %>
+                  <li><hr class="dropdown-divider"></li>
+                  <% if document.is_archived? %>
+                    <li><%= link_to "Restore", restore_document_path(document), method: :patch, 
+                                   class: "dropdown-item text-success",
+                                   data: { confirm: "Are you sure you want to restore this document?" } %></li>
+                  <% else %>
+                    <li><%= link_to "Archive", "#", class: "dropdown-item text-warning",
+                                   data: { bs_toggle: "modal", bs_target: "#archiveModal#{document.id}" } %></li>
+                  <% end %>
+                  <li><%= link_to "Delete", document_path(document), method: :delete, 
+                                 class: "dropdown-item text-danger",
+                                 data: { confirm: "Are you sure you want to permanently delete this document?" } %></li>
+                <% end %>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="card-body">
+            <h6 class="card-title mb-2">
+              <%= link_to document.name, document_path(document), class: "text-decoration-none" %>
+            </h6>
+            
+            <% if document.description.present? %>
+              <p class="card-text text-muted small mb-2">
+                <%= truncate(document.description, length: 100) %>
+              </p>
+            <% end %>
+            
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <small class="text-muted">v<%= document.version %></small>
+              <span class="badge <%= document.is_archived? ? 'bg-warning' : 'bg-success' %>">
+                <%= document.is_archived? ? 'Archived' : 'Active' %>
+              </span>
+            </div>
+            
+            <div class="row text-center small text-muted">
+              <div class="col-4">
+                <div><%= document.human_file_size %></div>
+                <div>Size</div>
+              </div>
+              <div class="col-4">
+                <div><%= document.created_at.strftime('%m/%d/%Y') %></div>
+                <div>Created</div>
+              </div>
+              <div class="col-4">
+                <div><%= document.user.full_name.split.map(&:first).join('') %></div>
+                <div>By</div>
+              </div>
+            </div>
+          </div>
+          
+          <% if document.tags.any? %>
+            <div class="card-footer">
+              <% document.tags.first(3).each do |tag| %>
+                <span class="badge bg-light text-dark me-1"><%= tag %></span>
+              <% end %>
+              <% if document.tags.count > 3 %>
+                <span class="badge bg-light text-dark">+<%= document.tags.count - 3 %></span>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+      
+      <!-- New Version Modal -->
+      <% if document.can_be_edited_by?(current_user) %>
+        <div class="modal fade" id="newVersionModal<%= document.id %>" tabindex="-1">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <%= form_with url: new_version_document_path(document), method: :post, 
+                           multipart: true, local: true, class: "modal-content" do |form| %>
+                <div class="modal-header">
+                  <h5 class="modal-title">Upload New Version</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  <div class="mb-3">
+                    <%= form.file_field :file, class: "form-control", required: true %>
+                    <div class="form-text">Select a file to upload as version <%= document.version + 1 %></div>
+                  </div>
+                  <div class="mb-3">
+                    <%= form.text_area :description, class: "form-control", rows: 3, 
+                                      placeholder: "Optional: Describe the changes in this version..." %>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                  <%= form.submit "Upload Version", class: "btn btn-primary" %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+      
+      <!-- Archive Modal -->
+      <% if document.can_be_deleted_by?(current_user) && !document.is_archived? %>
+        <div class="modal fade" id="archiveModal<%= document.id %>" tabindex="-1">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <%= form_with url: archive_document_path(document), method: :patch, local: true do |form| %>
+                <div class="modal-header">
+                  <h5 class="modal-title">Archive Document</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  <p>Are you sure you want to archive "<%= document.name %>"?</p>
+                  <div class="mb-3">
+                    <%= form.text_area :reason, class: "form-control", rows: 3, 
+                                      placeholder: "Optional: Reason for archiving..." %>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                  <%= form.submit "Archive Document", class: "btn btn-warning" %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+  
+  <!-- Pagination -->
+  <div class="d-flex justify-content-center mt-4">
+    <%= paginate @documents %>
+  </div>
+<% else %>
+  <div class="text-center py-5">
+    <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+    <h4 class="text-muted">No documents found</h4>
+    <p class="text-muted">
+      <% if params[:search].present? || params[:category].present? || params[:document_type].present? %>
+        Try adjusting your search criteria or 
+        <%= link_to "clear filters", request.path, class: "text-decoration-none" %>.
+      <% else %>
+        Get started by uploading your first document.
+      <% end %>
+    </p>
+    <% unless params[:search].present? || params[:category].present? || params[:document_type].present? %>
+      <%= link_to "Upload Document", new_document_path, class: "btn btn-primary" %>
+    <% end %>
+  </div>
+<% end %>
+
+<style>
+  .document-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  }
+  
+  .document-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  
+  .document-card .card-title a:hover {
+    color: var(--bs-primary);
+  }
+</style>

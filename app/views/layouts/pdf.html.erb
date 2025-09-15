@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>BrokerSync PDF Document</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  
+  <style>
+    /* PDF-specific styles */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 11pt;
+      line-height: 1.4;
+      color: #000;
+      background: white;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .pdf-container {
+      max-width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    
+    /* Typography */
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 0;
+      margin-bottom: 12pt;
+      font-weight: 600;
+      color: #000;
+    }
+    
+    h1 { font-size: 18pt; }
+    h2 { font-size: 16pt; }  
+    h3 { font-size: 14pt; }
+    h4 { font-size: 12pt; }
+    
+    p {
+      margin: 0 0 8pt 0;
+    }
+    
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10pt 0;
+      font-size: 10pt;
+    }
+    
+    th, td {
+      border: 1px solid #ddd;
+      padding: 6pt 8pt;
+      text-align: left;
+      vertical-align: top;
+    }
+    
+    th {
+      background-color: #f5f5f5;
+      font-weight: 600;
+    }
+    
+    /* Page breaks */
+    .page-break {
+      page-break-before: always;
+    }
+    
+    .no-page-break {
+      page-break-inside: avoid;
+    }
+    
+    /* Headers and footers */
+    .pdf-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20pt;
+      padding-bottom: 10pt;
+      border-bottom: 2pt solid #333;
+    }
+    
+    .pdf-logo {
+      font-size: 20pt;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    .pdf-document-type {
+      font-size: 14pt;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 1pt;
+    }
+    
+    .pdf-title {
+      font-size: 24pt;
+      font-weight: bold;
+      text-align: center;
+      margin: 20pt 0;
+      color: #333;
+    }
+    
+    /* Form sections */
+    .pdf-section {
+      margin: 15pt 0;
+      page-break-inside: avoid;
+    }
+    
+    .pdf-section-title {
+      font-size: 14pt;
+      font-weight: 600;
+      margin-bottom: 10pt;
+      padding-bottom: 5pt;
+      border-bottom: 1pt solid #ccc;
+      color: #333;
+    }
+    
+    /* Two column layout */
+    .pdf-two-columns {
+      display: table;
+      width: 100%;
+      table-layout: fixed;
+    }
+    
+    .pdf-column {
+      display: table-cell;
+      width: 50%;
+      vertical-align: top;
+      padding-right: 15pt;
+    }
+    
+    .pdf-column:last-child {
+      padding-right: 0;
+    }
+    
+    /* Field rows */
+    .pdf-field-row {
+      margin-bottom: 8pt;
+      overflow: hidden;
+    }
+    
+    .pdf-field-label {
+      font-weight: 600;
+      color: #333;
+      margin-right: 8pt;
+      min-width: 120pt;
+      display: inline-block;
+    }
+    
+    .pdf-field-value {
+      color: #000;
+    }
+    
+    /* Status badges */
+    .pdf-status {
+      padding: 2pt 6pt;
+      border-radius: 3pt;
+      font-size: 9pt;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .pdf-status.approved {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    
+    .pdf-status.pending {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    
+    .pdf-status.rejected {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    
+    /* Amounts */
+    .pdf-amount {
+      font-weight: 600;
+      color: #000;
+    }
+    
+    /* Lists */
+    ul, ol {
+      margin: 8pt 0;
+      padding-left: 20pt;
+    }
+    
+    li {
+      margin-bottom: 4pt;
+    }
+    
+    /* Hide elements that shouldn't appear in PDF */
+    .no-print,
+    .btn,
+    button,
+    input[type="submit"],
+    .dropdown,
+    .tooltip {
+      display: none !important;
+    }
+    
+    /* Force black text for better printing */
+    * {
+      color-adjust: exact !important;
+      -webkit-print-color-adjust: exact !important;
+    }
+    
+    /* Page setup */
+    @page {
+      size: A4;
+      margin: 2cm;
+      
+      @top-center {
+        content: "BrokerSync - Insurance Document";
+        font-size: 9pt;
+        color: #666;
+      }
+      
+      @bottom-center {
+        content: "Page " counter(page) " of " counter(pages);
+        font-size: 9pt;
+        color: #666;
+      }
+      
+      @bottom-left {
+        content: "Generated on " date(now, "%B %d, %Y");
+        font-size: 9pt;
+        color: #666;
+      }
+    }
+  </style>
+  
+  <%= yield :head %>
+</head>
+
+<body>
+  <div class="pdf-container">
+    <%= yield %>
+  </div>
+  
+  <!-- PDF Generation Ready Signal -->
+  <script>
+    // Signal that the PDF is ready for generation
+    window.status = 'ready';
+  </script>
+</body>
+</html>

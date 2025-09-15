@@ -1,4 +1,370 @@
-<div>
-  <h1 class="font-bold text-4xl">Documents#show</h1>
-  <p>Find me in app/views/documents/show.html.erb</p>
+<div class="row">
+  <div class="col-lg-8">
+    <!-- Document Header -->
+    <div class="d-flex justify-content-between align-items-start mb-4">
+      <div>
+        <h1 class="h3 mb-1"><%= @document.name %></h1>
+        <div class="d-flex align-items-center gap-3 text-muted">
+          <span><i class="<%= document_icon_class(@document.document_type) %> me-1"></i><%= @document.document_type.humanize %></span>
+          <span>Version <%= @document.version %></span>
+          <span><%= @document.human_file_size %></span>
+          <span class="badge <%= @document.is_archived? ? 'bg-warning' : 'bg-success' %>">
+            <%= @document.is_archived? ? 'Archived' : 'Active' %>
+          </span>
+        </div>
+      </div>
+      
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          Actions
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><%= link_to "Download", download_document_path(@document), class: "dropdown-item" %></li>
+          <% if @document.can_be_edited_by?(current_user) %>
+            <li><%= link_to "Edit", edit_document_path(@document), class: "dropdown-item" %></li>
+            <li><%= link_to "New Version", "#", class: "dropdown-item", 
+                            data: { bs_toggle: "modal", bs_target: "#newVersionModal" } %></li>
+          <% end %>
+          <li><hr class="dropdown-divider"></li>
+          <li><%= link_to "Generate PDF Report", generate_pdf_document_path(@document, template: 'document_info'), 
+                         class: "dropdown-item" %></li>
+          <% if @document.can_be_deleted_by?(current_user) %>
+            <li><hr class="dropdown-divider"></li>
+            <% if @document.is_archived? %>
+              <li><%= link_to "Restore", restore_document_path(@document), method: :patch, 
+                             class: "dropdown-item text-success",
+                             data: { confirm: "Are you sure you want to restore this document?" } %></li>
+            <% else %>
+              <li><%= link_to "Archive", "#", class: "dropdown-item text-warning",
+                             data: { bs_toggle: "modal", bs_target: "#archiveModal" } %></li>
+            <% end %>
+            <li><%= link_to "Delete", document_path(@document), method: :delete, 
+                           class: "dropdown-item text-danger",
+                           data: { confirm: "Are you sure you want to permanently delete this document?" } %></li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Document Details -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Document Information</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label text-muted">Name</label>
+              <div><%= @document.name %></div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label text-muted">Type</label>
+              <div><%= @document.document_type.humanize %></div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label text-muted">Category</label>
+              <div><%= @document.category&.humanize || 'Uncategorized' %></div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label text-muted">Access Level</label>
+              <div>
+                <span class="badge bg-info"><%= @document.access_level.humanize %></span>
+                <% if @document.is_public? %>
+                  <span class="badge bg-success ms-1">Public</span>
+                <% end %>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label text-muted">File Size</label>
+              <div><%= @document.human_file_size %></div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label text-muted">Content Type</label>
+              <div><%= @document.content_type || 'Unknown' %></div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label text-muted">Created</label>
+              <div>
+                <%= @document.created_at.strftime('%B %d, %Y at %I:%M %p') %>
+                <br><small class="text-muted">by <%= @document.user.full_name %></small>
+              </div>
+            </div>
+            
+            <% if @document.expires_at %>
+              <div class="mb-3">
+                <label class="form-label text-muted">Expires</label>
+                <div class="<%= @document.expired? ? 'text-danger' : @document.expiring_soon? ? 'text-warning' : '' %>">
+                  <%= @document.expires_at.strftime('%B %d, %Y') %>
+                  <% if @document.expired? %>
+                    <span class="badge bg-danger ms-1">Expired</span>
+                  <% elsif @document.expiring_soon? %>
+                    <span class="badge bg-warning ms-1">Expiring Soon</span>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+        
+        <% if @document.description.present? %>
+          <div class="mb-3">
+            <label class="form-label text-muted">Description</label>
+            <div><%= simple_format(@document.description) %></div>
+          </div>
+        <% end %>
+        
+        <% if @document.tags.any? %>
+          <div class="mb-3">
+            <label class="form-label text-muted">Tags</label>
+            <div>
+              <% @document.tags.each do |tag| %>
+                <span class="badge bg-light text-dark me-1"><%= tag %></span>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- File Preview/Viewer -->
+    <% if @document.file_attached? %>
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">File Preview</h5>
+          <%= link_to "Download Original", download_document_path(@document), class: "btn btn-sm btn-outline-primary" %>
+        </div>
+        <div class="card-body">
+          <% if @document.content_type&.include?('image') %>
+            <div class="text-center">
+              <%= image_tag @document.file, class: "img-fluid rounded", style: "max-height: 500px;" %>
+            </div>
+          <% elsif @document.content_type == 'application/pdf' %>
+            <div class="text-center">
+              <embed src="<%= @document.download_url %>" type="application/pdf" width="100%" height="600px" class="rounded">
+              <p class="mt-2 text-muted">
+                <small>Can't view PDF? <%= link_to "Download it here", download_document_path(@document) %></small>
+              </p>
+            </div>
+          <% elsif @document.content_type&.include?('text') %>
+            <div class="bg-light p-3 rounded" style="max-height: 400px; overflow-y: auto;">
+              <pre class="mb-0"><%= truncate(@document.file.download, length: 5000) %></pre>
+            </div>
+          <% else %>
+            <div class="text-center py-4">
+              <i class="<%= document_icon_class(@document.document_type) %> fa-3x text-muted mb-3"></i>
+              <h5 class="text-muted">Preview not available</h5>
+              <p class="text-muted">This file type cannot be previewed in the browser.</p>
+              <%= link_to "Download File", download_document_path(@document), class: "btn btn-primary" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Related Entity -->
+    <% if @document.documentable %>
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Related <%= @document.documentable_type.humanize %></h5>
+        </div>
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="me-3">
+              <i class="fas fa-link fa-2x text-muted"></i>
+            </div>
+            <div>
+              <div><strong>ID:</strong> <%= @document.documentable_id %></div>
+              <% if @document.documentable.respond_to?(:application_number) %>
+                <div><strong>Application:</strong> <%= @document.documentable.application_number %></div>
+              <% end %>
+              <% if @document.documentable.respond_to?(:client_name) %>
+                <div><strong>Client:</strong> <%= @document.documentable.client_name %></div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="col-lg-4">
+    <!-- Version History -->
+    <div class="card mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 class="card-title mb-0">Version History</h6>
+        <%= link_to "View All", versions_document_path(@document), class: "btn btn-sm btn-outline-primary" %>
+      </div>
+      <div class="card-body">
+        <% if @version_history.any? %>
+          <% @version_history.limit(5).each do |version| %>
+            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 <%= 'border-bottom' unless version == @version_history.limit(5).last %>">
+              <div>
+                <div class="fw-bold">
+                  v<%= version.version %>
+                  <% if version.is_current? %>
+                    <span class="badge bg-primary ms-1">Current</span>
+                  <% end %>
+                </div>
+                <small class="text-muted">
+                  <%= version.created_at.strftime('%m/%d/%Y %I:%M %p') %>
+                  <br>by <%= version.user.full_name %>
+                </small>
+              </div>
+              <div class="text-end">
+                <div><%= version.human_file_size %></div>
+                <% unless version.is_current? %>
+                  <%= link_to "Download", download_document_path(version), class: "btn btn-xs btn-outline-secondary" %>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+          
+          <% if @version_history.count > 5 %>
+            <div class="text-center mt-3">
+              <%= link_to "View All #{@version_history.count} Versions", versions_document_path(@document), 
+                         class: "btn btn-sm btn-outline-primary" %>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="text-muted mb-0">No version history available.</p>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Metadata -->
+    <% if @document.metadata.present? && @document.metadata.any? %>
+      <div class="card mb-4">
+        <div class="card-header">
+          <h6 class="card-title mb-0">Metadata</h6>
+        </div>
+        <div class="card-body">
+          <% @document.metadata.each do |key, value| %>
+            <div class="mb-2">
+              <strong><%= key.humanize %>:</strong> <%= value %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Archive Information -->
+    <% if @document.is_archived? %>
+      <div class="card mb-4 border-warning">
+        <div class="card-header bg-warning bg-opacity-10">
+          <h6 class="card-title mb-0 text-warning">
+            <i class="fas fa-archive me-1"></i>Archived Document
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="mb-2">
+            <strong>Archived:</strong> <%= @document.archived_at&.strftime('%B %d, %Y at %I:%M %p') %>
+          </div>
+          <div class="mb-2">
+            <strong>By:</strong> <%= @document.archived_by&.full_name %>
+          </div>
+          <% if @document.archive_reason %>
+            <div class="mb-2">
+              <strong>Reason:</strong> <%= @document.archive_reason %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Security Information -->
+    <div class="card">
+      <div class="card-header">
+        <h6 class="card-title mb-0">Security & Access</h6>
+      </div>
+      <div class="card-body">
+        <div class="mb-2">
+          <strong>Access Level:</strong> 
+          <span class="badge bg-info"><%= @document.access_level.humanize %></span>
+        </div>
+        <div class="mb-2">
+          <strong>Public Access:</strong> 
+          <span class="badge <%= @document.is_public? ? 'bg-success' : 'bg-secondary' %>">
+            <%= @document.is_public? ? 'Yes' : 'No' %>
+          </span>
+        </div>
+        <div class="mb-2">
+          <strong>Organization:</strong> <%= @document.organization.name %>
+        </div>
+        <% if @document.checksum %>
+          <div class="mb-2">
+            <strong>Checksum:</strong>
+            <small class="font-monospace text-muted d-block"><%= @document.checksum %></small>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
 </div>
+
+<!-- New Version Modal -->
+<% if @document.can_be_edited_by?(current_user) %>
+  <div class="modal fade" id="newVersionModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <%= form_with url: new_version_document_path(@document), method: :post, 
+                     multipart: true, local: true do |form| %>
+          <div class="modal-header">
+            <h5 class="modal-title">Upload New Version</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <%= form.file_field :file, class: "form-control", required: true %>
+              <div class="form-text">Select a file to upload as version <%= @document.version + 1 %></div>
+            </div>
+            <div class="mb-3">
+              <%= form.text_area :description, class: "form-control", rows: 3, 
+                                placeholder: "Optional: Describe the changes in this version..." %>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <%= form.submit "Upload Version", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<!-- Archive Modal -->
+<% if @document.can_be_deleted_by?(current_user) && !@document.is_archived? %>
+  <div class="modal fade" id="archiveModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <%= form_with url: archive_document_path(@document), method: :patch, local: true do |form| %>
+          <div class="modal-header">
+            <h5 class="modal-title">Archive Document</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to archive "<%= @document.name %>"?</p>
+            <div class="mb-3">
+              <%= form.text_area :reason, class: "form-control", rows: 3, 
+                                placeholder: "Optional: Reason for archiving..." %>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <%= form.submit "Archive Document", class: "btn btn-warning" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

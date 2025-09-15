@@ -1,0 +1,230 @@
+<div class="pdf-container">
+  <!-- Header -->
+  <div class="pdf-header">
+    <div class="pdf-logo">BrokerSync</div>
+    <div class="pdf-document-type">Document Information Report</div>
+  </div>
+  
+  <div class="pdf-title">Document Details</div>
+  
+  <!-- Document Summary -->
+  <div class="pdf-section">
+    <h3 class="pdf-section-title">Document Summary</h3>
+    
+    <div class="pdf-two-columns">
+      <div class="pdf-column">
+        <div class="pdf-field-row">
+          <span class="pdf-field-label">Name:</span>
+          <span class="pdf-field-value"><%= document.name %></span>
+        </div>
+        <div class="pdf-field-row">
+          <span class="pdf-field-label">Type:</span>
+          <span class="pdf-field-value"><%= document.document_type.humanize %></span>
+        </div>
+        <div class="pdf-field-row">
+          <span class="pdf-field-label">Category:</span>
+          <span class="pdf-field-value"><%= document.category&.humanize || 'Uncategorized' %></span>
+        </div>
+        <div class="pdf-field-row">
+          <span class="pdf-field-label">Version:</span>
+          <span class="pdf-field-value"><%= document.version %></span>
+        </div>
+        <div class="pdf-field-row">
+          <span class="pdf-field-label">Status:</span>
+          <span class="pdf-field-value">
+            <span class="pdf-status <%= document.is_archived? ? 'archived' : 'active' %>">
+              <%= document.is_archived? ? 'Archived' : 'Active' %>
+            </span>
+          </span>
+        </div>
+      </div>
+      
+      <div class="pdf-column">
+        <div class="pdf-field-row">
+          <span class="pdf-field-label">File Size:</span>
+          <span class="pdf-field-value"><%= document.human_file_size %></span>
+        </div>
+        <div class="pdf-field-row">
+          <span class="pdf-field-label">Content Type:</span>
+          <span class="pdf-field-value"><%= document.content_type || 'Unknown' %></span>
+        </div>
+        <div class="pdf-field-row">
+          <span class="pdf-field-label">Created:</span>
+          <span class="pdf-field-value"><%= document.created_at.strftime('%B %d, %Y at %I:%M %p') %></span>
+        </div>
+        <div class="pdf-field-row">
+          <span class="pdf-field-label">Created By:</span>
+          <span class="pdf-field-value"><%= document.user.full_name %></span>
+        </div>
+        <div class="pdf-field-row">
+          <span class="pdf-field-label">Organization:</span>
+          <span class="pdf-field-value"><%= document.organization.name %></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Description -->
+  <% if document.description.present? %>
+    <div class="pdf-section">
+      <h3 class="pdf-section-title">Description</h3>
+      <p><%= simple_format(document.description) %></p>
+    </div>
+  <% end %>
+  
+  <!-- Access & Security -->
+  <div class="pdf-section">
+    <h3 class="pdf-section-title">Access & Security</h3>
+    
+    <div class="pdf-two-columns">
+      <div class="pdf-column">
+        <div class="pdf-field-row">
+          <span class="pdf-field-label">Access Level:</span>
+          <span class="pdf-field-value"><%= document.access_level.humanize %></span>
+        </div>
+        <div class="pdf-field-row">
+          <span class="pdf-field-label">Public:</span>
+          <span class="pdf-field-value"><%= document.is_public? ? 'Yes' : 'No' %></span>
+        </div>
+        <% if document.expires_at %>
+          <div class="pdf-field-row">
+            <span class="pdf-field-label">Expires:</span>
+            <span class="pdf-field-value"><%= document.expires_at.strftime('%B %d, %Y') %></span>
+          </div>
+        <% end %>
+      </div>
+      
+      <div class="pdf-column">
+        <% if document.checksum %>
+          <div class="pdf-field-row">
+            <span class="pdf-field-label">Checksum:</span>
+            <span class="pdf-field-value" style="font-family: monospace; font-size: 9pt;"><%= document.checksum %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Tags -->
+  <% if document.tags.any? %>
+    <div class="pdf-section">
+      <h3 class="pdf-section-title">Tags</h3>
+      <p>
+        <% document.tags.each do |tag| %>
+          <span style="background-color: #e9ecef; padding: 2pt 6pt; border-radius: 3pt; margin-right: 6pt; font-size: 9pt;">
+            <%= tag %>
+          </span>
+        <% end %>
+      </p>
+    </div>
+  <% end %>
+  
+  <!-- Metadata -->
+  <% if document.metadata.present? && document.metadata.any? %>
+    <div class="pdf-section">
+      <h3 class="pdf-section-title">Metadata</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 30%;">Key</th>
+            <th style="width: 70%;">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% document.metadata.each do |key, value| %>
+            <tr>
+              <td><%= key.humanize %></td>
+              <td><%= value %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+  
+  <!-- Archive Information -->
+  <% if document.is_archived? %>
+    <div class="pdf-section">
+      <h3 class="pdf-section-title">Archive Information</h3>
+      
+      <div class="pdf-two-columns">
+        <div class="pdf-column">
+          <div class="pdf-field-row">
+            <span class="pdf-field-label">Archived At:</span>
+            <span class="pdf-field-value"><%= document.archived_at&.strftime('%B %d, %Y at %I:%M %p') %></span>
+          </div>
+          <div class="pdf-field-row">
+            <span class="pdf-field-label">Archived By:</span>
+            <span class="pdf-field-value"><%= document.archived_by&.full_name %></span>
+          </div>
+        </div>
+        
+        <div class="pdf-column">
+          <% if document.archive_reason %>
+            <div class="pdf-field-row">
+              <span class="pdf-field-label">Reason:</span>
+              <span class="pdf-field-value"><%= document.archive_reason %></span>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+  
+  <!-- Related Entity -->
+  <% if document.documentable %>
+    <div class="pdf-section">
+      <h3 class="pdf-section-title">Related <%= document.documentable_type.humanize %></h3>
+      
+      <div class="pdf-field-row">
+        <span class="pdf-field-label">ID:</span>
+        <span class="pdf-field-value"><%= document.documentable_id %></span>
+      </div>
+      
+      <% if document.documentable.respond_to?(:application_number) %>
+        <div class="pdf-field-row">
+          <span class="pdf-field-label">Application Number:</span>
+          <span class="pdf-field-value"><%= document.documentable.application_number %></span>
+        </div>
+      <% end %>
+      
+      <% if document.documentable.respond_to?(:client_name) %>
+        <div class="pdf-field-row">
+          <span class="pdf-field-label">Client:</span>
+          <span class="pdf-field-value"><%= document.documentable.client_name %></span>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+  
+  <!-- Version History Summary -->
+  <% version_history = document.version_history.limit(10) %>
+  <% if version_history.count > 1 %>
+    <div class="pdf-section">
+      <h3 class="pdf-section-title">Version History (Last 10)</h3>
+      
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 15%;">Version</th>
+            <th style="width: 25%;">Created</th>
+            <th style="width: 25%;">Created By</th>
+            <th style="width: 20%;">Size</th>
+            <th style="width: 15%;">Current</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% version_history.each do |version| %>
+            <tr>
+              <td><%= version.version %></td>
+              <td><%= version.created_at.strftime('%m/%d/%Y %I:%M %p') %></td>
+              <td><%= version.user.full_name %></td>
+              <td><%= version.human_file_size %></td>
+              <td><%= version.is_current? ? 'Yes' : 'No' %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</div>

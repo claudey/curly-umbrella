@@ -1,0 +1,178 @@
+<div class="pdf-container">
+  <!-- Header -->
+  <div class="pdf-header">
+    <div class="pdf-logo">BrokerSync</div>
+    <div class="pdf-document-type">Document List Report</div>
+  </div>
+  
+  <div class="pdf-title"><%= title %></div>
+  
+  <!-- Summary -->
+  <div class="pdf-section">
+    <h3 class="pdf-section-title">Summary</h3>
+    
+    <div class="pdf-two-columns">
+      <div class="pdf-column">
+        <div class="pdf-field-row">
+          <span class="pdf-field-label">Total Documents:</span>
+          <span class="pdf-field-value"><%= documents.count %></span>
+        </div>
+        <div class="pdf-field-row">
+          <span class="pdf-field-label">Generated:</span>
+          <span class="pdf-field-value"><%= Time.current.strftime('%B %d, %Y at %I:%M %p') %></span>
+        </div>
+      </div>
+      
+      <div class="pdf-column">
+        <div class="pdf-field-row">
+          <span class="pdf-field-label">Total Size:</span>
+          <span class="pdf-field-value">
+            <%= 
+              total_size = documents.sum(&:file_size)
+              units = ['B', 'KB', 'MB', 'GB', 'TB']
+              size = total_size.to_f
+              unit_index = 0
+              while size >= 1024 && unit_index < units.length - 1
+                size /= 1024
+                unit_index += 1
+              end
+              "#{size.round(1)} #{units[unit_index]}"
+            %>
+          </span>
+        </div>
+        <div class="pdf-field-row">
+          <span class="pdf-field-label">Organization:</span>
+          <span class="pdf-field-value"><%= documents.first&.organization&.name || 'Multiple' %></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Document List -->
+  <div class="pdf-section">
+    <h3 class="pdf-section-title">Documents</h3>
+    
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 25%;">Name</th>
+          <th style="width: 15%;">Type</th>
+          <th style="width: 10%;">Version</th>
+          <th style="width: 15%;">Created</th>
+          <th style="width: 15%;">Created By</th>
+          <th style="width: 10%;">Size</th>
+          <th style="width: 10%;">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% documents.each do |document| %>
+          <tr>
+            <td>
+              <strong><%= document.name %></strong>
+              <% if document.description.present? %>
+                <br><small style="color: #666; font-size: 9pt;"><%= truncate(document.description, length: 60) %></small>
+              <% end %>
+            </td>
+            <td><%= document.document_type.humanize %></td>
+            <td>v<%= document.version %></td>
+            <td><%= document.created_at.strftime('%m/%d/%Y') %></td>
+            <td><%= document.user.full_name %></td>
+            <td><%= document.human_file_size %></td>
+            <td>
+              <span class="pdf-status <%= document.is_archived? ? 'archived' : 'active' %>">
+                <%= document.is_archived? ? 'Archived' : 'Active' %>
+              </span>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  
+  <!-- Document Types Summary -->
+  <% 
+    type_counts = documents.group_by(&:document_type).transform_values(&:count)
+    if type_counts.any?
+  %>
+    <div class="pdf-section">
+      <h3 class="pdf-section-title">Documents by Type</h3>
+      
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 60%;">Document Type</th>
+            <th style="width: 20%;">Count</th>
+            <th style="width: 20%;">Percentage</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% type_counts.sort_by { |type, count| -count }.each do |type, count| %>
+            <tr>
+              <td><%= type.humanize %></td>
+              <td><%= count %></td>
+              <td><%= number_to_percentage((count.to_f / documents.count) * 100, precision: 1) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+  
+  <!-- Categories Summary -->
+  <% 
+    category_counts = documents.where.not(category: nil).group_by(&:category).transform_values(&:count)
+    if category_counts.any?
+  %>
+    <div class="pdf-section">
+      <h3 class="pdf-section-title">Documents by Category</h3>
+      
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 60%;">Category</th>
+            <th style="width: 20%;">Count</th>
+            <th style="width: 20%;">Percentage</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% category_counts.sort_by { |category, count| -count }.each do |category, count| %>
+            <tr>
+              <td><%= category.humanize %></td>
+              <td><%= count %></td>
+              <td><%= number_to_percentage((count.to_f / documents.count) * 100, precision: 1) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+  
+  <!-- Recent Activity -->
+  <% recent_documents = documents.order(created_at: :desc).limit(10) %>
+  <% if recent_documents.any? %>
+    <div class="pdf-section">
+      <h3 class="pdf-section-title">Recent Activity (Last 10)</h3>
+      
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 40%;">Document</th>
+            <th style="width: 20%;">Action</th>
+            <th style="width: 20%;">Date</th>
+            <th style="width: 20%;">User</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% recent_documents.each do |document| %>
+            <tr>
+              <td><%= document.name %></td>
+              <td>Created</td>
+              <td><%= document.created_at.strftime('%m/%d/%Y %I:%M %p') %></td>
+              <td><%= document.user.full_name %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</div>
