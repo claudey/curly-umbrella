@@ -140,6 +140,22 @@
                   </details>
                 </li>
 
+                <!-- Documents Section -->
+                <li>
+                  <details>
+                    <summary class="font-medium">
+                      <%= nav_icon(:folder) %>
+                      Documents
+                    </summary>
+                    <ul>
+                      <li><%= link_to "All Documents", documents_path %></li>
+                      <li><%= link_to "Upload Document", new_document_path %></li>
+                      <li><%= link_to "Archived", archived_documents_path %></li>
+                      <li><%= link_to "Expiring Soon", expiring_documents_path %></li>
+                    </ul>
+                  </details>
+                </li>
+
                 <!-- Insurance Companies Section -->
                 <li>
                   <details>
