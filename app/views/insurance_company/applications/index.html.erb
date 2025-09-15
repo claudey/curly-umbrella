@@ -1,0 +1,296 @@
+<% content_for :title, "Applications - #{@insurance_company.name}" %>
+
+<div class="container mx-auto px-4 py-6">
+  <!-- Page Header -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">Applications</h1>
+      <p class="text-gray-600 mt-1">Review and quote on insurance applications</p>
+    </div>
+    <div class="flex space-x-3">
+      <%= link_to insurance_company_dashboard_index_path, class: "btn btn-outline" do %>
+        <i class="ph ph-house"></i>
+        Dashboard
+      <% end %>
+      <%= link_to insurance_company_quotes_path, class: "btn btn-primary" do %>
+        <i class="ph ph-note"></i>
+        My Quotes
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Summary Stats -->
+  <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
+    <div class="stat bg-base-100 shadow rounded-lg">
+      <div class="stat-title text-xs">Total</div>
+      <div class="stat-value text-lg"><%= @summary_stats[:total] %></div>
+    </div>
+    <div class="stat bg-base-100 shadow rounded-lg">
+      <div class="stat-title text-xs">Pending</div>
+      <div class="stat-value text-lg text-warning"><%= @summary_stats[:pending] %></div>
+    </div>
+    <div class="stat bg-base-100 shadow rounded-lg">
+      <div class="stat-title text-xs">Viewed</div>
+      <div class="stat-value text-lg text-info"><%= @summary_stats[:viewed] %></div>
+    </div>
+    <div class="stat bg-base-100 shadow rounded-lg">
+      <div class="stat-title text-xs">Quoted</div>
+      <div class="stat-value text-lg text-success"><%= @summary_stats[:quoted] %></div>
+    </div>
+    <div class="stat bg-base-100 shadow rounded-lg">
+      <div class="stat-title text-xs">High Match</div>
+      <div class="stat-value text-lg text-primary"><%= @summary_stats[:high_match] %></div>
+    </div>
+    <div class="stat bg-base-100 shadow rounded-lg">
+      <div class="stat-title text-xs">Ignored</div>
+      <div class="stat-value text-lg text-neutral"><%= @summary_stats[:ignored] %></div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card bg-base-100 shadow mb-6">
+    <div class="card-body">
+      <%= form_with url: insurance_company_applications_path, method: :get, local: true, 
+                    class: "grid grid-cols-1 md:grid-cols-6 gap-4 items-end" do |form| %>
+        
+        <!-- Status Filter -->
+        <div class="form-control">
+          <%= form.label :status, class: "label label-text font-medium" %>
+          <%= form.select :status, 
+                          options_for_select([
+                            ['All Statuses', ''],
+                            ['Pending', 'pending'],
+                            ['Viewed', 'viewed'],
+                            ['Quoted', 'quoted'],
+                            ['Ignored', 'ignored'],
+                            ['Active Only', 'active']
+                          ], @filter_params[:status]), 
+                          {}, 
+                          { class: "select select-bordered select-sm" } %>
+        </div>
+
+        <!-- Insurance Type Filter -->
+        <div class="form-control">
+          <%= form.label :insurance_type, class: "label label-text font-medium" %>
+          <%= form.select :insurance_type, 
+                          options_for_select([
+                            ['All Types', ''],
+                            ['Motor Insurance', 'motor'],
+                            ['Fire Insurance', 'fire'],
+                            ['Liability Insurance', 'liability'],
+                            ['General Accident', 'general_accident'],
+                            ['Bonds Insurance', 'bonds']
+                          ], @filter_params[:insurance_type]), 
+                          {}, 
+                          { class: "select select-bordered select-sm" } %>
+        </div>
+
+        <!-- Match Score Filter -->
+        <div class="form-control">
+          <%= form.label :match_score, class: "label label-text font-medium" %>
+          <%= form.select :match_score, 
+                          options_for_select([
+                            ['All Matches', ''],
+                            ['High (70%+)', 'high'],
+                            ['Medium (40-69%)', 'medium'],
+                            ['Low (<40%)', 'low']
+                          ], @filter_params[:match_score]), 
+                          {}, 
+                          { class: "select select-bordered select-sm" } %>
+        </div>
+
+        <!-- Search -->
+        <div class="form-control">
+          <%= form.label :search, class: "label label-text font-medium" %>
+          <%= form.text_field :search, 
+                              value: @filter_params[:search], 
+                              placeholder: "Client name or app#...", 
+                              class: "input input-bordered input-sm" %>
+        </div>
+
+        <!-- Sort -->
+        <div class="form-control">
+          <%= form.label :sort, class: "label label-text font-medium" %>
+          <%= form.select :sort, 
+                          options_for_select([
+                            ['Newest First', 'created_desc'],
+                            ['Oldest First', 'created_asc'],
+                            ['Best Match', 'match_score_desc'],
+                            ['Worst Match', 'match_score_asc'],
+                            ['By Type', 'type']
+                          ], @filter_params[:sort]), 
+                          {}, 
+                          { class: "select select-bordered select-sm" } %>
+        </div>
+
+        <!-- Actions -->
+        <div class="form-control">
+          <%= form.submit "Filter", class: "btn btn-primary btn-sm" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Applications List -->
+  <div class="card bg-base-100 shadow">
+    <div class="card-body p-0">
+      <% if @distributions.any? %>
+        <div class="overflow-x-auto">
+          <table class="table table-hover">
+            <thead>
+              <tr class="border-b">
+                <th>Client</th>
+                <th>Insurance Type</th>
+                <th>Application #</th>
+                <th>Match Score</th>
+                <th>Status</th>
+                <th>Received</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @distributions.each do |distribution| %>
+                <% application = distribution.insurance_application %>
+                <% client = application.client %>
+                <tr class="hover:bg-base-50">
+                  <td>
+                    <div class="flex items-center space-x-3">
+                      <div class="avatar placeholder">
+                        <div class="bg-neutral text-neutral-content rounded-full w-10">
+                          <span class="text-xs"><%= client.initials %></span>
+                        </div>
+                      </div>
+                      <div>
+                        <div class="font-bold text-sm"><%= client.full_name %></div>
+                        <div class="text-sm opacity-50"><%= client.email %></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="flex items-center space-x-2">
+                      <span class="badge badge-outline badge-sm">
+                        <%= application.insurance_type_display_name %>
+                      </span>
+                      <div class="text-xs text-gray-500">
+                        Risk: <span class="<%= application.risk_level_color %>"><%= application.risk_level.humanize %></span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="font-mono text-sm"><%= application.application_number %></div>
+                    <div class="text-xs text-gray-500">
+                      <%= time_ago_in_words(application.created_at) %> ago
+                    </div>
+                  </td>
+                  <td>
+                    <div class="flex items-center space-x-2">
+                      <div class="radial-progress text-primary text-xs" 
+                           style="--value:<%= distribution.match_score.round %>; --size: 2.5rem;">
+                        <%= distribution.match_score.round %>%
+                      </div>
+                      <div class="text-xs">
+                        <% if distribution.high_match? %>
+                          <span class="text-green-600">High</span>
+                        <% elsif distribution.medium_match? %>
+                          <span class="text-yellow-600">Medium</span>
+                        <% else %>
+                          <span class="text-red-600">Low</span>
+                        <% end %>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge <%= case distribution.status
+                                         when 'pending' then 'badge-warning'
+                                         when 'viewed' then 'badge-info'
+                                         when 'quoted' then 'badge-success'
+                                         when 'ignored' then 'badge-neutral'
+                                         else 'badge-ghost'
+                                         end %> badge-sm">
+                      <%= distribution.status.humanize %>
+                    </span>
+                  </td>
+                  <td>
+                    <div class="text-sm"><%= distribution.created_at.strftime('%m/%d/%Y') %></div>
+                    <div class="text-xs text-gray-500"><%= distribution.created_at.strftime('%I:%M %p') %></div>
+                  </td>
+                  <td>
+                    <div class="flex space-x-2">
+                      <%= link_to insurance_company_application_path(distribution), 
+                                  class: "btn btn-sm btn-outline" do %>
+                        <i class="ph ph-eye"></i>
+                        View
+                      <% end %>
+                      
+                      <% unless distribution.ignored? %>
+                        <% existing_quote = @insurance_company.quotes.find_by(insurance_application: application) %>
+                        <% if existing_quote %>
+                          <%= link_to insurance_company_quote_path(existing_quote), 
+                                      class: "btn btn-sm btn-primary" do %>
+                            <i class="ph ph-note"></i>
+                            Quote
+                          <% end %>
+                        <% else %>
+                          <%= link_to new_insurance_company_quote_path(application_id: application.id), 
+                                      class: "btn btn-sm btn-success" do %>
+                            <i class="ph ph-plus"></i>
+                            Quote
+                          <% end %>
+                        <% end %>
+                      <% end %>
+
+                      <div class="dropdown dropdown-end">
+                        <label tabindex="0" class="btn btn-sm btn-ghost">
+                          <i class="ph ph-dots-three"></i>
+                        </label>
+                        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+                          <% unless distribution.viewed? %>
+                            <li>
+                              <%= link_to mark_viewed_insurance_company_application_path(distribution), 
+                                          method: :patch do %>
+                                <i class="ph ph-check"></i>
+                                Mark as Viewed
+                              <% end %>
+                            </li>
+                          <% end %>
+                          <% unless distribution.ignored? %>
+                            <li>
+                              <%= link_to ignore_insurance_company_application_path(distribution), 
+                                          method: :patch,
+                                          data: { confirm: "Mark this application as ignored?" } do %>
+                                <i class="ph ph-x"></i>
+                                Ignore
+                              <% end %>
+                            </li>
+                          <% end %>
+                        </ul>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="text-center py-12">
+          <i class="ph ph-files text-6xl text-gray-300 mb-4"></i>
+          <h3 class="text-lg font-semibold text-gray-600 mb-2">No Applications Found</h3>
+          <p class="text-gray-500">
+            <% if @filter_params.values.any?(&:present?) %>
+              Try adjusting your filters to see more results.
+            <% else %>
+              New applications will appear here when they're distributed to your company.
+            <% end %>
+          </p>
+          <% if @filter_params.values.any?(&:present?) %>
+            <%= link_to insurance_company_applications_path, class: "btn btn-outline mt-4" do %>
+              <i class="ph ph-arrow-clockwise"></i>
+              Clear Filters
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -1,4 +1,15 @@
 Rails.application.routes.draw do
+  namespace :insurance_company do
+    get "quotes/index"
+    get "quotes/show"
+    get "quotes/new"
+    get "quotes/create"
+    get "quotes/edit"
+    get "quotes/update"
+    get "applications/index"
+    get "applications/show"
+    get "dashboard/index"
+  end
   namespace :admin do
     get "roles/index"
     get "roles/show"

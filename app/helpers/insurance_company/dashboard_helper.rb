@@ -1,0 +1,2 @@
+module InsuranceCompany::DashboardHelper
+end

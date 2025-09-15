@@ -1,0 +1,256 @@
+<% content_for :title, "Dashboard - #{@insurance_company.name}" %>
+
+<div class="container mx-auto px-4 py-6">
+  <!-- Page Header -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
+      <p class="text-gray-600 mt-1">Welcome back, <%= current_user.first_name %>!</p>
+    </div>
+    <div class="flex space-x-3">
+      <%= link_to insurance_company_applications_path, class: "btn btn-outline" do %>
+        <i class="ph ph-files"></i>
+        View Applications
+      <% end %>
+      <%= link_to insurance_company_quotes_path, class: "btn btn-primary" do %>
+        <i class="ph ph-note"></i>
+        Manage Quotes
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Pending Applications -->
+    <div class="stats shadow bg-base-100">
+      <div class="stat">
+        <div class="stat-figure text-warning">
+          <i class="ph ph-clock text-2xl"></i>
+        </div>
+        <div class="stat-title">Pending Applications</div>
+        <div class="stat-value text-warning"><%= @dashboard_data[:pending_applications] %></div>
+        <div class="stat-desc">Waiting for review</div>
+      </div>
+    </div>
+
+    <!-- Total Quotes -->
+    <div class="stats shadow bg-base-100">
+      <div class="stat">
+        <div class="stat-figure text-primary">
+          <i class="ph ph-note text-2xl"></i>
+        </div>
+        <div class="stat-title">Total Quotes</div>
+        <div class="stat-value text-primary"><%= @dashboard_data[:total_quotes] %></div>
+        <div class="stat-desc"><%= @dashboard_data[:accepted_quotes] %> accepted</div>
+      </div>
+    </div>
+
+    <!-- Response Time -->
+    <div class="stats shadow bg-base-100">
+      <div class="stat">
+        <div class="stat-figure text-info">
+          <i class="ph ph-timer text-2xl"></i>
+        </div>
+        <div class="stat-title">Avg Response Time</div>
+        <div class="stat-value text-info"><%= @dashboard_data[:response_time] %>h</div>
+        <div class="stat-desc">Hours to first view</div>
+      </div>
+    </div>
+
+    <!-- Acceptance Rate -->
+    <div class="stats shadow bg-base-100">
+      <div class="stat">
+        <div class="stat-figure text-success">
+          <i class="ph ph-chart-line-up text-2xl"></i>
+        </div>
+        <div class="stat-title">Acceptance Rate</div>
+        <div class="stat-value text-success"><%= @dashboard_data[:quote_acceptance_rate] %>%</div>
+        <div class="stat-desc">Quotes accepted</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left Column: Charts and Stats -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- Weekly Applications Chart -->
+      <div class="card bg-base-100 shadow">
+        <div class="card-body">
+          <h2 class="card-title">
+            <i class="ph ph-chart-bar"></i>
+            Weekly Applications
+          </h2>
+          <div class="flex justify-between items-end h-32 mt-4">
+            <% @dashboard_data[:weekly_applications].each do |day_data| %>
+              <div class="flex flex-col items-center">
+                <div class="bg-primary rounded-t" style="width: 24px; height: <%= [day_data[:count] * 8, 2].max %>px;"></div>
+                <span class="text-xs mt-1 text-gray-600"><%= day_data[:date] %></span>
+                <span class="text-xs font-semibold"><%= day_data[:count] %></span>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Insurance Type Breakdown -->
+      <div class="card bg-base-100 shadow">
+        <div class="card-body">
+          <h2 class="card-title">
+            <i class="ph ph-chart-pie"></i>
+            Applications by Type
+          </h2>
+          <div class="grid grid-cols-2 gap-4 mt-4">
+            <% @dashboard_data[:insurance_type_breakdown].each do |type, count| %>
+              <div class="flex justify-between items-center p-3 bg-base-200 rounded-lg">
+                <span class="font-medium"><%= type %></span>
+                <span class="badge badge-primary"><%= count %></span>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Monthly Progress -->
+      <div class="card bg-base-100 shadow">
+        <div class="card-body">
+          <h2 class="card-title">
+            <i class="ph ph-target"></i>
+            Monthly Quote Target
+          </h2>
+          <div class="mt-4">
+            <div class="flex justify-between text-sm mb-2">
+              <span>Progress: <%= @dashboard_data[:monthly_progress] %> / <%= @dashboard_data[:monthly_target] %></span>
+              <span><%= ((@dashboard_data[:monthly_progress].to_f / @dashboard_data[:monthly_target]) * 100).round(1) %>%</span>
+            </div>
+            <progress class="progress progress-primary w-full" 
+                      value="<%= @dashboard_data[:monthly_progress] %>" 
+                      max="<%= @dashboard_data[:monthly_target] %>"></progress>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Recent Activity -->
+    <div class="space-y-6">
+      <!-- Recent Applications -->
+      <div class="card bg-base-100 shadow">
+        <div class="card-body">
+          <h2 class="card-title">
+            <i class="ph ph-clock-clockwise"></i>
+            Recent Applications
+          </h2>
+          <div class="space-y-3 mt-4">
+            <% if @dashboard_data[:recent_applications].any? %>
+              <% @dashboard_data[:recent_applications].first(5).each do |distribution| %>
+                <div class="flex justify-between items-center p-3 border border-base-300 rounded-lg hover:bg-base-50">
+                  <div class="flex-1">
+                    <div class="font-medium text-sm">
+                      <%= link_to insurance_company_application_path(distribution), 
+                                  class: "link link-primary" do %>
+                        <%= distribution.insurance_application.client.full_name %>
+                      <% end %>
+                    </div>
+                    <div class="text-xs text-gray-600">
+                      <%= distribution.insurance_application.insurance_type_display_name %>
+                    </div>
+                    <div class="text-xs text-gray-500">
+                      <%= time_ago_in_words(distribution.created_at) %> ago
+                    </div>
+                  </div>
+                  <div class="flex flex-col items-end">
+                    <span class="badge <%= distribution.status == 'pending' ? 'badge-warning' : 'badge-info' %> badge-sm">
+                      <%= distribution.status.humanize %>
+                    </span>
+                    <span class="text-xs text-gray-500 mt-1">
+                      <%= distribution.match_score.round %>% match
+                    </span>
+                  </div>
+                </div>
+              <% end %>
+            <% else %>
+              <div class="text-center text-gray-500 py-8">
+                <i class="ph ph-files text-4xl mb-2"></i>
+                <p>No recent applications</p>
+              </div>
+            <% end %>
+          </div>
+          <div class="card-actions justify-end mt-4">
+            <%= link_to "View All", insurance_company_applications_path, class: "btn btn-sm btn-outline" %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Expiring Quotes -->
+      <div class="card bg-base-100 shadow">
+        <div class="card-body">
+          <h2 class="card-title">
+            <i class="ph ph-warning"></i>
+            Expiring Soon
+          </h2>
+          <div class="space-y-3 mt-4">
+            <% if @dashboard_data[:expiring_quotes].any? %>
+              <% @dashboard_data[:expiring_quotes].each do |quote| %>
+                <div class="flex justify-between items-center p-3 border border-base-300 rounded-lg">
+                  <div class="flex-1">
+                    <div class="font-medium text-sm">
+                      <%= link_to insurance_company_quote_path(quote), 
+                                  class: "link link-primary" do %>
+                        <%= quote.quote_number %>
+                      <% end %>
+                    </div>
+                    <div class="text-xs text-gray-600">
+                      <%= quote.insurance_application.client.full_name %>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-xs text-error font-medium">
+                      <%= pluralize(quote.expires_in_days, 'day') %> left
+                    </div>
+                    <div class="text-xs text-gray-500">
+                      $<%= number_with_delimiter(quote.premium_amount) %>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            <% else %>
+              <div class="text-center text-gray-500 py-8">
+                <i class="ph ph-check-circle text-4xl mb-2"></i>
+                <p>No quotes expiring soon</p>
+              </div>
+            <% end %>
+          </div>
+          <div class="card-actions justify-end mt-4">
+            <%= link_to "View All Quotes", insurance_company_quotes_path, class: "btn btn-sm btn-outline" %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="card bg-base-100 shadow">
+        <div class="card-body">
+          <h2 class="card-title">
+            <i class="ph ph-lightning"></i>
+            Quick Actions
+          </h2>
+          <div class="space-y-2 mt-4">
+            <%= link_to insurance_company_applications_path(status: 'pending'), 
+                        class: "btn btn-outline btn-sm w-full justify-start" do %>
+              <i class="ph ph-eye"></i>
+              Review Pending Applications
+            <% end %>
+            <%= link_to insurance_company_quotes_path(status: 'draft'), 
+                        class: "btn btn-outline btn-sm w-full justify-start" do %>
+              <i class="ph ph-note-pencil"></i>
+              Complete Draft Quotes
+            <% end %>
+            <%= link_to insurance_company_quotes_path(status: 'expired'), 
+                        class: "btn btn-outline btn-sm w-full justify-start" do %>
+              <i class="ph ph-clock-countdown"></i>
+              Handle Expired Quotes
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

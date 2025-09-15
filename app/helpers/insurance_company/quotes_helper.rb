@@ -1,0 +1,2 @@
+module InsuranceCompany::QuotesHelper
+end

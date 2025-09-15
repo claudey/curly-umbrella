@@ -1,0 +1,2 @@
+module InsuranceCompany::ApplicationsHelper
+end
