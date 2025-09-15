@@ -1,0 +1,30 @@
+<div class="<%= wrapper_css_classes %>">
+  <% unless @type == 'checkbox' || @type == 'radio' %>
+    <%= @form.label @field, field_label, class: "label" do %>
+      <span class="label-text">
+        <%= field_label %>
+        <% if @required %>
+          <span class="text-error">*</span>
+        <% end %>
+      </span>
+    <% end %>
+  <% end %>
+
+  <%= render_input %>
+
+  <% if @help_text || has_errors? %>
+    <div class="label">
+      <% if @help_text && !has_errors? %>
+        <span class="label-text-alt text-base-content/70">
+          <%= @help_text %>
+        </span>
+      <% end %>
+      
+      <% if has_errors? %>
+        <span class="label-text-alt text-error">
+          <%= field_errors.first %>
+        </span>
+      <% end %>
+    </div>
+  <% end %>
+</div>

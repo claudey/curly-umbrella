@@ -1,0 +1,213 @@
+<div class="dashboard-container">
+  <!-- Grid Controls -->
+  <% if @customizable %>
+    <div class="dashboard-controls mb-4 flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <h2 class="text-xl font-semibold">Dashboard</h2>
+        <div class="badge badge-neutral badge-sm" data-dashboard-grid-target="widgetCount">
+          <!-- Widget count will be updated by JavaScript -->
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-2">
+        <!-- Layout Controls -->
+        <div class="join">
+          <button class="join-item btn btn-sm" 
+                  data-action="click->dashboard-grid#setColumns"
+                  data-columns="2"
+                  title="2 Columns">
+            <%= icon("view-columns", class: "w-4 h-4") %>
+            2
+          </button>
+          <button class="join-item btn btn-sm" 
+                  data-action="click->dashboard-grid#setColumns"
+                  data-columns="3"
+                  title="3 Columns">
+            <%= icon("view-columns", class: "w-4 h-4") %>
+            3
+          </button>
+          <button class="join-item btn btn-sm btn-active" 
+                  data-action="click->dashboard-grid#setColumns"
+                  data-columns="4"
+                  title="4 Columns">
+            <%= icon("view-columns", class: "w-4 h-4") %>
+            4
+          </button>
+        </div>
+
+        <!-- Widget Management -->
+        <div class="dropdown dropdown-end">
+          <div tabindex="0" role="button" class="btn btn-sm btn-outline">
+            <%= icon("plus", class: "w-4 h-4") %>
+            Add Widget
+          </div>
+          <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 z-50">
+            <li>
+              <a data-action="click->dashboard-grid#addWidget" 
+                 data-widget-type="metric"
+                 data-widget-title="Performance Metrics">
+                <%= icon("chart-bar", class: "w-4 h-4") %>
+                Metrics Widget
+              </a>
+            </li>
+            <li>
+              <a data-action="click->dashboard-grid#addWidget" 
+                 data-widget-type="chart"
+                 data-widget-title="Analytics Chart">
+                <%= icon("chart-line", class: "w-4 h-4") %>
+                Chart Widget
+              </a>
+            </li>
+            <li>
+              <a data-action="click->dashboard-grid#addWidget" 
+                 data-widget-type="list"
+                 data-widget-title="Recent Activity">
+                <%= icon("list-bullet", class: "w-4 h-4") %>
+                List Widget
+              </a>
+            </li>
+            <li>
+              <a data-action="click->dashboard-grid#addWidget" 
+                 data-widget-type="activity"
+                 data-widget-title="Activity Feed">
+                <%= icon("bell", class: "w-4 h-4") %>
+                Activity Widget
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Dashboard Actions -->
+        <div class="dropdown dropdown-end">
+          <div tabindex="0" role="button" class="btn btn-sm btn-ghost">
+            <%= icon("ellipsis-vertical", class: "w-4 h-4") %>
+          </div>
+          <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-50">
+            <li>
+              <a data-action="click->dashboard-grid#resetLayout">
+                <%= icon("arrow-path", class: "w-4 h-4") %>
+                Reset Layout
+              </a>
+            </li>
+            <li>
+              <a data-action="click->dashboard-grid#exportLayout">
+                <%= icon("arrow-down-tray", class: "w-4 h-4") %>
+                Export Layout
+              </a>
+            </li>
+            <li>
+              <a data-action="click->dashboard-grid#importLayout">
+                <%= icon("arrow-up-tray", class: "w-4 h-4") %>
+                Import Layout
+              </a>
+            </li>
+            <li class="divider"></li>
+            <li>
+              <a data-action="click->dashboard-grid#toggleEditMode" 
+                 data-dashboard-grid-target="editModeToggle">
+                <%= icon("pencil", class: "w-4 h-4") %>
+                <span data-dashboard-grid-target="editModeText">Edit Mode</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Main Dashboard Grid -->
+  <div class="<%= grid_classes %>"
+       style="<%= grid_styles %>"
+       data-controller="<%= stimulus_controllers %>"
+       <%= stimulus_data.map { |k, v| "#{k}=\"#{v}\"" }.join(' ').html_safe %>
+       id="<%= @grid_id %>"
+       data-dashboard-grid-target="grid">
+    
+    <%= content %>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-dashboard hidden" data-dashboard-grid-target="emptyState">
+    <div class="text-center py-12">
+      <div class="w-16 h-16 mx-auto mb-4 text-base-content/30">
+        <%= icon("squares-plus", class: "w-16 h-16") %>
+      </div>
+      <h3 class="text-lg font-medium text-base-content/70 mb-2">Your dashboard is empty</h3>
+      <p class="text-base-content/50 mb-4">Add widgets to get started with your personalized dashboard</p>
+      <% if @customizable %>
+        <button class="btn btn-primary" data-action="click->dashboard-grid#showAddWidgetModal">
+          <%= icon("plus", class: "w-4 h-4") %>
+          Add Your First Widget
+        </button>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Drop Zones for Sortable (hidden by default) -->
+  <% if @sortable %>
+    <div class="drop-zone-indicator hidden absolute inset-0 border-2 border-dashed border-primary bg-primary/10 rounded-lg z-10"
+         data-dashboard-grid-target="dropZone">
+      <div class="flex items-center justify-center h-full">
+        <div class="text-primary font-medium">Drop widget here</div>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<!-- Add Widget Modal (if customizable) -->
+<% if @customizable %>
+  <dialog class="modal" data-dashboard-grid-target="addWidgetModal">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg mb-4">Add New Widget</h3>
+      
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <!-- Widget Type Cards -->
+        <div class="card card-compact bg-base-200 cursor-pointer hover:bg-base-300 transition-colors"
+             data-action="click->dashboard-grid#selectWidgetType"
+             data-widget-type="metric">
+          <div class="card-body items-center text-center">
+            <%= icon("chart-bar", class: "w-8 h-8 mb-2 text-primary") %>
+            <div class="card-title text-sm">Metrics</div>
+            <p class="text-xs text-base-content/70">Display key performance indicators</p>
+          </div>
+        </div>
+
+        <div class="card card-compact bg-base-200 cursor-pointer hover:bg-base-300 transition-colors"
+             data-action="click->dashboard-grid#selectWidgetType"
+             data-widget-type="chart">
+          <div class="card-body items-center text-center">
+            <%= icon("chart-line", class: "w-8 h-8 mb-2 text-primary") %>
+            <div class="card-title text-sm">Charts</div>
+            <p class="text-xs text-base-content/70">Visualize data with graphs</p>
+          </div>
+        </div>
+
+        <div class="card card-compact bg-base-200 cursor-pointer hover:bg-base-300 transition-colors"
+             data-action="click->dashboard-grid#selectWidgetType"
+             data-widget-type="list">
+          <div class="card-body items-center text-center">
+            <%= icon("list-bullet", class: "w-8 h-8 mb-2 text-primary") %>
+            <div class="card-title text-sm">Lists</div>
+            <p class="text-xs text-base-content/70">Show recent items or data</p>
+          </div>
+        </div>
+
+        <div class="card card-compact bg-base-200 cursor-pointer hover:bg-base-300 transition-colors"
+             data-action="click->dashboard-grid#selectWidgetType"
+             data-widget-type="activity">
+          <div class="card-body items-center text-center">
+            <%= icon("bell", class: "w-8 h-8 mb-2 text-primary") %>
+            <div class="card-title text-sm">Activity</div>
+            <p class="text-xs text-base-content/70">Track recent activity</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-action">
+        <form method="dialog">
+          <button class="btn">Cancel</button>
+        </form>
+      </div>
+    </div>
+  </dialog>
+<% end %>

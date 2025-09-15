@@ -1,0 +1,112 @@
+<div class="<%= widget_classes %>" 
+     data-controller="dashboard-widget"
+     <%= stimulus_data.map { |k, v| "#{k}=\"#{v}\"" }.join(' ').html_safe %>
+     id="widget-<%= widget_id %>"
+     data-dashboard-widget-target="widget">
+
+  <!-- Widget Header -->
+  <div class="<%= header_classes %>" data-dashboard-widget-target="header">
+    <div class="flex items-center gap-3">
+      <% if @draggable %>
+        <div class="drag-handle cursor-move opacity-50 hover:opacity-100" data-dashboard-widget-target="dragHandle">
+          <%= icon("bars-3", class: "w-4 h-4") %>
+        </div>
+      <% end %>
+      
+      <h3 class="font-semibold text-lg" data-dashboard-widget-target="title">
+        <%= @title %>
+      </h3>
+      
+      <% if @loading %>
+        <span class="loading loading-spinner loading-sm"></span>
+      <% end %>
+    </div>
+
+    <% if has_header_actions? %>
+      <div class="flex items-center gap-2">
+        <!-- Custom Actions -->
+        <% @actions.each do |action| %>
+          <%= link_to action[:url], 
+                     class: "btn btn-ghost btn-sm", 
+                     title: action[:title],
+                     data: action[:data] || {} do %>
+            <%= icon(action[:icon], class: "w-4 h-4") if action[:icon] %>
+            <%= action[:label] if action[:label] %>
+          <% end %>
+        <% end %>
+
+        <!-- Refresh Button -->
+        <% if @refresh_url %>
+          <button class="btn btn-ghost btn-sm" 
+                  data-action="click->dashboard-widget#refresh"
+                  title="Refresh">
+            <%= icon("arrow-path", class: "w-4 h-4") %>
+          </button>
+        <% end %>
+
+        <!-- Collapse Button -->
+        <% if @collapsible %>
+          <button class="btn btn-ghost btn-sm" 
+                  data-action="click->dashboard-widget#toggle"
+                  data-dashboard-widget-target="toggleButton"
+                  title="Collapse/Expand">
+            <%= icon("minus", class: "w-4 h-4") %>
+          </button>
+        <% end %>
+
+        <!-- Remove Button -->
+        <% if @removable %>
+          <button class="btn btn-ghost btn-sm text-error" 
+                  data-action="click->dashboard-widget#remove"
+                  title="Remove Widget">
+            <%= icon("x-mark", class: "w-4 h-4") %>
+          </button>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Widget Body -->
+  <div class="<%= body_classes %>" 
+       data-dashboard-widget-target="body"
+       style="<%= 'display: none;' if @collapsible && false %>">
+    
+    <% if @error %>
+      <!-- Error State -->
+      <div class="flex flex-col items-center justify-center py-8 text-center">
+        <div class="text-error mb-2">
+          <%= icon("exclamation-triangle", class: "w-8 h-8") %>
+        </div>
+        <div class="text-sm text-error">
+          <%= @error %>
+        </div>
+        <% if @refresh_url %>
+          <button class="btn btn-outline btn-sm mt-3" 
+                  data-action="click->dashboard-widget#refresh">
+            Try Again
+          </button>
+        <% end %>
+      </div>
+    
+    <% elsif @loading %>
+      <!-- Loading State -->
+      <div class="flex items-center justify-center py-8">
+        <span class="loading loading-spinner loading-lg"></span>
+      </div>
+    
+    <% else %>
+      <!-- Widget Content -->
+      <div data-dashboard-widget-target="content">
+        <%= content %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Resize Handle (for resizable widgets) -->
+  <% if @draggable %>
+    <div class="resize-handle absolute bottom-0 right-0 w-4 h-4 cursor-se-resize opacity-50 hover:opacity-100"
+         data-dashboard-widget-target="resizeHandle">
+      <%= icon("arrows-pointing-out", class: "w-3 h-3") %>
+    </div>
+  <% end %>
+</div>
