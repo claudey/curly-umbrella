@@ -117,6 +117,16 @@ class QuotesController < ApplicationController
                          .recent
   end
 
+  def compare
+    @motor_application = current_user.organization.motor_applications.find(params[:motor_application_id])
+    @quotes = @motor_application.quotes_for_comparison
+    
+    if @quotes.empty?
+      redirect_to motor_application_path(@motor_application), 
+                  alert: 'No approved quotes available for comparison.'
+    end
+  end
+
   private
 
   def set_quote

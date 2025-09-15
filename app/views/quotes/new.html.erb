@@ -1,4 +1,238 @@
-<div>
-  <h1 class="font-bold text-4xl">Quotes#new</h1>
-  <p>Find me in app/views/quotes/new.html.erb</p>
+<div class="container mx-auto px-4 py-8">
+  <div class="flex items-center gap-4 mb-6">
+    <%= link_to quotes_path, class: "btn btn-ghost btn-circle" do %>
+      <%= icon("arrow-left") %>
+    <% end %>
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">Create New Quote</h1>
+      <p class="text-gray-600 mt-2">
+        Generate a quote for a motor insurance application
+      </p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Quote Form -->
+    <div class="lg:col-span-2">
+      <div class="card bg-base-100 shadow-sm">
+        <div class="card-body">
+          <%= form_with model: @quote, local: true, 
+                        data: { controller: "quote-form", action: "input->quote-form#calculateCommission" } do |form| %>
+            
+            <% if @quote.errors.any? %>
+              <div class="alert alert-error mb-6">
+                <h3 class="font-semibold">Please fix the following errors:</h3>
+                <ul class="list-disc list-inside mt-2">
+                  <% @quote.errors.full_messages.each do |message| %>
+                    <li><%= message %></li>
+                  <% end %>
+                </ul>
+              </div>
+            <% end %>
+
+            <!-- Application Selection -->
+            <div class="form-control mb-4">
+              <%= form.label :motor_application_id, "Motor Application", class: "label" %>
+              <%= form.select :motor_application_id,
+                             options_from_collection_for_select(
+                               current_user.organization.motor_applications.submitted.includes(:client),
+                               :id, 
+                               lambda { |app| "#{app.application_number} - #{app.client_name}" },
+                               @quote.motor_application_id
+                             ),
+                             { prompt: "Select an application..." },
+                             { 
+                               class: "select select-bordered w-full",
+                               data: { quote_form_target: "applicationSelect" }
+                             } %>
+            </div>
+
+            <!-- Insurance Company Selection -->
+            <div class="form-control mb-4">
+              <%= form.label :insurance_company_id, "Insurance Company", class: "label" %>
+              <%= form.select :insurance_company_id,
+                             options_from_collection_for_select(
+                               @insurance_companies,
+                               :id,
+                               :name,
+                               @quote.insurance_company_id
+                             ),
+                             { prompt: "Select insurance company..." },
+                             { 
+                               class: "select select-bordered w-full",
+                               data: { quote_form_target: "companySelect" }
+                             } %>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <!-- Premium Amount -->
+              <div class="form-control">
+                <%= form.label :premium_amount, "Premium Amount ($)", class: "label" %>
+                <%= form.number_field :premium_amount,
+                                     step: 0.01,
+                                     min: 0,
+                                     class: "input input-bordered",
+                                     placeholder: "0.00",
+                                     data: { quote_form_target: "premiumAmount" } %>
+              </div>
+
+              <!-- Coverage Amount -->
+              <div class="form-control">
+                <%= form.label :coverage_amount, "Coverage Amount ($)", class: "label" %>
+                <%= form.number_field :coverage_amount,
+                                     step: 0.01,
+                                     min: 0,
+                                     class: "input input-bordered",
+                                     placeholder: "0.00" %>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <!-- Commission Rate -->
+              <div class="form-control">
+                <%= form.label :commission_rate, "Commission Rate (%)", class: "label" %>
+                <%= form.number_field :commission_rate,
+                                     step: 0.1,
+                                     min: 0,
+                                     max: 100,
+                                     class: "input input-bordered",
+                                     placeholder: "0.0",
+                                     data: { quote_form_target: "commissionRate" } %>
+              </div>
+
+              <!-- Validity Period -->
+              <div class="form-control">
+                <%= form.label :validity_period, "Validity Period (days)", class: "label" %>
+                <%= form.number_field :validity_period,
+                                     value: @quote.validity_period || 30,
+                                     min: 1,
+                                     max: 365,
+                                     class: "input input-bordered" %>
+              </div>
+            </div>
+
+            <!-- Coverage Details -->
+            <div class="form-control mb-4">
+              <label class="label">
+                <span class="label-text">Coverage Details</span>
+              </label>
+              <div class="card bg-base-200 p-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" data-quote-form-target="coverageContainer">
+                  <!-- Coverage fields will be populated dynamically -->
+                  <div class="form-control">
+                    <label class="label label-text-alt">Comprehensive Coverage</label>
+                    <%= text_field_tag "quote[coverage_details][comprehensive]", 
+                                      @quote.coverage_details&.dig('comprehensive'),
+                                      class: "input input-sm input-bordered",
+                                      placeholder: "e.g., Full coverage" %>
+                  </div>
+                  
+                  <div class="form-control">
+                    <label class="label label-text-alt">Third Party Coverage</label>
+                    <%= text_field_tag "quote[coverage_details][third_party]", 
+                                      @quote.coverage_details&.dig('third_party'),
+                                      class: "input input-sm input-bordered",
+                                      placeholder: "e.g., $1,000,000" %>
+                  </div>
+                  
+                  <div class="form-control">
+                    <label class="label label-text-alt">Excess Amount</label>
+                    <%= text_field_tag "quote[coverage_details][excess]", 
+                                      @quote.coverage_details&.dig('excess'),
+                                      class: "input input-sm input-bordered",
+                                      placeholder: "e.g., $500" %>
+                  </div>
+                  
+                  <div class="form-control">
+                    <label class="label label-text-alt">Additional Benefits</label>
+                    <%= text_field_tag "quote[coverage_details][benefits]", 
+                                      @quote.coverage_details&.dig('benefits'),
+                                      class: "input input-sm input-bordered",
+                                      placeholder: "e.g., Roadside assistance" %>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Terms & Conditions -->
+            <div class="form-control mb-6">
+              <%= form.label :terms_conditions, "Terms & Conditions", class: "label" %>
+              <%= form.text_area :terms_conditions,
+                                rows: 4,
+                                class: "textarea textarea-bordered",
+                                placeholder: "Enter specific terms, conditions, and any special clauses for this quote..." %>
+            </div>
+
+            <!-- Notes -->
+            <div class="form-control mb-6">
+              <%= form.label :notes, "Internal Notes", class: "label" %>
+              <%= form.text_area :notes,
+                                rows: 3,
+                                class: "textarea textarea-bordered",
+                                placeholder: "Add any internal notes about this quote..." %>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex gap-4 justify-end">
+              <%= link_to "Cancel", quotes_path, class: "btn btn-ghost" %>
+              <%= form.submit "Save as Draft", 
+                             name: "commit", 
+                             value: "draft",
+                             class: "btn btn-outline" %>
+              <%= form.submit "Create Quote", 
+                             name: "commit", 
+                             value: "create",
+                             class: "btn btn-primary" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quote Summary Sidebar -->
+    <div class="lg:col-span-1">
+      <div class="card bg-base-100 shadow-sm sticky top-4">
+        <div class="card-body">
+          <h3 class="font-semibold text-lg mb-4">Quote Summary</h3>
+          
+          <div class="space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="text-gray-600">Premium Amount:</span>
+              <span class="font-medium" data-quote-form-target="premiumDisplay">$0.00</span>
+            </div>
+            
+            <div class="flex justify-between items-center">
+              <span class="text-gray-600">Commission Rate:</span>
+              <span class="font-medium" data-quote-form-target="commissionRateDisplay">0.0%</span>
+            </div>
+            
+            <div class="flex justify-between items-center">
+              <span class="text-gray-600">Commission Amount:</span>
+              <span class="font-medium" data-quote-form-target="commissionAmountDisplay">$0.00</span>
+            </div>
+            
+            <div class="divider my-2"></div>
+            
+            <div class="flex justify-between items-center text-lg font-semibold">
+              <span>Total Premium:</span>
+              <span data-quote-form-target="totalDisplay">$0.00</span>
+            </div>
+          </div>
+
+          <div class="mt-6">
+            <div class="alert alert-info">
+              <div class="text-sm">
+                <p class="font-medium mb-1">💡 Quick Tips:</p>
+                <ul class="text-xs space-y-1">
+                  <li>• Check competitor rates before quoting</li>
+                  <li>• Consider client's claim history</li>
+                  <li>• Verify coverage matches requirements</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

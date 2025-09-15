@@ -11,6 +11,7 @@ Rails.application.routes.draw do
     collection do
       get :pending
       get :expiring_soon
+      get :compare
     end
   end
   resources :notifications, only: [:index, :show, :update] do

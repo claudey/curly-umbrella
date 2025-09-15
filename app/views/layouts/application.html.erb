@@ -117,7 +117,7 @@
                       Applications
                     </summary>
                     <ul>
-                      <li><a href="#">Motor Insurance</a></li>
+                      <li><%= link_to "Motor Insurance", motor_applications_path %></li>
                       <li><a href="#">Life Insurance</a></li>
                       <li><a href="#">Fire Insurance</a></li>
                       <li><a href="#">Residential Insurance</a></li>
@@ -133,9 +133,9 @@
                       Quotes
                     </summary>
                     <ul>
-                      <li><a href="#">All Quotes</a></li>
-                      <li><a href="#">Pending Reviews</a></li>
-                      <li><a href="#">Approved</a></li>
+                      <li><%= link_to "All Quotes", quotes_path %></li>
+                      <li><%= link_to "Pending Reviews", pending_quotes_path %></li>
+                      <li><%= link_to "Expiring Soon", expiring_soon_quotes_path %></li>
                     </ul>
                   </details>
                 </li>

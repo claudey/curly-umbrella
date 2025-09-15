@@ -169,6 +169,27 @@ class MotorApplication < ApplicationRecord
     premium_amount + (premium_amount * commission_rate / 100)
   end
 
+  # Quote management methods
+  def has_quotes?
+    quotes.any?
+  end
+
+  def active_quotes
+    quotes.active.includes(:insurance_company, :quoted_by)
+  end
+
+  def best_quote
+    active_quotes.approved.order(:premium_amount).first
+  end
+
+  def accepted_quote
+    quotes.accepted.first
+  end
+
+  def quotes_for_comparison
+    active_quotes.approved.order(:premium_amount)
+  end
+
   private
 
   def generate_application_number

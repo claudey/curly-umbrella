@@ -99,11 +99,11 @@
 ## Phase 2: Quote Management (Weeks 5-6)
 
 ### 2.1 Quote Management System
-- [ ] Create Quote model with comprehensive fields
-- [ ] Design quote submission workflow for insurance companies
-- [ ] Implement quote comparison interface with DaisyUI tables
-- [ ] Add quote status tracking and notifications
-- [ ] Create quote analytics dashboard
+- [x] Create Quote model with comprehensive fields
+- [x] Design quote submission workflow for insurance companies
+- [x] Implement quote comparison interface with DaisyUI tables
+- [x] Add quote status tracking and notifications
+- [x] Create quote analytics dashboard
 
 ### 2.2 Insurance Company Portal
 - [ ] Create dedicated interface for insurance company users

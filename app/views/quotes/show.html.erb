@@ -1,4 +1,393 @@
-<div>
-  <h1 class="font-bold text-4xl">Quotes#show</h1>
-  <p>Find me in app/views/quotes/show.html.erb</p>
+<div class="container mx-auto px-4 py-8">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center gap-4">
+      <%= link_to quotes_path, class: "btn btn-ghost btn-circle" do %>
+        <%= icon("arrow-left") %>
+      <% end %>
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">
+          Quote <%= @quote.quote_number %>
+        </h1>
+        <p class="text-gray-600 mt-1">
+          Created <%= time_ago_in_words(@quote.created_at) %> ago by 
+          <%= @quote.quoted_by.full_name %>
+        </p>
+      </div>
+    </div>
+    
+    <div class="flex items-center gap-3">
+      <!-- Status Badge -->
+      <span class="badge <%= @quote.status_badge_class %> badge-lg">
+        <%= @quote.status.humanize %>
+      </span>
+      
+      <!-- Expiration Warning -->
+      <% if @quote.expired? %>
+        <span class="badge badge-error">Expired</span>
+      <% elsif @quote.expires_in_days && @quote.expires_in_days <= 3 %>
+        <span class="badge badge-warning">
+          Expires in <%= @quote.expires_in_days %> day<%= @quote.expires_in_days == 1 ? '' : 's' %>
+        </span>
+      <% end %>
+      
+      <!-- Action Buttons -->
+      <div class="dropdown dropdown-end">
+        <div tabindex="0" role="button" class="btn btn-outline">
+          <%= icon("ellipsis-vertical") %>
+          Actions
+        </div>
+        <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
+          <% if @quote.draft? %>
+            <li>
+              <%= link_to edit_quote_path(@quote) do %>
+                <%= icon("pencil", class: "w-4 h-4") %>
+                Edit Quote
+              <% end %>
+            </li>
+            <li>
+              <%= link_to submit_quote_path(@quote), method: :patch,
+                          data: { confirm: "Submit this quote?" } do %>
+                <%= icon("paper-airplane", class: "w-4 h-4") %>
+                Submit Quote
+              <% end %>
+            </li>
+          <% elsif @quote.pending_review? %>
+            <li>
+              <%= link_to approve_quote_path(@quote), method: :patch,
+                          data: { confirm: "Approve this quote?" } do %>
+                <%= icon("check-circle", class: "w-4 h-4") %>
+                Approve Quote
+              <% end %>
+            </li>
+            <li>
+              <%= link_to reject_quote_path(@quote), method: :patch,
+                          data: { 
+                            confirm: "Reject this quote?",
+                            reason: prompt("Reason for rejection:")
+                          } do %>
+                <%= icon("x-circle", class: "w-4 h-4") %>
+                Reject Quote
+              <% end %>
+            </li>
+          <% elsif @quote.approved? %>
+            <li>
+              <%= link_to accept_quote_path(@quote), method: :patch,
+                          data: { confirm: "Accept this quote? This will reject all other quotes for this application." } do %>
+                <%= icon("hand-thumb-up", class: "w-4 h-4") %>
+                Accept Quote
+              <% end %>
+            </li>
+          <% end %>
+          
+          <% unless @quote.accepted? || @quote.expired? %>
+            <li>
+              <%= link_to withdraw_quote_path(@quote), method: :patch,
+                          data: { confirm: "Withdraw this quote?" } do %>
+                <%= icon("archive-box-x-mark", class: "w-4 h-4") %>
+                Withdraw Quote
+              <% end %>
+            </li>
+          <% end %>
+          
+          <div class="divider my-1"></div>
+          <li>
+            <a href="#" onclick="window.print()">
+              <%= icon("printer", class: "w-4 h-4") %>
+              Print Quote
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Main Content -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- Quote Details -->
+      <div class="card bg-base-100 shadow-sm">
+        <div class="card-body">
+          <h2 class="card-title text-xl mb-4">Quote Details</h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 class="font-semibold text-lg mb-3">Financial Details</h3>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Premium Amount:</span>
+                  <span class="font-medium">$<%= number_with_delimiter(@quote.premium_amount) %></span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Coverage Amount:</span>
+                  <span class="font-medium">$<%= number_with_delimiter(@quote.coverage_amount) %></span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Commission Rate:</span>
+                  <span class="font-medium"><%= number_to_percentage(@quote.commission_rate || 0, precision: 1) %></span>
+                </div>
+                <% if @quote.commission_amount %>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Commission Amount:</span>
+                    <span class="font-medium">$<%= number_with_delimiter(@quote.commission_amount) %></span>
+                  </div>
+                <% end %>
+                <div class="divider my-2"></div>
+                <div class="flex justify-between text-lg font-semibold">
+                  <span>Total Premium:</span>
+                  <span>$<%= number_with_delimiter(@quote.total_premium) %></span>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 class="font-semibold text-lg mb-3">Quote Information</h3>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Quote Number:</span>
+                  <span class="font-medium"><%= @quote.quote_number %></span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Validity Period:</span>
+                  <span class="font-medium"><%= @quote.validity_period %> days</span>
+                </div>
+                <% if @quote.quoted_at %>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Quoted Date:</span>
+                    <span class="font-medium"><%= @quote.quoted_at.strftime("%b %d, %Y") %></span>
+                  </div>
+                <% end %>
+                <% if @quote.expires_at %>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Expires:</span>
+                    <span class="font-medium <%= 'text-error' if @quote.expired? %>">
+                      <%= @quote.expires_at.strftime("%b %d, %Y") %>
+                    </span>
+                  </div>
+                <% end %>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Quoted By:</span>
+                  <span class="font-medium"><%= @quote.quoted_by.full_name %></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coverage Details -->
+      <% if @quote.coverage_details.present? %>
+        <div class="card bg-base-100 shadow-sm">
+          <div class="card-body">
+            <h2 class="card-title text-xl mb-4">Coverage Details</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <% @quote.coverage_details.each do |key, value| %>
+                <% if value.present? %>
+                  <div class="form-control">
+                    <label class="label label-text-alt font-medium">
+                      <%= key.humanize %>
+                    </label>
+                    <div class="input input-bordered bg-base-200 text-gray-700">
+                      <%= value %>
+                    </div>
+                  </div>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <!-- Terms & Conditions -->
+      <% if @quote.terms_conditions.present? %>
+        <div class="card bg-base-100 shadow-sm">
+          <div class="card-body">
+            <h2 class="card-title text-xl mb-4">Terms & Conditions</h2>
+            <div class="prose max-w-none">
+              <%= simple_format(@quote.terms_conditions) %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <!-- Notes -->
+      <% if @quote.notes.present? %>
+        <div class="card bg-base-100 shadow-sm">
+          <div class="card-body">
+            <h2 class="card-title text-xl mb-4">Internal Notes</h2>
+            <div class="prose max-w-none">
+              <%= simple_format(@quote.notes) %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="lg:col-span-1 space-y-6">
+      <!-- Application Details -->
+      <div class="card bg-base-100 shadow-sm">
+        <div class="card-body">
+          <h3 class="card-title text-lg mb-4">Application Details</h3>
+          
+          <div class="space-y-3">
+            <div>
+              <span class="text-gray-600 text-sm">Application Number</span>
+              <div class="font-medium">
+                <%= link_to @motor_application.application_number, 
+                           motor_application_path(@motor_application),
+                           class: "link link-primary" %>
+              </div>
+            </div>
+            
+            <div>
+              <span class="text-gray-600 text-sm">Client Name</span>
+              <div class="font-medium"><%= @motor_application.client_name %></div>
+            </div>
+            
+            <div>
+              <span class="text-gray-600 text-sm">Vehicle</span>
+              <div class="font-medium">
+                <%= @motor_application.vehicle_display_name %>
+              </div>
+            </div>
+            
+            <div>
+              <span class="text-gray-600 text-sm">Coverage Type</span>
+              <div class="font-medium">
+                <span class="badge badge-outline">
+                  <%= @motor_application.coverage_type&.humanize %>
+                </span>
+              </div>
+            </div>
+            
+            <div>
+              <span class="text-gray-600 text-sm">Application Status</span>
+              <div class="font-medium">
+                <span class="badge <%= @motor_application.status_badge_class %>">
+                  <%= @motor_application.status.humanize %>
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-4">
+            <%= link_to motor_application_path(@motor_application), 
+                       class: "btn btn-outline btn-sm w-full" do %>
+              <%= icon("eye") %>
+              View Full Application
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Insurance Company Details -->
+      <div class="card bg-base-100 shadow-sm">
+        <div class="card-body">
+          <h3 class="card-title text-lg mb-4">Insurance Company</h3>
+          
+          <div class="space-y-3">
+            <div>
+              <span class="text-gray-600 text-sm">Company Name</span>
+              <div class="font-medium"><%= @insurance_company.name %></div>
+            </div>
+            
+            <div>
+              <span class="text-gray-600 text-sm">Contact Person</span>
+              <div class="font-medium"><%= @insurance_company.contact_person %></div>
+            </div>
+            
+            <div>
+              <span class="text-gray-600 text-sm">Email</span>
+              <div class="font-medium">
+                <%= link_to @insurance_company.email, 
+                           "mailto:#{@insurance_company.email}",
+                           class: "link link-primary" %>
+              </div>
+            </div>
+            
+            <% if @insurance_company.phone.present? %>
+              <div>
+                <span class="text-gray-600 text-sm">Phone</span>
+                <div class="font-medium">
+                  <%= link_to @insurance_company.phone, 
+                             "tel:#{@insurance_company.phone}",
+                             class: "link link-primary" %>
+                </div>
+              </div>
+            <% end %>
+            
+            <div>
+              <span class="text-gray-600 text-sm">Rating</span>
+              <div class="font-medium">
+                <div class="rating rating-sm">
+                  <% (1..5).each do |i| %>
+                    <input type="radio" class="mask mask-star-2 bg-orange-400" 
+                           disabled <%= 'checked' if i <= @insurance_company.rating %> />
+                  <% end %>
+                </div>
+                <span class="ml-2 text-sm text-gray-600">
+                  <%= @insurance_company.rating_display %>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quote Timeline -->
+      <div class="card bg-base-100 shadow-sm">
+        <div class="card-body">
+          <h3 class="card-title text-lg mb-4">Timeline</h3>
+          
+          <div class="space-y-3">
+            <div class="flex items-center gap-3">
+              <div class="w-2 h-2 bg-primary rounded-full"></div>
+              <div>
+                <div class="font-medium text-sm">Quote Created</div>
+                <div class="text-xs text-gray-500">
+                  <%= @quote.created_at.strftime("%b %d, %Y at %I:%M %p") %>
+                </div>
+              </div>
+            </div>
+            
+            <% if @quote.quoted_at %>
+              <div class="flex items-center gap-3">
+                <div class="w-2 h-2 bg-info rounded-full"></div>
+                <div>
+                  <div class="font-medium text-sm">Quote Submitted</div>
+                  <div class="text-xs text-gray-500">
+                    <%= @quote.quoted_at.strftime("%b %d, %Y at %I:%M %p") %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+            
+            <% if @quote.accepted_at %>
+              <div class="flex items-center gap-3">
+                <div class="w-2 h-2 bg-success rounded-full"></div>
+                <div>
+                  <div class="font-medium text-sm">Quote Accepted</div>
+                  <div class="text-xs text-gray-500">
+                    <%= @quote.accepted_at.strftime("%b %d, %Y at %I:%M %p") %>
+                  </div>
+                </div>
+              </div>
+            <% elsif @quote.rejected_at %>
+              <div class="flex items-center gap-3">
+                <div class="w-2 h-2 bg-error rounded-full"></div>
+                <div>
+                  <div class="font-medium text-sm">Quote Rejected</div>
+                  <div class="text-xs text-gray-500">
+                    <%= @quote.rejected_at.strftime("%b %d, %Y at %I:%M %p") %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

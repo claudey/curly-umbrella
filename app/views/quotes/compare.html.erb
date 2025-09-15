@@ -1,0 +1,359 @@
+<div class="container mx-auto px-4 py-8">
+  <!-- Header -->
+  <div class="flex items-center gap-4 mb-6">
+    <%= link_to motor_application_path(@motor_application), class: "btn btn-ghost btn-circle" do %>
+      <%= icon("arrow-left") %>
+    <% end %>
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">Compare Quotes</h1>
+      <p class="text-gray-600 mt-2">
+        Application <%= @motor_application.application_number %> - 
+        <%= @motor_application.client_name %>
+      </p>
+    </div>
+  </div>
+
+  <!-- Application Summary -->
+  <div class="card bg-base-100 shadow-sm mb-6">
+    <div class="card-body p-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+          <span class="text-gray-600 text-sm">Vehicle</span>
+          <div class="font-medium"><%= @motor_application.vehicle_display_name %></div>
+        </div>
+        <div>
+          <span class="text-gray-600 text-sm">Coverage Type</span>
+          <div class="font-medium">
+            <span class="badge badge-outline">
+              <%= @motor_application.coverage_type&.humanize %>
+            </span>
+          </div>
+        </div>
+        <div>
+          <span class="text-gray-600 text-sm">Coverage Period</span>
+          <div class="font-medium"><%= @motor_application.coverage_period %></div>
+        </div>
+        <div>
+          <span class="text-gray-600 text-sm">Quotes Available</span>
+          <div class="font-medium"><%= @quotes.count %> quotes</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quotes Comparison Table -->
+  <div class="card bg-base-100 shadow-sm mb-6">
+    <div class="card-body p-0">
+      <div class="overflow-x-auto">
+        <table class="table w-full">
+          <thead>
+            <tr>
+              <th class="sticky left-0 bg-base-100 z-10">Insurance Company</th>
+              <th>Premium Amount</th>
+              <th>Commission</th>
+              <th>Total Premium</th>
+              <th>Coverage Details</th>
+              <th>Validity</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @quotes.each_with_index do |quote, index| %>
+              <tr class="hover <%= 'bg-success/10' if index == 0 %>">
+                <!-- Insurance Company (Sticky) -->
+                <td class="sticky left-0 bg-base-100 z-10 <%= 'bg-success/10' if index == 0 %>">
+                  <div class="flex items-center gap-3">
+                    <% if index == 0 %>
+                      <div class="badge badge-success badge-sm">Best</div>
+                    <% end %>
+                    <div>
+                      <div class="font-semibold">
+                        <%= quote.insurance_company.name %>
+                      </div>
+                      <div class="text-sm text-gray-500">
+                        Rating: <%= quote.insurance_company.rating_display %>
+                      </div>
+                      <div class="text-xs text-gray-400">
+                        Quote: <%= quote.quote_number %>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Premium Amount -->
+                <td>
+                  <div class="font-semibold text-lg">
+                    $<%= number_with_delimiter(quote.premium_amount) %>
+                  </div>
+                  <% if index == 0 %>
+                    <div class="text-xs text-success font-medium">Lowest Premium</div>
+                  <% else %>
+                    <% difference = quote.premium_amount - @quotes.first.premium_amount %>
+                    <div class="text-xs text-gray-500">
+                      +$<%= number_with_delimiter(difference) %> more
+                    </div>
+                  <% end %>
+                </td>
+
+                <!-- Commission -->
+                <td>
+                  <div class="font-medium">
+                    <%= number_to_percentage(quote.commission_rate || 0, precision: 1) %>
+                  </div>
+                  <% if quote.commission_amount %>
+                    <div class="text-sm text-gray-500">
+                      $<%= number_with_delimiter(quote.commission_amount) %>
+                    </div>
+                  <% end %>
+                </td>
+
+                <!-- Total Premium -->
+                <td>
+                  <div class="font-semibold">
+                    $<%= number_with_delimiter(quote.total_premium) %>
+                  </div>
+                </td>
+
+                <!-- Coverage Details -->
+                <td>
+                  <% if quote.coverage_details.present? %>
+                    <div class="dropdown dropdown-end">
+                      <div tabindex="0" role="button" class="btn btn-ghost btn-sm">
+                        <%= icon("eye") %>
+                        Details
+                      </div>
+                      <div tabindex="0" class="dropdown-content card card-compact w-64 bg-base-100 shadow-xl z-[1]">
+                        <div class="card-body">
+                          <h3 class="font-semibold">Coverage Details</h3>
+                          <% quote.coverage_details.each do |key, value| %>
+                            <% if value.present? %>
+                              <div class="text-sm">
+                                <span class="font-medium"><%= key.humanize %>:</span>
+                                <%= value %>
+                              </div>
+                            <% end %>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+                  <% else %>
+                    <span class="text-gray-400">—</span>
+                  <% end %>
+                </td>
+
+                <!-- Validity -->
+                <td>
+                  <% if quote.expires_at %>
+                    <div class="text-sm">
+                      <%= quote.expires_at.strftime("%b %d, %Y") %>
+                    </div>
+                    <% if quote.expires_in_days %>
+                      <div class="text-xs <%= quote.expires_in_days <= 3 ? 'text-error' : 'text-gray-500' %>">
+                        <%= quote.expires_in_days %> days left
+                      </div>
+                    <% end %>
+                  <% else %>
+                    <span class="text-gray-400">—</span>
+                  <% end %>
+                </td>
+
+                <!-- Actions -->
+                <td>
+                  <div class="flex gap-2">
+                    <%= link_to quote_path(quote), class: "btn btn-ghost btn-sm" do %>
+                      <%= icon("eye", class: "w-4 h-4") %>
+                    <% end %>
+                    
+                    <%= link_to accept_quote_path(quote), 
+                               method: :patch,
+                               class: "btn btn-primary btn-sm",
+                               data: { 
+                                 confirm: "Accept this quote from #{quote.insurance_company.name}? This will reject all other quotes for this application." 
+                               } do %>
+                      <%= icon("check") %>
+                      Accept
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparison Summary Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+    <!-- Price Comparison -->
+    <div class="card bg-base-100 shadow-sm">
+      <div class="card-body">
+        <h3 class="card-title text-lg">Price Analysis</h3>
+        
+        <div class="space-y-3">
+          <div class="flex justify-between">
+            <span class="text-gray-600">Lowest Premium:</span>
+            <span class="font-semibold text-success">
+              $<%= number_with_delimiter(@quotes.minimum(:premium_amount)) %>
+            </span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Highest Premium:</span>
+            <span class="font-semibold">
+              $<%= number_with_delimiter(@quotes.maximum(:premium_amount)) %>
+            </span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Average Premium:</span>
+            <span class="font-semibold">
+              $<%= number_with_delimiter(@quotes.average(:premium_amount).to_i) %>
+            </span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Price Difference:</span>
+            <span class="font-semibold">
+              $<%= number_with_delimiter(@quotes.maximum(:premium_amount) - @quotes.minimum(:premium_amount)) %>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Company Ratings -->
+    <div class="card bg-base-100 shadow-sm">
+      <div class="card-body">
+        <h3 class="card-title text-lg">Company Ratings</h3>
+        
+        <div class="space-y-3">
+          <% @quotes.joins(:insurance_company).order('insurance_companies.rating DESC').each do |quote| %>
+            <div class="flex justify-between items-center">
+              <span class="text-sm font-medium">
+                <%= truncate(quote.insurance_company.name, length: 20) %>
+              </span>
+              <div class="flex items-center gap-2">
+                <div class="rating rating-sm">
+                  <% (1..5).each do |i| %>
+                    <input type="radio" class="mask mask-star-2 bg-orange-400" 
+                           disabled <%= 'checked' if i <= quote.insurance_company.rating %> />
+                  <% end %>
+                </div>
+                <span class="text-xs text-gray-600">
+                  <%= quote.insurance_company.rating.to_f %>
+                </span>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Commission Analysis -->
+    <div class="card bg-base-100 shadow-sm">
+      <div class="card-body">
+        <h3 class="card-title text-lg">Commission Analysis</h3>
+        
+        <div class="space-y-3">
+          <div class="flex justify-between">
+            <span class="text-gray-600">Highest Rate:</span>
+            <span class="font-semibold">
+              <%= number_to_percentage(@quotes.maximum(:commission_rate) || 0, precision: 1) %>
+            </span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Lowest Rate:</span>
+            <span class="font-semibold">
+              <%= number_to_percentage(@quotes.minimum(:commission_rate) || 0, precision: 1) %>
+            </span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Total Commission:</span>
+            <span class="font-semibold text-info">
+              $<%= number_with_delimiter(@quotes.sum(:commission_amount)) %>
+            </span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Best Commission:</span>
+            <span class="font-semibold">
+              $<%= number_with_delimiter(@quotes.maximum(:commission_amount) || 0) %>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recommendations -->
+  <div class="card bg-base-100 shadow-sm">
+    <div class="card-body">
+      <h3 class="card-title text-lg mb-4">Recommendations</h3>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h4 class="font-semibold text-green-700 mb-2">💰 Best Value Option</h4>
+          <% best_quote = @quotes.first %>
+          <div class="bg-green-50 p-4 rounded-lg">
+            <div class="font-semibold"><%= best_quote.insurance_company.name %></div>
+            <div class="text-sm text-gray-600">
+              Premium: $<%= number_with_delimiter(best_quote.premium_amount) %> • 
+              Rating: <%= best_quote.insurance_company.rating_display %> •
+              Commission: <%= number_to_percentage(best_quote.commission_rate || 0, precision: 1) %>
+            </div>
+            <div class="mt-2">
+              <%= link_to accept_quote_path(best_quote), 
+                         method: :patch,
+                         class: "btn btn-success btn-sm",
+                         data: { 
+                           confirm: "Accept the best value quote from #{best_quote.insurance_company.name}?" 
+                         } do %>
+                <%= icon("check") %>
+                Accept Best Quote
+              <% end %>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="font-semibold text-blue-700 mb-2">⭐ Highest Rated Company</h4>
+          <% top_rated = @quotes.joins(:insurance_company).order('insurance_companies.rating DESC').first %>
+          <div class="bg-blue-50 p-4 rounded-lg">
+            <div class="font-semibold"><%= top_rated.insurance_company.name %></div>
+            <div class="text-sm text-gray-600">
+              Premium: $<%= number_with_delimiter(top_rated.premium_amount) %> • 
+              Rating: <%= top_rated.insurance_company.rating_display %> •
+              Commission: <%= number_to_percentage(top_rated.commission_rate || 0, precision: 1) %>
+            </div>
+            <% if top_rated != best_quote %>
+              <div class="mt-2">
+                <%= link_to accept_quote_path(top_rated), 
+                           method: :patch,
+                           class: "btn btn-info btn-sm",
+                           data: { 
+                             confirm: "Accept the quote from the highest rated company (#{top_rated.insurance_company.name})?" 
+                           } do %>
+                  <%= icon("star") %>
+                  Accept Top Rated
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Add some interactivity for comparison
+document.addEventListener('DOMContentLoaded', function() {
+  // Highlight the row on hover
+  const rows = document.querySelectorAll('tbody tr')
+  rows.forEach(row => {
+    row.addEventListener('mouseenter', function() {
+      this.classList.add('bg-primary/5')
+    })
+    row.addEventListener('mouseleave', function() {
+      this.classList.remove('bg-primary/5')
+    })
+  })
+})
+</script>
