@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>New Application Available</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    
+    <!-- Header -->
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 20px; text-align: center;">
+      <h1 style="margin: 0; font-size: 24px; font-weight: bold;">New Application Available</h1>
+      <p style="margin: 10px 0 0 0; opacity: 0.9;">BrokerSync Insurance Portal</p>
+    </div>
+
+    <!-- Content -->
+    <div style="padding: 30px 20px;">
+      
+      <!-- Greeting -->
+      <p style="margin: 0 0 20px 0; font-size: 16px; color: #333;">
+        Dear <%= @insurance_company.name %> Team,
+      </p>
+      
+      <p style="margin: 0 0 25px 0; font-size: 16px; color: #333; line-height: 1.6;">
+        A new <strong><%= @application.coverage_type.humanize %></strong> insurance application 
+        is now available for quoting on the BrokerSync platform.
+      </p>
+
+      <!-- Match Score Badge -->
+      <div style="text-align: center; margin: 25px 0;">
+        <div style="display: inline-block; background-color: <%= @match_score >= 70 ? '#10b981' : @match_score >= 40 ? '#f59e0b' : '#ef4444' %>; 
+                    color: white; padding: 12px 24px; border-radius: 25px; font-weight: bold; font-size: 16px;">
+          <%= @match_score.round(0) %>% Match Score
+        </div>
+      </div>
+
+      <!-- Application Details Card -->
+      <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 25px 0; background-color: #f9fafb;">
+        <h3 style="margin: 0 0 15px 0; color: #1f2937; font-size: 18px;">Application Details</h3>
+        
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 8px 0; color: #6b7280; font-weight: 500; width: 40%;">Application #:</td>
+            <td style="padding: 8px 0; color: #1f2937; font-weight: 600;"><%= @application.application_number %></td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #6b7280; font-weight: 500;">Client Name:</td>
+            <td style="padding: 8px 0; color: #1f2937; font-weight: 600;"><%= @application.client_name %></td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #6b7280; font-weight: 500;">Coverage Type:</td>
+            <td style="padding: 8px 0; color: #1f2937; font-weight: 600;"><%= @application.coverage_type.humanize %></td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #6b7280; font-weight: 500;">Vehicle:</td>
+            <td style="padding: 8px 0; color: #1f2937; font-weight: 600;"><%= @application.vehicle_display_name %></td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #6b7280; font-weight: 500;">Sum Insured:</td>
+            <td style="padding: 8px 0; color: #1f2937; font-weight: 600;">
+              <% if @application.sum_insured %>
+                $<%= number_with_delimiter(@application.sum_insured) %>
+              <% else %>
+                Not specified
+              <% end %>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #6b7280; font-weight: 500;">Driver Age:</td>
+            <td style="padding: 8px 0; color: #1f2937; font-weight: 600;">
+              <%= @application.driver_age || 'Not specified' %> years
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Risk Assessment -->
+      <div style="border-left: 4px solid #3b82f6; padding: 15px 20px; margin: 25px 0; background-color: #eff6ff;">
+        <h4 style="margin: 0 0 10px 0; color: #1e40af; font-size: 16px;">Risk Assessment</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <% if @application.driver_has_claims? %>
+            <span style="background-color: #fbbf24; color: #92400e; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500;">Has Claims</span>
+          <% else %>
+            <span style="background-color: #34d399; color: #065f46; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500;">No Claims</span>
+          <% end %>
+          
+          <% if @application.driver_age && @application.driver_age < 25 %>
+            <span style="background-color: #fbbf24; color: #92400e; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500;">Young Driver</span>
+          <% elsif @application.driver_age && @application.driver_age > 65 %>
+            <span style="background-color: #60a5fa; color: #1e40af; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500;">Senior Driver</span>
+          <% end %>
+          
+          <% if @application.vehicle_year && @application.vehicle_year < (Date.current.year - 10) %>
+            <span style="background-color: #9ca3af; color: #374151; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500;">Older Vehicle</span>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Call to Action -->
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="<%= Rails.application.routes.url_helpers.insurance_companies_application_url(@application, host: 'localhost:3000') %>" 
+           style="display: inline-block; background-color: #3b82f6; color: white; padding: 15px 30px; 
+                  text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;">
+          View Application & Create Quote
+        </a>
+      </div>
+
+      <!-- Additional Info -->
+      <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 25px 0;">
+        <h4 style="margin: 0 0 10px 0; color: #374151; font-size: 16px;">Why This Application Matches Your Preferences:</h4>
+        <ul style="margin: 0; padding-left: 20px; color: #6b7280;">
+          <% if @distribution.distribution_criteria&.dig('coverage_type_match') %>
+            <li style="margin: 5px 0;">Matches your preferred coverage types</li>
+          <% end %>
+          <% if @distribution.distribution_criteria&.dig('vehicle_category_match') %>
+            <li style="margin: 5px 0;">Matches your preferred vehicle categories</li>
+          <% end %>
+          <% if @distribution.distribution_criteria&.dig('risk_appetite_match') %>
+            <li style="margin: 5px 0;">Fits your risk appetite preferences</li>
+          <% end %>
+          <% if @distribution.distribution_criteria&.dig('sum_insured_range_match') %>
+            <li style="margin: 5px 0;">Within your preferred sum insured range</li>
+          <% end %>
+        </ul>
+      </div>
+
+      <!-- Footer Message -->
+      <p style="margin: 25px 0 0 0; font-size: 14px; color: #6b7280; line-height: 1.6;">
+        This application was automatically distributed to you based on your company preferences. 
+        Please log in to the Insurance Portal to view full details and submit your quote.
+      </p>
+
+    </div>
+
+    <!-- Footer -->
+    <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+      <p style="margin: 0; font-size: 14px; color: #6b7280;">
+        © 2024 BrokerSync. All rights reserved.
+      </p>
+      <p style="margin: 10px 0 0 0; font-size: 12px; color: #9ca3af;">
+        You received this email because you have an active insurance company account with BrokerSync.
+      </p>
+    </div>
+
+  </div>
+</body>
+</html>
