@@ -38,5 +38,8 @@ module BrokerSync
 
     # Don't generate system test files.
     config.generators.system_tests = nil
+
+    # Security middleware for IP blocking and rate limiting
+    config.middleware.insert_before Rack::Runtime, SecurityMiddleware
   end
 end

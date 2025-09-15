@@ -133,6 +133,23 @@ Rails.application.routes.draw do
       get :compliance_report
     end
   end
+
+  # Security monitoring routes
+  scope :security, controller: :security do
+    get :dashboard, as: :security_dashboard
+    get :alerts, as: :security_alerts
+    get 'alerts/:id', action: :alert_details, as: :security_alert_details
+    patch 'alerts/:id/resolve', action: :resolve_alert, as: :resolve_security_alert
+    patch 'alerts/:id/dismiss', action: :dismiss_alert, as: :dismiss_security_alert
+    patch 'alerts/:id/investigate', action: :investigate_alert, as: :investigate_security_alert
+    get :blocked_ips, as: :security_blocked_ips
+    post :block_ip, as: :security_block_ip
+    delete :unblock_ip, as: :security_unblock_ip
+    get :threat_intelligence, as: :security_threat_intelligence
+    get :settings, action: :security_settings, as: :security_settings
+    patch :settings, action: :update_security_settings
+    get :export_report, action: :export_security_report, as: :export_security_report
+  end
   
   # Root route
   root "home#index"

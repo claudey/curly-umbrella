@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_15_184743) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_15_232437) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -524,6 +524,30 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_184743) do
     t.index ["system_role"], name: "index_roles_on_system_role"
   end
 
+  create_table "security_alerts", force: :cascade do |t|
+    t.string "alert_type", null: false
+    t.text "message", null: false
+    t.string "severity", null: false
+    t.jsonb "data", default: {}
+    t.bigint "organization_id", null: false
+    t.datetime "triggered_at", null: false
+    t.string "status", default: "active", null: false
+    t.datetime "resolved_at"
+    t.bigint "resolved_by_id"
+    t.text "resolution_notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["alert_type"], name: "index_security_alerts_on_alert_type"
+    t.index ["organization_id", "severity"], name: "index_security_alerts_on_organization_id_and_severity"
+    t.index ["organization_id", "status"], name: "index_security_alerts_on_organization_id_and_status"
+    t.index ["organization_id", "triggered_at"], name: "index_security_alerts_on_organization_id_and_triggered_at"
+    t.index ["organization_id"], name: "index_security_alerts_on_organization_id"
+    t.index ["resolved_by_id"], name: "index_security_alerts_on_resolved_by_id"
+    t.index ["severity"], name: "index_security_alerts_on_severity"
+    t.index ["status"], name: "index_security_alerts_on_status"
+    t.index ["triggered_at"], name: "index_security_alerts_on_triggered_at"
+  end
+
   create_table "sms_logs", force: :cascade do |t|
     t.string "to", null: false
     t.string "from"
@@ -655,6 +679,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_184743) do
   add_foreign_key "role_permissions", "roles"
   add_foreign_key "role_permissions", "users", column: "granted_by_id"
   add_foreign_key "roles", "organizations"
+  add_foreign_key "security_alerts", "organizations"
+  add_foreign_key "security_alerts", "users", column: "resolved_by_id"
   add_foreign_key "sms_logs", "organizations"
   add_foreign_key "sms_logs", "users"
   add_foreign_key "user_roles", "roles"
