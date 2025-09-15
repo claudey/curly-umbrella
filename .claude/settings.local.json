@@ -7,7 +7,8 @@
       "Bash(rails generate:*)",
       "Bash(rails:*)",
       "Bash(git rm:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

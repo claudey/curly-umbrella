@@ -67,6 +67,23 @@ Rails.application.routes.draw do
   end
   devise_for :users
   
+  # Multi-factor authentication routes
+  resource :mfa, only: [:show] do
+    member do
+      get :setup
+      post :enable
+      post :disable
+      get :backup_codes
+      post :regenerate_backup_codes
+    end
+  end
+  
+  resources :mfa_verifications, only: [:new, :create] do
+    collection do
+      get :backup_codes
+    end
+  end
+  
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

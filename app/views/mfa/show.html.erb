@@ -1,0 +1,75 @@
+<% content_for :title, "Two-Factor Authentication" %>
+
+<div class="container mx-auto p-6 max-w-2xl">
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h1 class="card-title text-2xl mb-6">
+        <i class="ph ph-shield-check text-primary"></i>
+        Two-Factor Authentication
+      </h1>
+      
+      <% if current_user.mfa_enabled? %>
+        <div class="alert alert-success mb-6">
+          <i class="ph ph-check-circle"></i>
+          <span>Two-factor authentication is <strong>enabled</strong> for your account.</span>
+        </div>
+        
+        <div class="space-y-4">
+          <p class="text-base-content/70">
+            Your account is protected with two-factor authentication. You'll be asked to enter 
+            a verification code from your authenticator app when signing in.
+          </p>
+          
+          <div class="flex gap-4">
+            <%= link_to backup_codes_mfa_path, class: "btn btn-outline" do %>
+              <i class="ph ph-list-bullets"></i>
+              View Backup Codes
+            <% end %>
+            
+            <%= button_to "Disable MFA", disable_mfa_path, 
+                         method: :post,
+                         class: "btn btn-error",
+                         data: { 
+                           confirm: "Are you sure you want to disable two-factor authentication? This will make your account less secure.",
+                           turbo_method: :post
+                         },
+                         form: { 
+                           onsubmit: "const code = prompt('Enter your current MFA code to confirm:'); if (!code) return false; this.querySelector('input[name=\"code\"]').value = code; return true;"
+                         } do %>
+              <input type="hidden" name="code" value="">
+              <i class="ph ph-shield-x"></i>
+              Disable MFA
+            <% end %>
+          </div>
+        </div>
+      <% else %>
+        <div class="alert alert-warning mb-6">
+          <i class="ph ph-warning"></i>
+          <span>Two-factor authentication is <strong>disabled</strong> for your account.</span>
+        </div>
+        
+        <div class="space-y-4">
+          <p class="text-base-content/70">
+            Protect your account by enabling two-factor authentication. You'll use an authenticator 
+            app like Google Authenticator, Authy, or 1Password to generate verification codes.
+          </p>
+          
+          <div class="bg-base-200 p-4 rounded-lg">
+            <h3 class="font-semibold mb-2">Benefits of Two-Factor Authentication:</h3>
+            <ul class="list-disc list-inside space-y-1 text-sm">
+              <li>Significantly reduces the risk of unauthorized account access</li>
+              <li>Protects against password-based attacks</li>
+              <li>Required for administrative functions</li>
+              <li>Industry security best practice</li>
+            </ul>
+          </div>
+          
+          <%= link_to setup_mfa_path, class: "btn btn-primary" do %>
+            <i class="ph ph-shield-plus"></i>
+            Set Up Two-Factor Authentication
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

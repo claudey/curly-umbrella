@@ -49,6 +49,13 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
+  
+  # Testing framework
+  gem "rspec-rails", "~> 7.1"
+  gem "factory_bot_rails", "~> 6.4"
+  gem "faker", "~> 3.5"
+  gem "shoulda-matchers", "~> 6.4"
+  gem "database_cleaner-active_record", "~> 2.2"
 end
 
 group :development do
@@ -72,3 +79,7 @@ gem "view_component", "~> 3.0"
 # Email delivery
 gem "brevo", "~> 2.0"
 gem "enum_help", "~> 0.0.17"
+
+# Multi-factor authentication
+gem "rotp", "~> 6.3"
+gem "rqrcode", "~> 2.2"

@@ -1,0 +1,110 @@
+<% content_for :title, "Set Up Two-Factor Authentication" %>
+
+<div class="container mx-auto p-6 max-w-2xl">
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h1 class="card-title text-2xl mb-6">
+        <i class="ph ph-shield-plus text-primary"></i>
+        Set Up Two-Factor Authentication
+      </h1>
+      
+      <div class="steps steps-vertical lg:steps-horizontal mb-8">
+        <div class="step step-primary">Scan QR Code</div>
+        <div class="step">Verify Code</div>
+        <div class="step">Save Backup Codes</div>
+      </div>
+      
+      <%= form_with url: enable_mfa_path, method: :post, local: true, class: "space-y-6" do |form| %>
+        <div class="space-y-4">
+          <h2 class="text-lg font-semibold">Step 1: Scan the QR Code</h2>
+          
+          <div class="bg-base-200 p-6 rounded-lg text-center">
+            <% if @qr_code_svg %>
+              <div class="inline-block p-4 bg-white rounded-lg">
+                <%= @qr_code_svg.html_safe %>
+              </div>
+            <% end %>
+          </div>
+          
+          <div class="alert alert-info">
+            <i class="ph ph-info"></i>
+            <div>
+              <p class="font-medium">Scan this QR code with your authenticator app:</p>
+              <ul class="list-disc list-inside text-sm mt-1">
+                <li>Google Authenticator</li>
+                <li>Authy</li>
+                <li>1Password</li>
+                <li>Microsoft Authenticator</li>
+              </ul>
+            </div>
+          </div>
+          
+          <details class="collapse collapse-arrow bg-base-200">
+            <summary class="collapse-title text-sm font-medium">
+              Can't scan the QR code? Enter this code manually
+            </summary>
+            <div class="collapse-content">
+              <p class="text-sm mt-2">
+                <strong>Secret Key:</strong> 
+                <code class="bg-base-300 px-2 py-1 rounded text-xs font-mono">
+                  <%= current_user.mfa_secret %>
+                </code>
+              </p>
+              <p class="text-xs text-base-content/70 mt-2">
+                Account: <%= current_user.email %><br>
+                Issuer: <%= Rails.application.class.module_parent_name %>
+              </p>
+            </div>
+          </details>
+        </div>
+        
+        <div class="divider">THEN</div>
+        
+        <div class="space-y-4">
+          <h2 class="text-lg font-semibold">Step 2: Enter Verification Code</h2>
+          
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Enter the 6-digit code from your authenticator app</span>
+            </label>
+            <%= form.text_field :code, 
+                               placeholder: "000000",
+                               maxlength: 6,
+                               class: "input input-bordered text-center text-lg font-mono tracking-widest",
+                               autocomplete: "off",
+                               required: true %>
+            <label class="label">
+              <span class="label-text-alt text-base-content/50">
+                The code refreshes every 30 seconds
+              </span>
+            </label>
+          </div>
+        </div>
+        
+        <div class="card-actions justify-end">
+          <%= link_to "Cancel", mfa_path, class: "btn btn-ghost" %>
+          <%= form.submit "Enable Two-Factor Authentication", 
+                         class: "btn btn-primary",
+                         data: { disable_with: "Verifying..." } %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const codeInput = document.querySelector('input[name="code"]');
+    if (codeInput) {
+      codeInput.addEventListener('input', function(e) {
+        // Only allow digits
+        this.value = this.value.replace(/\D/g, '');
+        
+        // Auto-submit when 6 digits are entered
+        if (this.value.length === 6) {
+          this.form.requestSubmit();
+        }
+      });
+    }
+  });
+</script>

@@ -1,0 +1,114 @@
+<% content_for :title, "Two-Factor Authentication Required" %>
+
+<div class="min-h-screen flex items-center justify-center bg-base-200">
+  <div class="card w-full max-w-md bg-base-100 shadow-xl">
+    <div class="card-body">
+      <div class="text-center mb-6">
+        <i class="ph ph-shield-check text-primary text-4xl"></i>
+        <h1 class="text-2xl font-bold mt-4">
+          <%= @setup_required ? "Set Up" : "Verify" %> Two-Factor Authentication
+        </h1>
+        <p class="text-base-content/70 mt-2">
+          <% if @setup_required %>
+            Set up two-factor authentication to secure your account.
+          <% else %>
+            Enter your authentication code to continue.
+          <% end %>
+        </p>
+      </div>
+      
+      <% if @setup_required %>
+        <div class="mb-6">
+          <h2 class="text-lg font-semibold mb-4">Scan QR Code</h2>
+          
+          <div class="bg-base-200 p-4 rounded-lg text-center mb-4">
+            <% if @qr_code_svg %>
+              <div class="inline-block p-3 bg-white rounded-lg">
+                <%= @qr_code_svg.html_safe %>
+              </div>
+            <% end %>
+          </div>
+          
+          <div class="text-sm text-base-content/70">
+            <p class="mb-2">Use an authenticator app to scan this QR code:</p>
+            <ul class="list-disc list-inside text-xs">
+              <li>Google Authenticator</li>
+              <li>Authy</li>
+              <li>1Password</li>
+            </ul>
+          </div>
+        </div>
+      <% end %>
+      
+      <%= form_with model: :mfa_verification, url: mfa_verifications_path, local: true, class: "space-y-4" do |form| %>
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Authentication Code</span>
+          </label>
+          <%= form.text_field :code,
+                             placeholder: "000000",
+                             maxlength: 8,
+                             class: "input input-bordered input-lg text-center font-mono tracking-widest",
+                             autocomplete: "off",
+                             autofocus: true,
+                             required: true %>
+          <label class="label">
+            <span class="label-text-alt">
+              Enter the 6-digit code from your authenticator app
+              <%= " or 8-character backup code" unless @setup_required %>
+            </span>
+          </label>
+        </div>
+        
+        <div class="form-control mt-6">
+          <%= form.submit @setup_required ? "Complete Setup" : "Verify", 
+                         class: "btn btn-primary btn-block",
+                         data: { disable_with: "Verifying..." } %>
+        </div>
+      <% end %>
+      
+      <% unless @setup_required %>
+        <div class="divider text-xs">Having trouble?</div>
+        
+        <div class="text-center">
+          <p class="text-xs text-base-content/50 mb-2">
+            Lost your authenticator device? Use a backup code instead.
+          </p>
+          
+          <%= link_to "Sign Out", destroy_user_session_path, 
+                     method: :delete,
+                     class: "link link-primary text-xs" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const codeInput = document.querySelector('input[name="mfa_verification[code]"]');
+    
+    if (codeInput) {
+      codeInput.addEventListener('input', function(e) {
+        // Allow digits and letters for backup codes
+        this.value = this.value.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+        
+        // Auto-submit when code is complete
+        if ((this.value.length === 6 && /^\d{6}$/.test(this.value)) || 
+            (this.value.length === 8 && /^[a-f0-9]{8}$/.test(this.value))) {
+          this.form.requestSubmit();
+        }
+      });
+      
+      codeInput.addEventListener('paste', function(e) {
+        setTimeout(() => {
+          const value = this.value.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+          if ((value.length === 6 && /^\d{6}$/.test(value)) || 
+              (value.length === 8 && /^[a-f0-9]{8}$/.test(value))) {
+            this.form.requestSubmit();
+          }
+        }, 100);
+      });
+    }
+  });
+</script>

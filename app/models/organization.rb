@@ -9,9 +9,8 @@ class Organization < ApplicationRecord
   validates :name, presence: true
   validates :license_number, presence: true, uniqueness: true
 
-  # JSON attributes for flexible data storage
-  serialize :contact_info, JSON
-  serialize :settings, JSON
+  # JSONB attributes are natively supported in PostgreSQL
+  # No need for serialize with JSONB columns
 
   # Default values
   after_initialize :set_defaults
