@@ -1,4 +1,233 @@
-<div>
-  <h1 class="font-bold text-4xl">InsuranceCompanies::Portal#applications</h1>
-  <p>Find me in app/views/insurance_companies/portal/applications.html.erb</p>
+<div class="container mx-auto px-4 py-8">
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">Available Applications</h1>
+      <p class="text-gray-600 mt-2">
+        Motor insurance applications ready for quoting
+      </p>
+    </div>
+    
+    <%= link_to insurance_companies_dashboard_path, class: "btn btn-ghost" do %>
+      <%= icon("arrow-left") %>
+      Back to Dashboard
+    <% end %>
+  </div>
+
+  <!-- Filters -->
+  <div class="card bg-base-100 shadow-sm mb-6">
+    <div class="card-body p-4">
+      <%= form_with url: insurance_companies_applications_path, method: :get, local: true, 
+                    class: "flex flex-wrap gap-4 items-end" do |form| %>
+        <div class="form-control w-full max-w-xs">
+          <%= form.label :search, "Search Applications", class: "label" %>
+          <%= form.text_field :search, 
+                             value: params[:search],
+                             placeholder: "Client name...",
+                             class: "input input-bordered" %>
+        </div>
+        
+        <div class="form-control w-full max-w-xs">
+          <%= form.label :coverage_type, "Coverage Type", class: "label" %>
+          <%= form.select :coverage_type,
+                         options_for_select([
+                           ['All Types', ''],
+                           ['Comprehensive', 'comprehensive'],
+                           ['Third Party', 'third_party'],
+                           ['Fire & Theft', 'fire_theft']
+                         ], params[:coverage_type]),
+                         {},
+                         { class: "select select-bordered" } %>
+        </div>
+        
+        <div class="form-control">
+          <%= form.submit "Filter", class: "btn btn-outline" %>
+        </div>
+        
+        <% if params[:search].present? || params[:coverage_type].present? %>
+          <%= link_to "Clear", insurance_companies_applications_path, class: "btn btn-ghost" %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Applications Grid -->
+  <% if @applications.any? %>
+    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      <% @applications.each do |application| %>
+        <div class="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
+          <div class="card-body">
+            <!-- Header -->
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <h3 class="card-title text-lg">
+                  <%= link_to application.application_number, 
+                             insurance_companies_application_path(application),
+                             class: "link link-primary" %>
+                </h3>
+                <div class="text-sm text-gray-600">
+                  <%= application.organization.name %>
+                </div>
+              </div>
+              <span class="badge <%= application.status_badge_class %> badge-sm">
+                <%= application.status.humanize %>
+              </span>
+            </div>
+
+            <!-- Client Info -->
+            <div class="space-y-2 mb-4">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Client:</span>
+                <span class="font-medium"><%= application.client_name %></span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Age:</span>
+                <span class="font-medium"><%= application.driver_age || 'N/A' %></span>
+              </div>
+            </div>
+
+            <!-- Vehicle Info -->
+            <div class="bg-base-200 p-3 rounded-lg mb-4">
+              <div class="font-medium text-sm mb-2">Vehicle Details</div>
+              <div class="space-y-1">
+                <div class="text-sm">
+                  <span class="font-medium"><%= application.vehicle_display_name %></span>
+                </div>
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-600">Category:</span>
+                  <span><%= application.vehicle_category&.humanize %></span>
+                </div>
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-600">Usage:</span>
+                  <span><%= application.vehicle_usage&.humanize %></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Coverage Info -->
+            <div class="space-y-2 mb-4">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Coverage:</span>
+                <span class="badge badge-outline badge-sm">
+                  <%= application.coverage_type&.humanize %>
+                </span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Period:</span>
+                <span class="text-sm"><%= application.coverage_period %></span>
+              </div>
+              <% if application.sum_insured %>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Sum Insured:</span>
+                  <span class="font-medium">$<%= number_with_delimiter(application.sum_insured) %></span>
+                </div>
+              <% end %>
+            </div>
+
+            <!-- Risk Factors -->
+            <div class="mb-4">
+              <div class="text-sm font-medium mb-2">Risk Assessment</div>
+              <div class="flex flex-wrap gap-1">
+                <% if application.driver_has_claims? %>
+                  <span class="badge badge-warning badge-xs">Has Claims</span>
+                <% else %>
+                  <span class="badge badge-success badge-xs">No Claims</span>
+                <% end %>
+                
+                <% if application.driver_age && application.driver_age < 25 %>
+                  <span class="badge badge-warning badge-xs">Young Driver</span>
+                <% elsif application.driver_age && application.driver_age > 65 %>
+                  <span class="badge badge-info badge-xs">Senior Driver</span>
+                <% end %>
+                
+                <% if application.vehicle_year && application.vehicle_year < (Date.current.year - 10) %>
+                  <span class="badge badge-neutral badge-xs">Older Vehicle</span>
+                <% end %>
+              </div>
+            </div>
+
+            <!-- Submission Info -->
+            <div class="text-xs text-gray-500 mb-4">
+              Submitted <%= time_ago_in_words(application.submitted_at || application.created_at) %> ago
+            </div>
+
+            <!-- Actions -->
+            <div class="card-actions justify-end">
+              <%= link_to insurance_companies_application_path(application), 
+                         class: "btn btn-ghost btn-sm" do %>
+                <%= icon("eye", class: "w-4 h-4") %>
+                View Details
+              <% end %>
+              
+              <%= link_to insurance_companies_new_quote_path(application_id: application.id), 
+                         class: "btn btn-primary btn-sm" do %>
+                <%= icon("plus", class: "w-4 h-4") %>
+                Create Quote
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Pagination -->
+    <% if respond_to?(:paginate) %>
+      <div class="mt-8 flex justify-center">
+        <%= paginate @applications %>
+      </div>
+    <% end %>
+
+  <% else %>
+    <!-- Empty State -->
+    <div class="text-center py-12">
+      <div class="w-20 h-20 mx-auto mb-4 text-gray-400">
+        <%= icon("clipboard-document-list", class: "w-20 h-20") %>
+      </div>
+      <h3 class="text-xl font-medium text-gray-900 mb-2">No Applications Found</h3>
+      <% if params[:search].present? || params[:coverage_type].present? %>
+        <p class="text-gray-600 mb-4">
+          No applications match your current filters. Try adjusting your search criteria.
+        </p>
+        <%= link_to "Clear Filters", insurance_companies_applications_path, 
+                   class: "btn btn-outline" %>
+      <% else %>
+        <p class="text-gray-600 mb-4">
+          There are currently no new applications available for quoting.
+        </p>
+        <p class="text-sm text-gray-500">
+          Check back later or contact brokerages to discuss partnership opportunities.
+        </p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <!-- Summary Stats -->
+  <% if @applications.any? %>
+    <div class="mt-8 bg-base-200 rounded-lg p-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
+        <div>
+          <div class="font-semibold text-lg"><%= @applications.count %></div>
+          <div class="text-sm text-gray-600">Available Applications</div>
+        </div>
+        <div>
+          <div class="font-semibold text-lg">
+            <%= @applications.joins(:client).average(:driver_age)&.to_i || 'N/A' %>
+          </div>
+          <div class="text-sm text-gray-600">Avg Driver Age</div>
+        </div>
+        <div>
+          <div class="font-semibold text-lg">
+            <%= @applications.where(driver_has_claims: false).count %>
+          </div>
+          <div class="text-sm text-gray-600">No Claims Bonus</div>
+        </div>
+        <div>
+          <div class="font-semibold text-lg">
+            $<%= number_to_human(@applications.average(:sum_insured) || 0, precision: 0) %>
+          </div>
+          <div class="text-sm text-gray-600">Avg Sum Insured</div>
+        </div>
+      </div>
+    </div>
+  <% end %>
 </div>

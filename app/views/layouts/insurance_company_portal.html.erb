@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Insurance Portal - BrokerSync" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body data-theme="light">
+    <div class="drawer lg:drawer-open" data-controller="sidebar" data-sidebar-open-class="drawer-open">
+      <!-- Sidebar toggle for mobile -->
+      <input id="drawer-toggle" type="checkbox" class="drawer-toggle" />
+      
+      <!-- Page content -->
+      <div class="drawer-content flex flex-col">
+        <!-- Navbar -->
+        <div class="navbar bg-primary text-primary-content w-full">
+          <div class="flex-none lg:hidden">
+            <label for="drawer-toggle" class="btn btn-square btn-ghost text-primary-content" data-action="click->sidebar#toggle" data-sidebar-target="toggle">
+              <%= icon("bars-3", class: "w-6 h-6") %>
+            </label>
+          </div>
+          <div class="flex-1 px-2 mx-2">
+            <%= link_to "Insurance Portal", insurance_companies_root_path, class: "text-lg font-bold" %>
+            <div class="text-sm opacity-80 ml-3">
+              <%= @insurance_company&.name || "Insurance Company" %>
+            </div>
+          </div>
+          <div class="flex-none gap-2">
+            <% if user_signed_in? %>
+              <!-- User Menu -->
+              <div class="dropdown dropdown-end">
+                <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
+                  <div class="w-10 rounded-full">
+                    <div class="bg-primary-content text-primary w-full h-full flex items-center justify-center text-lg font-semibold">
+                      <%= current_user.first_name&.first&.upcase || "U" %>
+                    </div>
+                  </div>
+                </div>
+                <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+                  <li><a href="#" class="justify-between">Profile</a></li>
+                  <li><a href="#">Settings</a></li>
+                  <li><%= link_to "Main Dashboard", root_path %></li>
+                  <li><%= link_to "Logout", destroy_user_session_path, method: :delete %></li>
+                </ul>
+              </div>
+            <% else %>
+              <%= link_to "Login", new_user_session_path, class: "btn btn-ghost btn-sm" %>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- Flash messages -->
+        <% if notice %>
+          <div class="alert alert-success mx-4 mt-4">
+            <%= icon("check-circle", class: "w-5 h-5") %>
+            <span><%= notice %></span>
+          </div>
+        <% end %>
+        
+        <% if alert %>
+          <div class="alert alert-error mx-4 mt-4">
+            <%= icon("exclamation-triangle", class: "w-5 h-5") %>
+            <span><%= alert %></span>
+          </div>
+        <% end %>
+
+        <!-- Page content -->
+        <main class="flex-1">
+          <%= yield %>
+        </main>
+      </div>
+      
+      <!-- Sidebar -->
+      <div class="drawer-side" data-sidebar-target="sidebar">
+        <label for="drawer-toggle" aria-label="close sidebar" class="drawer-overlay" data-action="click->sidebar#close" data-sidebar-target="overlay"></label>
+        <aside class="bg-base-200 min-h-full w-80">
+          <div class="p-4">
+            <div class="flex items-center gap-3 mb-6 p-3 bg-primary/10 rounded-lg">
+              <div class="w-12 h-12 bg-primary text-primary-content rounded-full flex items-center justify-center">
+                <%= icon("building-office", class: "w-6 h-6") %>
+              </div>
+              <div>
+                <div class="font-semibold text-sm">
+                  <%= @insurance_company&.name || "Insurance Company" %>
+                </div>
+                <div class="text-xs text-gray-500">
+                  Insurance Portal
+                </div>
+              </div>
+            </div>
+            
+            <ul class="menu p-0 w-full">
+              <!-- Dashboard -->
+              <li>
+                <%= link_to insurance_companies_dashboard_path, 
+                           class: "flex items-center space-x-3 #{'active' if current_page?(insurance_companies_dashboard_path)}" do %>
+                  <%= icon("home", class: "w-5 h-5") %>
+                  <span>Dashboard</span>
+                <% end %>
+              </li>
+              
+              <!-- Applications -->
+              <li>
+                <details <%= 'open' if controller_name == 'portal' && ['applications', 'show_application'].include?(action_name) %>>
+                  <summary class="font-medium">
+                    <%= icon("clipboard-document-list", class: "w-5 h-5") %>
+                    Applications
+                  </summary>
+                  <ul>
+                    <li>
+                      <%= link_to insurance_companies_applications_path,
+                                 class: "#{'active' if current_page?(insurance_companies_applications_path)}" do %>
+                        Browse Applications
+                      <% end %>
+                    </li>
+                  </ul>
+                </details>
+              </li>
+
+              <!-- Quotes -->
+              <li>
+                <details <%= 'open' if controller_name == 'portal' && ['quotes', 'show_quote', 'new_quote'].include?(action_name) %>>
+                  <summary class="font-medium">
+                    <%= icon("document-text", class: "w-5 h-5") %>
+                    Quotes
+                  </summary>
+                  <ul>
+                    <li>
+                      <%= link_to insurance_companies_quotes_path,
+                                 class: "#{'active' if current_page?(insurance_companies_quotes_path)}" do %>
+                        My Quotes
+                      <% end %>
+                    </li>
+                    <li>
+                      <%= link_to insurance_companies_quotes_path(status: 'submitted'),
+                                 class: "#{'active' if params[:status] == 'submitted'}" do %>
+                        Pending Quotes
+                      <% end %>
+                    </li>
+                    <li>
+                      <%= link_to insurance_companies_quotes_path(status: 'approved'),
+                                 class: "#{'active' if params[:status] == 'approved'}" do %>
+                        Approved Quotes
+                      <% end %>
+                    </li>
+                  </ul>
+                </details>
+              </li>
+
+              <!-- Performance -->
+              <li>
+                <details>
+                  <summary class="font-medium">
+                    <%= icon("chart-bar", class: "w-5 h-5") %>
+                    Performance
+                  </summary>
+                  <ul>
+                    <li><a href="#">Quote Analytics</a></li>
+                    <li><a href="#">Market Share</a></li>
+                    <li><a href="#">Commission Reports</a></li>
+                  </ul>
+                </details>
+              </li>
+
+              <!-- Company Settings -->
+              <li>
+                <details>
+                  <summary class="font-medium">
+                    <%= icon("cog-6-tooth", class: "w-5 h-5") %>
+                    Settings
+                  </summary>
+                  <ul>
+                    <li><a href="#">Company Profile</a></li>
+                    <li><a href="#">Quote Preferences</a></li>
+                    <li><a href="#">Notification Settings</a></li>
+                  </ul>
+                </details>
+              </li>
+
+              <!-- Divider -->
+              <div class="divider my-4"></div>
+
+              <!-- Support -->
+              <li>
+                <a href="#" class="flex items-center space-x-3">
+                  <%= icon("question-mark-circle", class: "w-5 h-5") %>
+                  <span>Help & Support</span>
+                </a>
+              </li>
+
+              <!-- Back to Main Portal -->
+              <li>
+                <%= link_to root_path, class: "flex items-center space-x-3 text-primary" do %>
+                  <%= icon("arrow-left", class: "w-5 h-5") %>
+                  <span>Back to Main Portal</span>
+                <% end %>
+              </li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,4 +1,6 @@
 class InsuranceCompanies::PortalController < ApplicationController
+  layout 'insurance_company_portal'
+  
   before_action :authenticate_user!
   before_action :ensure_insurance_company_user
   before_action :set_insurance_company

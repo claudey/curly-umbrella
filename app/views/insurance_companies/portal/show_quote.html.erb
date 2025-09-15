@@ -1,0 +1,342 @@
+<div class="container mx-auto px-4 py-8">
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">Quote Details</h1>
+      <p class="text-gray-600 mt-2">
+        Quote #<%= @quote.quote_number %>
+      </p>
+    </div>
+    
+    <div class="flex items-center gap-3">
+      <span class="badge <%= @quote.status_badge_class %> badge-lg">
+        <%= @quote.status.humanize %>
+      </span>
+      <%= link_to insurance_companies_quotes_path, class: "btn btn-ghost" do %>
+        <%= icon("arrow-left") %>
+        Back to Quotes
+      <% end %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Quote Details -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- Quote Information -->
+      <div class="card bg-base-100 shadow-sm">
+        <div class="card-body">
+          <h2 class="card-title text-xl mb-6">Quote Information</h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <div>
+                <label class="text-sm font-medium text-gray-600">Premium Amount</label>
+                <div class="text-2xl font-bold text-primary">
+                  $<%= number_with_delimiter(@quote.premium_amount) %>
+                </div>
+              </div>
+              
+              <div>
+                <label class="text-sm font-medium text-gray-600">Coverage Amount</label>
+                <div class="text-lg font-semibold">
+                  $<%= number_with_delimiter(@quote.coverage_amount) %>
+                </div>
+              </div>
+              
+              <div>
+                <label class="text-sm font-medium text-gray-600">Commission Rate</label>
+                <div class="text-lg font-semibold text-success">
+                  <%= @quote.commission_rate %>%
+                  <span class="text-sm text-gray-500">
+                    ($<%= number_with_delimiter(@quote.commission_amount) %>)
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="space-y-4">
+              <div>
+                <label class="text-sm font-medium text-gray-600">Validity Period</label>
+                <div class="text-lg font-semibold">
+                  <%= @quote.validity_period %> days
+                </div>
+              </div>
+              
+              <div>
+                <label class="text-sm font-medium text-gray-600">Expires On</label>
+                <div class="text-lg font-semibold">
+                  <%= @quote.expires_at&.strftime("%B %d, %Y") || 'Not set' %>
+                  <% if @quote.expires_in_days && @quote.expires_in_days <= 7 %>
+                    <span class="badge badge-warning badge-sm ml-2">
+                      <% if @quote.expires_in_days <= 0 %>
+                        Expired
+                      <% else %>
+                        <%= @quote.expires_in_days %>d left
+                      <% end %>
+                    </span>
+                  <% end %>
+                </div>
+              </div>
+              
+              <div>
+                <label class="text-sm font-medium text-gray-600">Quoted By</label>
+                <div class="text-lg font-semibold">
+                  <%= @quote.quoted_by&.full_name || 'System' %>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coverage Details -->
+      <% if @quote.coverage_details.present? %>
+        <div class="card bg-base-100 shadow-sm">
+          <div class="card-body">
+            <h3 class="card-title text-lg mb-4">Coverage Details</h3>
+            
+            <div class="space-y-3">
+              <% @quote.coverage_details.each do |key, details| %>
+                <% if details['included'] == '1' || details['included'] == true %>
+                  <div class="flex justify-between items-center p-3 bg-base-200 rounded-lg">
+                    <div>
+                      <div class="font-medium"><%= key.humanize %></div>
+                      <% if details['limit'].present? %>
+                        <div class="text-sm text-gray-600">
+                          Limit: $<%= number_with_delimiter(details['limit']) %>
+                        </div>
+                      <% end %>
+                    </div>
+                    <span class="badge badge-success badge-sm">Included</span>
+                  </div>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <!-- Terms & Conditions -->
+      <% if @quote.terms_conditions.present? %>
+        <div class="card bg-base-100 shadow-sm">
+          <div class="card-body">
+            <h3 class="card-title text-lg mb-4">Terms & Conditions</h3>
+            <div class="prose max-w-none">
+              <p class="whitespace-pre-wrap"><%= @quote.terms_conditions %></p>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <!-- Internal Notes -->
+      <% if @quote.notes.present? %>
+        <div class="card bg-base-100 shadow-sm">
+          <div class="card-body">
+            <h3 class="card-title text-lg mb-4">Internal Notes</h3>
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div class="text-sm text-yellow-800 whitespace-pre-wrap">
+                <%= @quote.notes %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <!-- Quote Timeline -->
+      <div class="card bg-base-100 shadow-sm">
+        <div class="card-body">
+          <h3 class="card-title text-lg mb-4">Quote Timeline</h3>
+          
+          <div class="space-y-4">
+            <div class="flex items-center gap-3">
+              <div class="w-3 h-3 bg-primary rounded-full"></div>
+              <div class="flex-1">
+                <div class="font-medium">Quote Created</div>
+                <div class="text-sm text-gray-600">
+                  <%= @quote.created_at.strftime("%B %d, %Y at %I:%M %p") %>
+                </div>
+              </div>
+            </div>
+            
+            <% if @quote.quoted_at %>
+              <div class="flex items-center gap-3">
+                <div class="w-3 h-3 bg-success rounded-full"></div>
+                <div class="flex-1">
+                  <div class="font-medium">Quote Submitted</div>
+                  <div class="text-sm text-gray-600">
+                    <%= @quote.quoted_at.strftime("%B %d, %Y at %I:%M %p") %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+            
+            <% if @quote.reviewed_at %>
+              <div class="flex items-center gap-3">
+                <div class="w-3 h-3 bg-warning rounded-full"></div>
+                <div class="flex-1">
+                  <div class="font-medium">Quote Under Review</div>
+                  <div class="text-sm text-gray-600">
+                    <%= @quote.reviewed_at.strftime("%B %d, %Y at %I:%M %p") %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+            
+            <% if @quote.approved_at %>
+              <div class="flex items-center gap-3">
+                <div class="w-3 h-3 bg-info rounded-full"></div>
+                <div class="flex-1">
+                  <div class="font-medium">Quote Approved</div>
+                  <div class="text-sm text-gray-600">
+                    <%= @quote.approved_at.strftime("%B %d, %Y at %I:%M %p") %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+            
+            <% if @quote.accepted_at %>
+              <div class="flex items-center gap-3">
+                <div class="w-3 h-3 bg-success rounded-full"></div>
+                <div class="flex-1">
+                  <div class="font-medium">Quote Accepted</div>
+                  <div class="text-sm text-gray-600">
+                    <%= @quote.accepted_at.strftime("%B %d, %Y at %I:%M %p") %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+            
+            <% if @quote.rejected_at %>
+              <div class="flex items-center gap-3">
+                <div class="w-3 h-3 bg-error rounded-full"></div>
+                <div class="flex-1">
+                  <div class="font-medium">Quote Rejected</div>
+                  <div class="text-sm text-gray-600">
+                    <%= @quote.rejected_at.strftime("%B %d, %Y at %I:%M %p") %>
+                    <% if @quote.rejection_reason.present? %>
+                      <div class="text-sm text-red-600 mt-1">
+                        Reason: <%= @quote.rejection_reason %>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Application Summary -->
+    <div class="lg:col-span-1">
+      <div class="card bg-base-100 shadow-sm sticky top-4">
+        <div class="card-body">
+          <h3 class="card-title text-lg mb-4">Application Summary</h3>
+          
+          <!-- Application Number -->
+          <div class="mb-4">
+            <%= link_to insurance_companies_application_path(@application), 
+                       class: "btn btn-ghost btn-sm w-full justify-start" do %>
+              <%= icon("eye", class: "w-4 h-4") %>
+              View Application #<%= @application.application_number %>
+            <% end %>
+          </div>
+          
+          <!-- Client Info -->
+          <div class="space-y-3 mb-6">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Client:</span>
+              <span class="font-medium"><%= @application.client_name %></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Age:</span>
+              <span class="font-medium"><%= @application.driver_age || 'N/A' %></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">License:</span>
+              <span class="font-medium"><%= @application.license_years || 'N/A' %> years</span>
+            </div>
+          </div>
+
+          <!-- Vehicle Info -->
+          <div class="bg-base-200 p-3 rounded-lg mb-6">
+            <div class="font-medium text-sm mb-2">Vehicle Details</div>
+            <div class="space-y-2">
+              <div class="text-sm">
+                <span class="font-medium"><%= @application.vehicle_display_name %></span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Category:</span>
+                <span><%= @application.vehicle_category&.humanize %></span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Usage:</span>
+                <span><%= @application.vehicle_usage&.humanize %></span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Year:</span>
+                <span><%= @application.vehicle_year %></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Coverage Requirements -->
+          <div class="space-y-3 mb-6">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Coverage Type:</span>
+              <span class="badge badge-outline badge-sm">
+                <%= @application.coverage_type&.humanize %>
+              </span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Period:</span>
+              <span class="text-sm"><%= @application.coverage_period %></span>
+            </div>
+            <% if @application.sum_insured %>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Sum Insured:</span>
+                <span class="font-medium">$<%= number_with_delimiter(@application.sum_insured) %></span>
+              </div>
+            <% end %>
+          </div>
+
+          <!-- Risk Factors -->
+          <div class="mb-6">
+            <div class="text-sm font-medium mb-2">Risk Assessment</div>
+            <div class="flex flex-wrap gap-1">
+              <% if @application.driver_has_claims? %>
+                <span class="badge badge-warning badge-xs">Has Claims</span>
+              <% else %>
+                <span class="badge badge-success badge-xs">No Claims</span>
+              <% end %>
+              
+              <% if @application.driver_age && @application.driver_age < 25 %>
+                <span class="badge badge-warning badge-xs">Young Driver</span>
+              <% elsif @application.driver_age && @application.driver_age > 65 %>
+                <span class="badge badge-info badge-xs">Senior Driver</span>
+              <% end %>
+              
+              <% if @application.vehicle_year && @application.vehicle_year < (Date.current.year - 10) %>
+                <span class="badge badge-neutral badge-xs">Older Vehicle</span>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="space-y-2">
+            <% if @quote.draft? %>
+              <%= link_to "Edit Quote", insurance_companies_quote_path(@quote), 
+                         class: "btn btn-primary btn-sm w-full" %>
+            <% end %>
+            
+            <% if @quote.can_withdraw? %>
+              <%= link_to "Withdraw Quote", "#", 
+                         class: "btn btn-error btn-sm w-full",
+                         onclick: "if(confirm('Are you sure you want to withdraw this quote?')) { /* Add withdraw action */ }" %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

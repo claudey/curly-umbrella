@@ -1,4 +1,285 @@
-<div>
-  <h1 class="font-bold text-4xl">InsuranceCompanies::Portal#quotes</h1>
-  <p>Find me in app/views/insurance_companies/portal/quotes.html.erb</p>
+<div class="container mx-auto px-4 py-8">
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">My Quotes</h1>
+      <p class="text-gray-600 mt-2">
+        Manage your submitted quotes and track their status
+      </p>
+    </div>
+    
+    <%= link_to insurance_companies_dashboard_path, class: "btn btn-ghost" do %>
+      <%= icon("arrow-left") %>
+      Back to Dashboard
+    <% end %>
+  </div>
+
+  <!-- Filters -->
+  <div class="card bg-base-100 shadow-sm mb-6">
+    <div class="card-body p-4">
+      <%= form_with url: insurance_companies_quotes_path, method: :get, local: true, 
+                    class: "flex flex-wrap gap-4 items-end" do |form| %>
+        <div class="form-control w-full max-w-xs">
+          <%= form.label :search, "Search Quotes", class: "label" %>
+          <%= form.text_field :search, 
+                             value: params[:search],
+                             placeholder: "Quote number, client name...",
+                             class: "input input-bordered" %>
+        </div>
+        
+        <div class="form-control w-full max-w-xs">
+          <%= form.label :status, "Status", class: "label" %>
+          <%= form.select :status,
+                         options_for_select([
+                           ['All Status', ''],
+                           ['Draft', 'draft'],
+                           ['Submitted', 'submitted'],
+                           ['Under Review', 'under_review'],
+                           ['Approved', 'approved'],
+                           ['Rejected', 'rejected'],
+                           ['Accepted', 'accepted'],
+                           ['Expired', 'expired']
+                         ], params[:status]),
+                         {},
+                         { class: "select select-bordered" } %>
+        </div>
+        
+        <div class="form-control">
+          <%= form.submit "Filter", class: "btn btn-outline" %>
+        </div>
+        
+        <% if params[:search].present? || params[:status].present? %>
+          <%= link_to "Clear", insurance_companies_quotes_path, class: "btn btn-ghost" %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="stat bg-base-100 shadow-sm rounded-lg text-center">
+      <div class="stat-value text-primary text-2xl">
+        <%= @quotes.where(status: 'submitted').count %>
+      </div>
+      <div class="stat-title text-sm">Pending</div>
+    </div>
+    
+    <div class="stat bg-base-100 shadow-sm rounded-lg text-center">
+      <div class="stat-value text-success text-2xl">
+        <%= @quotes.where(status: 'accepted').count %>
+      </div>
+      <div class="stat-title text-sm">Accepted</div>
+    </div>
+    
+    <div class="stat bg-base-100 shadow-sm rounded-lg text-center">
+      <div class="stat-value text-warning text-2xl">
+        <%= @quotes.where(status: 'approved').count %>
+      </div>
+      <div class="stat-title text-sm">Approved</div>
+    </div>
+    
+    <div class="stat bg-base-100 shadow-sm rounded-lg text-center">
+      <div class="stat-value text-info text-2xl">
+        $<%= number_to_human(@quotes.sum(:premium_amount), precision: 1) %>
+      </div>
+      <div class="stat-title text-sm">Total Quoted</div>
+    </div>
+  </div>
+
+  <!-- Quotes List -->
+  <% if @quotes.any? %>
+    <div class="space-y-4">
+      <% @quotes.each do |quote| %>
+        <div class="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
+          <div class="card-body">
+            <div class="flex flex-col lg:flex-row lg:items-center gap-4">
+              <!-- Quote Info -->
+              <div class="flex-1">
+                <div class="flex items-center gap-3 mb-2">
+                  <h3 class="font-semibold text-lg">
+                    <%= link_to quote.quote_number, 
+                               insurance_companies_quote_path(quote),
+                               class: "link link-primary" %>
+                  </h3>
+                  <span class="badge <%= quote.status_badge_class %> badge-sm">
+                    <%= quote.status.humanize %>
+                  </span>
+                  <% if quote.expires_in_days && quote.expires_in_days <= 7 %>
+                    <span class="badge badge-warning badge-sm">
+                      <% if quote.expires_in_days <= 0 %>
+                        Expired
+                      <% else %>
+                        <%= quote.expires_in_days %>d left
+                      <% end %>
+                    </span>
+                  <% end %>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+                  <div>
+                    <span class="text-gray-600">Client:</span>
+                    <div class="font-medium"><%= quote.motor_application.client_name %></div>
+                  </div>
+                  
+                  <div>
+                    <span class="text-gray-600">Vehicle:</span>
+                    <div class="font-medium"><%= quote.motor_application.vehicle_display_name %></div>
+                  </div>
+                  
+                  <div>
+                    <span class="text-gray-600">Premium:</span>
+                    <div class="font-semibold text-primary">
+                      $<%= number_with_delimiter(quote.premium_amount) %>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <span class="text-gray-600">Commission:</span>
+                    <div class="font-medium text-success">
+                      $<%= number_with_delimiter(quote.commission_amount) %>
+                      (<%= quote.commission_rate %>%)
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="flex items-center gap-4 mt-3 text-xs text-gray-500">
+                  <span>
+                    <%= icon("clock", class: "w-3 h-3 inline") %>
+                    Quoted <%= time_ago_in_words(quote.created_at) %> ago
+                  </span>
+                  <% if quote.quoted_at %>
+                    <span>
+                      <%= icon("paper-airplane", class: "w-3 h-3 inline") %>
+                      Submitted <%= time_ago_in_words(quote.quoted_at) %> ago
+                    </span>
+                  <% end %>
+                  <% if quote.expires_at %>
+                    <span>
+                      <%= icon("calendar", class: "w-3 h-3 inline") %>
+                      Expires <%= quote.expires_at.strftime("%b %d, %Y") %>
+                    </span>
+                  <% end %>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex items-center gap-2">
+                <%= link_to insurance_companies_quote_path(quote), 
+                           class: "btn btn-ghost btn-sm" do %>
+                  <%= icon("eye", class: "w-4 h-4") %>
+                  View
+                <% end %>
+                
+                <% if quote.draft? %>
+                  <%= link_to insurance_companies_quote_path(quote), 
+                             class: "btn btn-primary btn-sm" do %>
+                    <%= icon("pencil", class: "w-4 h-4") %>
+                    Edit
+                  <% end %>
+                <% end %>
+                
+                <% if quote.can_withdraw? %>
+                  <%= link_to "#", 
+                             class: "btn btn-error btn-sm",
+                             onclick: "if(confirm('Are you sure you want to withdraw this quote?')) { /* Add withdraw action */ }" do %>
+                    <%= icon("x-mark", class: "w-4 h-4") %>
+                    Withdraw
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+
+            <!-- Progress Bar for Status -->
+            <div class="mt-4">
+              <div class="flex justify-between text-xs text-gray-500 mb-1">
+                <span>Draft</span>
+                <span>Submitted</span>
+                <span>Under Review</span>
+                <span>Approved</span>
+                <span>Accepted</span>
+              </div>
+              <div class="w-full bg-base-300 rounded-full h-1">
+                <div class="bg-primary h-1 rounded-full transition-all duration-300" 
+                     style="width: <%= quote.progress_percentage %>%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Pagination -->
+    <% if respond_to?(:paginate) %>
+      <div class="mt-8 flex justify-center">
+        <%= paginate @quotes %>
+      </div>
+    <% end %>
+
+  <% else %>
+    <!-- Empty State -->
+    <div class="text-center py-12">
+      <div class="w-20 h-20 mx-auto mb-4 text-gray-400">
+        <%= icon("document-text", class: "w-20 h-20") %>
+      </div>
+      <h3 class="text-xl font-medium text-gray-900 mb-2">No Quotes Found</h3>
+      <% if params[:search].present? || params[:status].present? %>
+        <p class="text-gray-600 mb-4">
+          No quotes match your current filters. Try adjusting your search criteria.
+        </p>
+        <%= link_to "Clear Filters", insurance_companies_quotes_path, 
+                   class: "btn btn-outline" %>
+      <% else %>
+        <p class="text-gray-600 mb-4">
+          You haven't submitted any quotes yet.
+        </p>
+        <p class="text-sm text-gray-500 mb-6">
+          Browse available applications and start quoting to grow your business.
+        </p>
+        <%= link_to insurance_companies_applications_path, 
+                   class: "btn btn-primary" do %>
+          <%= icon("magnifying-glass", class: "w-4 h-4") %>
+          Browse Applications
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <!-- Summary Stats -->
+  <% if @quotes.any? %>
+    <div class="mt-8 bg-base-200 rounded-lg p-6">
+      <h3 class="font-semibold text-lg mb-4">Quote Performance Summary</h3>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="text-center">
+          <div class="text-2xl font-bold text-primary">
+            <%= ((@quotes.where(status: 'accepted').count.to_f / @quotes.count) * 100).round(1) %>%
+          </div>
+          <div class="text-sm text-gray-600">Acceptance Rate</div>
+          <div class="text-xs text-gray-500 mt-1">
+            <%= @quotes.where(status: 'accepted').count %> of <%= @quotes.count %> quotes
+          </div>
+        </div>
+        
+        <div class="text-center">
+          <div class="text-2xl font-bold text-success">
+            $<%= number_to_human(@quotes.where(status: 'accepted').sum(:premium_amount), precision: 1) %>
+          </div>
+          <div class="text-sm text-gray-600">Premium Bound</div>
+          <div class="text-xs text-gray-500 mt-1">
+            From accepted quotes
+          </div>
+        </div>
+        
+        <div class="text-center">
+          <div class="text-2xl font-bold text-info">
+            $<%= number_to_human(@quotes.where(status: 'accepted').sum(&:commission_amount), precision: 1) %>
+          </div>
+          <div class="text-sm text-gray-600">Commission Earned</div>
+          <div class="text-xs text-gray-500 mt-1">
+            From accepted quotes
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
 </div>

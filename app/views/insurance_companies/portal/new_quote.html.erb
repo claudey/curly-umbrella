@@ -1,0 +1,300 @@
+<div class="container mx-auto px-4 py-8">
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">Create Quote</h1>
+      <p class="text-gray-600 mt-2">
+        Application #<%= @application.application_number %>
+      </p>
+    </div>
+    
+    <%= link_to insurance_companies_application_path(@application), class: "btn btn-ghost" do %>
+      <%= icon("arrow-left") %>
+      Back to Application
+    <% end %>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Quote Form -->
+    <div class="lg:col-span-2">
+      <div class="card bg-base-100 shadow-sm">
+        <div class="card-body">
+          <h2 class="card-title text-xl mb-6">Quote Details</h2>
+          
+          <%= form_with model: @quote, url: insurance_companies_quotes_path, local: true do |form| %>
+            <%= hidden_field_tag :motor_application_id, @application.id %>
+            
+            <!-- Premium Information -->
+            <div class="form-section mb-8">
+              <h3 class="text-lg font-semibold mb-4 text-primary">Premium Information</h3>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="form-control">
+                  <%= form.label :premium_amount, "Premium Amount ($)", class: "label" %>
+                  <%= form.number_field :premium_amount, 
+                                       step: 0.01,
+                                       min: 0,
+                                       placeholder: "Enter premium amount",
+                                       class: "input input-bordered",
+                                       required: true %>
+                  <label class="label">
+                    <span class="label-text-alt text-gray-500">Annual premium before taxes</span>
+                  </label>
+                </div>
+                
+                <div class="form-control">
+                  <%= form.label :coverage_amount, "Coverage Amount ($)", class: "label" %>
+                  <%= form.number_field :coverage_amount,
+                                       step: 0.01,
+                                       min: 0,
+                                       value: @application.sum_insured,
+                                       placeholder: "Coverage limit",
+                                       class: "input input-bordered",
+                                       required: true %>
+                  <label class="label">
+                    <span class="label-text-alt text-gray-500">Maximum coverage limit</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Commission & Validity -->
+            <div class="form-section mb-8">
+              <h3 class="text-lg font-semibold mb-4 text-primary">Terms & Validity</h3>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="form-control">
+                  <%= form.label :commission_rate, "Commission Rate (%)", class: "label" %>
+                  <%= form.number_field :commission_rate,
+                                       step: 0.01,
+                                       min: 0,
+                                       max: 100,
+                                       value: @insurance_company.commission_rate,
+                                       class: "input input-bordered",
+                                       required: true %>
+                  <label class="label">
+                    <span class="label-text-alt text-gray-500">Commission percentage for broker</span>
+                  </label>
+                </div>
+                
+                <div class="form-control">
+                  <%= form.label :validity_period, "Quote Validity (Days)", class: "label" %>
+                  <%= form.number_field :validity_period,
+                                       min: 1,
+                                       max: 365,
+                                       value: 30,
+                                       class: "input input-bordered",
+                                       required: true %>
+                  <label class="label">
+                    <span class="label-text-alt text-gray-500">Days until quote expires</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Coverage Details -->
+            <div class="form-section mb-8">
+              <h3 class="text-lg font-semibold mb-4 text-primary">Coverage Details</h3>
+              
+              <div class="space-y-4">
+                <% coverage_types = {
+                  'collision_coverage' => 'Collision Coverage',
+                  'comprehensive_coverage' => 'Comprehensive Coverage', 
+                  'liability_coverage' => 'Liability Coverage',
+                  'uninsured_motorist' => 'Uninsured Motorist',
+                  'medical_payments' => 'Medical Payments',
+                  'personal_injury' => 'Personal Injury Protection'
+                } %>
+                
+                <% coverage_types.each do |key, label| %>
+                  <div class="form-control">
+                    <label class="label cursor-pointer justify-start gap-3">
+                      <%= check_box_tag "quote[coverage_details][#{key}][included]", 
+                                        "1", 
+                                        @application.coverage_type&.include?(key.split('_').first),
+                                        class: "checkbox checkbox-primary",
+                                        id: "coverage_#{key}" %>
+                      <div class="flex-1">
+                        <span class="label-text font-medium"><%= label %></span>
+                        <div class="mt-1">
+                          <%= number_field_tag "quote[coverage_details][#{key}][limit]",
+                                               nil,
+                                               placeholder: "Coverage limit ($)",
+                                               class: "input input-bordered input-sm w-48",
+                                               step: 1000,
+                                               min: 0 %>
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+
+            <!-- Terms & Conditions -->
+            <div class="form-section mb-8">
+              <h3 class="text-lg font-semibold mb-4 text-primary">Terms & Conditions</h3>
+              
+              <div class="form-control">
+                <%= form.label :terms_conditions, "Special Terms & Conditions", class: "label" %>
+                <%= form.text_area :terms_conditions,
+                                  rows: 6,
+                                  placeholder: "Enter any special terms, conditions, or requirements for this quote...",
+                                  class: "textarea textarea-bordered" %>
+                <label class="label">
+                  <span class="label-text-alt text-gray-500">Include deductibles, exclusions, and special conditions</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Internal Notes -->
+            <div class="form-section mb-8">
+              <h3 class="text-lg font-semibold mb-4 text-primary">Internal Notes</h3>
+              
+              <div class="form-control">
+                <%= form.label :notes, "Quote Notes (Internal)", class: "label" %>
+                <%= form.text_area :notes,
+                                  rows: 4,
+                                  placeholder: "Internal notes about pricing rationale, risk assessment, etc...",
+                                  class: "textarea textarea-bordered" %>
+                <label class="label">
+                  <span class="label-text-alt text-gray-500">These notes are for internal use only</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex justify-end gap-3">
+              <%= link_to insurance_companies_application_path(@application), 
+                         class: "btn btn-ghost" do %>
+                Cancel
+              <% end %>
+              
+              <%= form.submit "Submit Quote", class: "btn btn-primary" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Application Summary -->
+    <div class="lg:col-span-1">
+      <div class="card bg-base-100 shadow-sm sticky top-4">
+        <div class="card-body">
+          <h3 class="card-title text-lg mb-4">Application Summary</h3>
+          
+          <!-- Client Info -->
+          <div class="space-y-3 mb-6">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Client:</span>
+              <span class="font-medium"><%= @application.client_name %></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Age:</span>
+              <span class="font-medium"><%= @application.driver_age || 'N/A' %></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">License:</span>
+              <span class="font-medium"><%= @application.license_years || 'N/A' %> years</span>
+            </div>
+          </div>
+
+          <!-- Vehicle Info -->
+          <div class="bg-base-200 p-3 rounded-lg mb-6">
+            <div class="font-medium text-sm mb-2">Vehicle Details</div>
+            <div class="space-y-2">
+              <div class="text-sm">
+                <span class="font-medium"><%= @application.vehicle_display_name %></span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Category:</span>
+                <span><%= @application.vehicle_category&.humanize %></span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Usage:</span>
+                <span><%= @application.vehicle_usage&.humanize %></span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Year:</span>
+                <span><%= @application.vehicle_year %></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Coverage Requirements -->
+          <div class="space-y-3 mb-6">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Coverage Type:</span>
+              <span class="badge badge-outline badge-sm">
+                <%= @application.coverage_type&.humanize %>
+              </span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Period:</span>
+              <span class="text-sm"><%= @application.coverage_period %></span>
+            </div>
+            <% if @application.sum_insured %>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Sum Insured:</span>
+                <span class="font-medium">$<%= number_with_delimiter(@application.sum_insured) %></span>
+              </div>
+            <% end %>
+          </div>
+
+          <!-- Risk Factors -->
+          <div class="mb-6">
+            <div class="text-sm font-medium mb-2">Risk Assessment</div>
+            <div class="flex flex-wrap gap-1">
+              <% if @application.driver_has_claims? %>
+                <span class="badge badge-warning badge-xs">Has Claims</span>
+              <% else %>
+                <span class="badge badge-success badge-xs">No Claims</span>
+              <% end %>
+              
+              <% if @application.driver_age && @application.driver_age < 25 %>
+                <span class="badge badge-warning badge-xs">Young Driver</span>
+              <% elsif @application.driver_age && @application.driver_age > 65 %>
+                <span class="badge badge-info badge-xs">Senior Driver</span>
+              <% end %>
+              
+              <% if @application.vehicle_year && @application.vehicle_year < (Date.current.year - 10) %>
+                <span class="badge badge-neutral badge-xs">Older Vehicle</span>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="space-y-2">
+            <%= link_to insurance_companies_application_path(@application), 
+                       class: "btn btn-ghost btn-sm w-full justify-start" do %>
+              <%= icon("eye", class: "w-4 h-4") %>
+              View Full Application
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Auto-calculate commission amount when premium or rate changes
+  document.addEventListener('DOMContentLoaded', function() {
+    const premiumField = document.querySelector('[name="quote[premium_amount]"]');
+    const commissionField = document.querySelector('[name="quote[commission_rate]"]');
+    
+    function updateCalculations() {
+      const premium = parseFloat(premiumField.value) || 0;
+      const commissionRate = parseFloat(commissionField.value) || 0;
+      const commissionAmount = (premium * commissionRate / 100).toFixed(2);
+      
+      // You could add a display element to show calculated commission
+      console.log('Commission Amount:', commissionAmount);
+    }
+    
+    if (premiumField && commissionField) {
+      premiumField.addEventListener('input', updateCalculations);
+      commissionField.addEventListener('input', updateCalculations);
+    }
+  });
+</script>
