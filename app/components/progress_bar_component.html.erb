@@ -1,0 +1,62 @@
+<div class="w-full">
+  <!-- Simple Progress Bar -->
+  <% if @steps.empty? %>
+    <div class="flex items-center gap-3">
+      <div class="flex-1">
+        <progress class="<%= progress_classes %>" value="<%= progress_percentage %>" max="100"></progress>
+      </div>
+      
+      <% if @show_percentage %>
+        <div class="text-sm font-medium text-base-content/70">
+          <%= progress_percentage %>%
+        </div>
+      <% end %>
+    </div>
+    
+    <% if @show_labels %>
+      <div class="flex justify-between text-xs text-base-content/60 mt-1">
+        <span>Step <%= @current_step %> of <%= @total_steps %></span>
+        <span><%= @total_steps - @current_step %> remaining</span>
+      </div>
+    <% end %>
+  
+  <!-- Step-based Progress Bar -->
+  <% else %>
+    <div class="flex items-center w-full">
+      <% @steps.each_with_index do |step, index| %>
+        <!-- Step Circle -->
+        <div class="flex flex-col items-center">
+          <div class="<%= step_classes(index) %>">
+            <% if step_icon(index) == 'check' %>
+              <%= icon('check', class: 'w-4 h-4') %>
+            <% elsif step_icon(index) == 'clock' %>
+              <%= icon('clock', class: 'w-4 h-4') %>
+            <% else %>
+              <%= step_icon(index) %>
+            <% end %>
+          </div>
+          
+          <% if @show_labels %>
+            <div class="mt-2 text-center">
+              <div class="text-xs font-medium"><%= step_label(index) %></div>
+              <div class="text-xs text-base-content/60"><%= step_description(index) %></div>
+            </div>
+          <% end %>
+        </div>
+        
+        <!-- Connector Line -->
+        <% unless index == @steps.length - 1 %>
+          <div class="<%= connector_classes(index) %>"></div>
+        <% end %>
+      <% end %>
+    </div>
+    
+    <% if @show_percentage %>
+      <div class="text-center mt-3">
+        <div class="text-sm font-medium text-base-content/70">
+          <%= progress_percentage %>% Complete
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

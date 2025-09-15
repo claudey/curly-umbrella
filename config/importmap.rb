@@ -8,3 +8,5 @@ pin_all_from "app/javascript/controllers", under: "controllers"
 
 # Pin Lexxy for rich text editing
 pin "lexxy", to: "https://cdn.jsdelivr.net/npm/lexxy@latest/dist/lexxy.js"
+pin "@rails/actioncable", to: "actioncable.esm.js"
+pin_all_from "app/javascript/channels", under: "channels"
