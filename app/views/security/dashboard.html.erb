@@ -1,0 +1,386 @@
+<% content_for :title, "Security Dashboard" %>
+
+<div class="min-h-screen bg-gray-50" data-controller="security-dashboard">
+  <!-- Header -->
+  <div class="bg-white shadow">
+    <div class="px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">
+            <i class="ph-shield-check text-red-600 mr-2"></i>
+            Security Dashboard
+          </h1>
+          <p class="text-gray-600 mt-1">
+            Real-time security monitoring and threat detection
+          </p>
+        </div>
+        
+        <!-- Date Range Filter -->
+        <div class="flex items-center space-x-4">
+          <%= form_with url: security_dashboard_path, method: :get, local: true, class: "flex items-center space-x-2" do |f| %>
+            <%= f.date_field :start_date, value: @date_range[:start], 
+                            class: "rounded-md border-gray-300 text-sm" %>
+            <span class="text-gray-500">to</span>
+            <%= f.date_field :end_date, value: @date_range[:end], 
+                            class: "rounded-md border-gray-300 text-sm" %>
+            <%= f.submit "Update", class: "btn-primary text-sm" %>
+          <% end %>
+          
+          <!-- Quick Actions -->
+          <div class="relative" data-controller="dropdown">
+            <button data-action="click->dropdown#toggle" 
+                    class="btn-secondary text-sm flex items-center">
+              <i class="ph-gear mr-2"></i>
+              Actions
+              <i class="ph-caret-down ml-1"></i>
+            </button>
+            
+            <div data-dropdown-target="menu" 
+                 class="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 hidden z-50">
+              <div class="py-1">
+                <%= link_to security_alerts_path,
+                           class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" do %>
+                  <i class="ph-warning-circle mr-2"></i>View All Alerts
+                <% end %>
+                <%= link_to security_blocked_ips_path,
+                           class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" do %>
+                  <i class="ph-prohibit mr-2"></i>Blocked IPs
+                <% end %>
+                <%= link_to security_threat_intelligence_path,
+                           class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" do %>
+                  <i class="ph-detective mr-2"></i>Threat Intelligence
+                <% end %>
+                <%= link_to export_security_report_path(format: 'pdf'),
+                           class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" do %>
+                  <i class="ph-file-pdf mr-2"></i>Export Report
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="px-6 py-6">
+    <!-- Security Status Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <!-- Total Alerts -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-blue-100">
+            <i class="ph-warning-circle text-blue-600 text-xl"></i>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600">Total Alerts</p>
+            <p class="text-2xl font-semibold text-gray-900">
+              <%= number_with_delimiter(@security_stats[:total_alerts]) %>
+            </p>
+            <p class="text-xs text-gray-500 mt-1">
+              <%= @date_range[:start].strftime('%m/%d') %> - <%= @date_range[:end].strftime('%m/%d') %>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Critical Alerts -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-red-100">
+            <i class="ph-fire text-red-600 text-xl"></i>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600">Critical Alerts</p>
+            <p class="text-2xl font-semibold text-gray-900">
+              <%= @security_stats[:critical_alerts] %>
+            </p>
+            <p class="text-xs text-red-600 mt-1">
+              Requires immediate attention
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Blocked IPs -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-orange-100">
+            <i class="ph-prohibit text-orange-600 text-xl"></i>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600">Blocked IPs</p>
+            <p class="text-2xl font-semibold text-gray-900">
+              <%= @security_stats[:blocked_ips] %>
+            </p>
+            <p class="text-xs text-orange-600 mt-1">
+              Active blocks
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resolution Rate -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-green-100">
+            <i class="ph-check-circle text-green-600 text-xl"></i>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600">Resolution Rate</p>
+            <p class="text-2xl font-semibold text-gray-900">
+              <%= @security_stats[:resolution_rate] %>%
+            </p>
+            <p class="text-xs text-green-600 mt-1">
+              <%= @security_stats[:resolved_alerts] %> resolved
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Dashboard Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <!-- Alert Trends Chart -->
+      <div class="lg:col-span-2 bg-white rounded-lg shadow p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900">
+            <i class="ph-chart-line mr-2"></i>
+            Alert Trends
+          </h3>
+          <div class="flex space-x-2">
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-red-100 text-red-800">
+              Critical
+            </span>
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-800">
+              High
+            </span>
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800">
+              Medium
+            </span>
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+              Low
+            </span>
+          </div>
+        </div>
+        <div id="alert-trends-chart" class="h-64"></div>
+      </div>
+
+      <!-- Recent Critical Alerts -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+            <i class="ph-warning-circle mr-2"></i>
+            Recent Critical Alerts
+          </h3>
+        </div>
+        <div class="p-6">
+          <div class="space-y-4 max-h-64 overflow-y-auto">
+            <% @recent_alerts.each do |alert| %>
+              <div class="border-l-4 pl-4 <%= severity_border_class(alert.severity) %>">
+                <div class="flex items-start justify-between">
+                  <div class="flex-1">
+                    <p class="text-sm font-medium text-gray-900">
+                      <%= alert.message.truncate(60) %>
+                    </p>
+                    <p class="text-xs text-gray-500 mt-1">
+                      <%= time_ago_in_words(alert.triggered_at) %> ago
+                      <% if alert.ip_address %>
+                        • <%= alert.ip_address %>
+                      <% end %>
+                    </p>
+                  </div>
+                  <span class="text-xs px-2 py-1 rounded-full <%= alert.severity_badge_class %>">
+                    <%= alert.severity.capitalize %>
+                  </span>
+                </div>
+              </div>
+            <% end %>
+            
+            <% if @recent_alerts.empty? %>
+              <div class="text-center py-4">
+                <i class="ph-check-circle text-green-500 text-3xl mb-2"></i>
+                <p class="text-gray-500">No critical alerts in the selected period</p>
+              </div>
+            <% end %>
+          </div>
+          
+          <div class="mt-4 pt-4 border-t border-gray-200">
+            <%= link_to security_alerts_path, class: "text-sm text-blue-600 hover:text-blue-800 font-medium" do %>
+              View all alerts →
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Secondary Stats Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- Alert Types Breakdown -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+          <i class="ph-chart-pie mr-2"></i>
+          Alert Types
+        </h3>
+        <div class="space-y-3">
+          <% @security_stats[:by_type].sort_by { |k, v| -v }.first(6).each do |alert_type, count| %>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center">
+                <div class="w-3 h-3 rounded-full mr-3 bg-blue-500"></div>
+                <span class="text-sm font-medium text-gray-900">
+                  <%= alert_type.humanize %>
+                </span>
+              </div>
+              <div class="flex items-center">
+                <span class="text-sm text-gray-600 mr-2"><%= count %></span>
+                <div class="w-16 bg-gray-200 rounded-full h-2">
+                  <div class="bg-blue-600 h-2 rounded-full" 
+                       style="width: <%= (count.to_f / @security_stats[:total_alerts] * 100).round(1) %>%"></div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Blocked IPs List -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+          <h3 class="text-lg font-semibold text-gray-900">
+            <i class="ph-prohibit mr-2"></i>
+            Recently Blocked IPs
+          </h3>
+          <%= link_to security_blocked_ips_path, class: "text-sm text-blue-600 hover:text-blue-800" do %>
+            View all →
+          <% end %>
+        </div>
+        <div class="p-6">
+          <div class="space-y-3">
+            <% @blocked_ips.each do |blocked_ip| %>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
+                <div>
+                  <p class="text-sm font-medium text-gray-900">
+                    <%= blocked_ip[:ip_address] %>
+                  </p>
+                  <p class="text-xs text-gray-500">
+                    <%= blocked_ip[:reason].truncate(40) %>
+                  </p>
+                </div>
+                <div class="text-right">
+                  <% if blocked_ip[:permanent] %>
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-red-100 text-red-800">
+                      Permanent
+                    </span>
+                  <% else %>
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800">
+                      Temporary
+                    </span>
+                  <% end %>
+                  <p class="text-xs text-gray-500 mt-1">
+                    <%= time_ago_in_words(blocked_ip[:blocked_at]) %> ago
+                  </p>
+                </div>
+              </div>
+            <% end %>
+            
+            <% if @blocked_ips.empty? %>
+              <div class="text-center py-4">
+                <i class="ph-shield-check text-green-500 text-3xl mb-2"></i>
+                <p class="text-gray-500">No blocked IPs</p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Threat Map (if available) -->
+    <% if @threat_map_data.any? %>
+      <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+          <i class="ph-globe mr-2"></i>
+          Threat Geographic Distribution
+        </h3>
+        <div id="threat-map" class="h-96 bg-gray-100 rounded-lg flex items-center justify-center">
+          <p class="text-gray-500">Threat map visualization would go here</p>
+          <!-- In production, integrate with a mapping service like Leaflet or Google Maps -->
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Chart.js Integration -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Alert Trends Chart
+const alertTrendsCtx = document.getElementById('alert-trends-chart').getContext('2d');
+const alertTrendsChart = new Chart(alertTrendsCtx, {
+  type: 'line',
+  data: {
+    labels: <%= raw @alert_trends.keys.to_json %>,
+    datasets: [
+      {
+        label: 'Critical',
+        data: <%= raw @alert_trends.values.map { |day| day[:critical] }.to_json %>,
+        borderColor: 'rgb(239, 68, 68)',
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        tension: 0.1,
+        fill: false
+      },
+      {
+        label: 'High',
+        data: <%= raw @alert_trends.values.map { |day| day[:high] }.to_json %>,
+        borderColor: 'rgb(251, 146, 60)',
+        backgroundColor: 'rgba(251, 146, 60, 0.1)',
+        tension: 0.1,
+        fill: false
+      },
+      {
+        label: 'Medium',
+        data: <%= raw @alert_trends.values.map { |day| day[:medium] }.to_json %>,
+        borderColor: 'rgb(245, 158, 11)',
+        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+        tension: 0.1,
+        fill: false
+      },
+      {
+        label: 'Low',
+        data: <%= raw @alert_trends.values.map { |day| day[:low] }.to_json %>,
+        borderColor: 'rgb(59, 130, 246)',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        tension: 0.1,
+        fill: false
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      y: {
+        beginAtZero: true,
+        stacked: false
+      }
+    },
+    plugins: {
+      legend: {
+        display: false // We have our own legend above
+      },
+      tooltip: {
+        mode: 'index',
+        intersect: false
+      }
+    },
+    hover: {
+      mode: 'nearest',
+      intersect: true
+    }
+  }
+});
+
+// Auto-refresh dashboard every 30 seconds
+setInterval(function() {
+  // In production, use AJAX to refresh data
+  console.log('Refreshing security dashboard...');
+}, 30000);
+</script>

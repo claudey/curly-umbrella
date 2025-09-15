@@ -39,7 +39,7 @@ module BrokerSync
     # Don't generate system test files.
     config.generators.system_tests = nil
 
-    # Security middleware for IP blocking and rate limiting
-    config.middleware.insert_before Rack::Runtime, SecurityMiddleware
+    # Ensure middleware directory is autoloaded
+    config.autoload_paths << Rails.root.join('app', 'middleware')
   end
 end
