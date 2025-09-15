@@ -2,7 +2,7 @@ class Quote < ApplicationRecord
   include Discard::Model
   acts_as_tenant :organization
 
-  belongs_to :motor_application
+  belongs_to :insurance_application
   belongs_to :insurance_company
   belongs_to :organization
   belongs_to :quoted_by, class_name: 'User'
@@ -104,7 +104,7 @@ class Quote < ApplicationRecord
       )
       
       # Mark other quotes for same application as rejected
-      motor_application.quotes.where.not(id: id).update_all(
+      insurance_application.quotes.where.not(id: id).update_all(
         status: 'rejected',
         rejected_at: Time.current,
         notes: 'Automatically rejected - another quote was accepted'

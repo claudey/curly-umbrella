@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_15_071501) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_15_072310) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -54,9 +54,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_071501) do
     t.json "distribution_criteria", default: {}
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "insurance_application_id"
     t.index ["created_at"], name: "index_application_distributions_on_created_at"
     t.index ["distributed_by_id"], name: "index_application_distributions_on_distributed_by_id"
     t.index ["distribution_method"], name: "index_application_distributions_on_distribution_method"
+    t.index ["insurance_application_id", "insurance_company_id"], name: "idx_unique_ins_app_company_distribution", unique: true
+    t.index ["insurance_application_id", "status"], name: "idx_on_insurance_application_id_status_ad7ef16d99"
+    t.index ["insurance_application_id"], name: "index_application_distributions_on_insurance_application_id"
     t.index ["insurance_company_id"], name: "index_application_distributions_on_insurance_company_id"
     t.index ["match_score"], name: "index_application_distributions_on_match_score"
     t.index ["motor_application_id", "insurance_company_id"], name: "idx_unique_app_company_distribution", unique: true
@@ -172,6 +176,44 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_071501) do
     t.index ["motor_application_id"], name: "index_distribution_analytics_on_motor_application_id"
     t.index ["occurred_at", "event_type"], name: "index_distribution_analytics_on_occurred_at_and_event_type"
     t.index ["occurred_at"], name: "index_distribution_analytics_on_occurred_at"
+  end
+
+  create_table "insurance_applications", force: :cascade do |t|
+    t.string "application_number", null: false
+    t.string "insurance_type", null: false
+    t.string "status", default: "draft", null: false
+    t.bigint "client_id", null: false
+    t.bigint "organization_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "submitted_at"
+    t.datetime "reviewed_at"
+    t.bigint "reviewed_by_id"
+    t.datetime "approved_at"
+    t.bigint "approved_by_id"
+    t.datetime "rejected_at"
+    t.bigint "rejected_by_id"
+    t.text "rejection_reason"
+    t.json "application_data", default: {}
+    t.decimal "sum_insured", precision: 12, scale: 2
+    t.decimal "premium_amount", precision: 12, scale: 2
+    t.decimal "commission_rate", precision: 5, scale: 2
+    t.text "notes"
+    t.datetime "discarded_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["application_number", "organization_id"], name: "idx_on_application_number_organization_id_9dd04114b0", unique: true
+    t.index ["approved_by_id"], name: "index_insurance_applications_on_approved_by_id"
+    t.index ["client_id"], name: "idx_insurance_applications_client_id"
+    t.index ["client_id"], name: "index_insurance_applications_on_client_id"
+    t.index ["discarded_at"], name: "index_insurance_applications_on_discarded_at"
+    t.index ["insurance_type", "status"], name: "index_insurance_applications_on_insurance_type_and_status"
+    t.index ["organization_id", "status"], name: "index_insurance_applications_on_organization_id_and_status"
+    t.index ["organization_id"], name: "index_insurance_applications_on_organization_id"
+    t.index ["rejected_by_id"], name: "index_insurance_applications_on_rejected_by_id"
+    t.index ["reviewed_by_id"], name: "index_insurance_applications_on_reviewed_by_id"
+    t.index ["submitted_at"], name: "index_insurance_applications_on_submitted_at"
+    t.index ["user_id"], name: "idx_insurance_applications_user_id"
+    t.index ["user_id"], name: "index_insurance_applications_on_user_id"
   end
 
   create_table "insurance_companies", force: :cascade do |t|
@@ -349,7 +391,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_071501) do
     t.text "notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "insurance_application_id"
     t.index ["expires_at"], name: "index_quotes_on_expires_at"
+    t.index ["insurance_application_id", "expires_at"], name: "index_quotes_on_insurance_application_id_and_expires_at"
+    t.index ["insurance_application_id", "status"], name: "index_quotes_on_insurance_application_id_and_status"
+    t.index ["insurance_application_id"], name: "index_quotes_on_insurance_application_id"
     t.index ["insurance_company_id"], name: "index_quotes_on_insurance_company_id"
     t.index ["motor_application_id", "insurance_company_id"], name: "index_quotes_on_motor_application_id_and_insurance_company_id"
     t.index ["motor_application_id"], name: "index_quotes_on_motor_application_id"
@@ -430,6 +476,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_071501) do
 
   add_foreign_key "api_keys", "organizations"
   add_foreign_key "api_keys", "users"
+  add_foreign_key "application_distributions", "insurance_applications"
   add_foreign_key "application_distributions", "insurance_companies"
   add_foreign_key "application_distributions", "motor_applications"
   add_foreign_key "application_distributions", "users", column: "distributed_by_id"
@@ -441,6 +488,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_071501) do
   add_foreign_key "company_preferences", "insurance_companies"
   add_foreign_key "distribution_analytics", "insurance_companies"
   add_foreign_key "distribution_analytics", "motor_applications"
+  add_foreign_key "insurance_applications", "clients"
+  add_foreign_key "insurance_applications", "organizations"
+  add_foreign_key "insurance_applications", "users"
+  add_foreign_key "insurance_applications", "users", column: "approved_by_id"
+  add_foreign_key "insurance_applications", "users", column: "rejected_by_id"
+  add_foreign_key "insurance_applications", "users", column: "reviewed_by_id"
   add_foreign_key "insurance_companies", "users", column: "approved_by_id"
   add_foreign_key "motor_applications", "clients"
   add_foreign_key "motor_applications", "organizations"
@@ -451,6 +504,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_071501) do
   add_foreign_key "notification_preferences", "users"
   add_foreign_key "notifications", "organizations"
   add_foreign_key "notifications", "users"
+  add_foreign_key "quotes", "insurance_applications"
   add_foreign_key "quotes", "insurance_companies"
   add_foreign_key "quotes", "motor_applications"
   add_foreign_key "quotes", "organizations"

@@ -1,9 +1,9 @@
 class ApplicationDistribution < ApplicationRecord
-  belongs_to :motor_application
+  belongs_to :insurance_application
   belongs_to :insurance_company
   belongs_to :distributed_by, class_name: 'User', optional: true
   
-  validates :motor_application_id, presence: true
+  validates :insurance_application_id, presence: true
   validates :insurance_company_id, presence: true
   validates :status, presence: true
   validates :distribution_method, presence: true
@@ -34,7 +34,7 @@ class ApplicationDistribution < ApplicationRecord
     
     distributions = eligible_companies.map do |company|
       create!(
-        motor_application: application,
+        insurance_application: application,
         insurance_company: company,
         distribution_method: options[:method] || 'automatic',
         distributed_by: options[:distributed_by],
@@ -56,33 +56,51 @@ class ApplicationDistribution < ApplicationRecord
   def self.find_eligible_companies(application, options = {})
     companies = InsuranceCompany.active.approved
     
-    # Apply coverage type filter
-    if application.coverage_type.present?
-      companies = companies.joins(:company_preferences)
-                          .where(company_preferences: { 
-                            coverage_types: { application.coverage_type => true } 
-                          })
-    end
+    # Apply insurance type filter
+    companies = companies.joins(:company_preferences)
+                        .where(company_preferences: { 
+                          insurance_types: { application.insurance_type => true } 
+                        })
     
-    # Apply geographical filter
-    if application.location.present?
+    # Apply geographical filter based on client location
+    if application.client&.city.present?
       companies = companies.where(
         "service_areas @> ? OR service_areas IS NULL", 
-        [application.location].to_json
+        [application.client.city].to_json
       )
     end
     
-    # Apply vehicle category filter
-    if application.vehicle_category.present?
-      companies = companies.joins(:company_preferences)
-                          .where(company_preferences: { 
-                            vehicle_categories: { application.vehicle_category => true } 
-                          })
+    # Apply insurance type specific filters
+    case application.insurance_type
+    when 'motor'
+      # Apply vehicle category filter for motor insurance
+      if application.get_field('vehicle_category').present?
+        companies = companies.joins(:company_preferences)
+                            .where(company_preferences: { 
+                              vehicle_categories: { application.get_field('vehicle_category') => true } 
+                            })
+      end
+    when 'fire'
+      # Apply property type filter for fire insurance
+      if application.get_field('property_type').present?
+        companies = companies.joins(:company_preferences)
+                            .where(company_preferences: { 
+                              property_types: { application.get_field('property_type') => true } 
+                            })
+      end
+    when 'liability'
+      # Apply business type filter for liability insurance
+      if application.get_field('business_type').present?
+        companies = companies.joins(:company_preferences)
+                            .where(company_preferences: { 
+                              business_types: { application.get_field('business_type') => true } 
+                            })
+      end
     end
     
     # Exclude companies that already have quotes for this application
     companies = companies.where.not(
-      id: Quote.where(motor_application: application).select(:insurance_company_id)
+      id: Quote.where(insurance_application: application).select(:insurance_company_id)
     )
     
     # Apply manual exclusions if specified
