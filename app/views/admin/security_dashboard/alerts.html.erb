@@ -1,0 +1,216 @@
+<% content_for :title, "Security Alerts" %>
+
+<div class="p-6 space-y-6">
+  <!-- Page Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">Security Alerts</h1>
+      <p class="text-gray-600 mt-2">Monitor and manage security threats across your platform</p>
+    </div>
+    <div class="flex space-x-3">
+      <%= link_to admin_security_dashboard_index_path, class: "btn btn-outline" do %>
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Back to Dashboard
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-white p-4 rounded-lg shadow-sm border">
+    <%= form_with url: admin_security_dashboard_alerts_path, method: :get, local: true, class: "flex flex-wrap items-end gap-4" do |form| %>
+      <div class="flex-1 min-w-0">
+        <%= form.select :status, 
+            options_for_select([
+              ['All Statuses', ''],
+              ['Active', 'active'],
+              ['Investigating', 'investigating'],
+              ['Resolved', 'resolved'],
+              ['Dismissed', 'dismissed']
+            ], params[:status]), 
+            {}, 
+            { class: "form-select" } %>
+        <label class="block text-xs text-gray-500 mt-1">Status</label>
+      </div>
+      
+      <div class="flex-1 min-w-0">
+        <%= form.select :severity, 
+            options_for_select([
+              ['All Severities', ''],
+              ['Critical', 'critical'],
+              ['High', 'high'],
+              ['Medium', 'medium'],
+              ['Low', 'low']
+            ], params[:severity]), 
+            {}, 
+            { class: "form-select" } %>
+        <label class="block text-xs text-gray-500 mt-1">Severity</label>
+      </div>
+      
+      <div class="flex-1 min-w-0">
+        <%= form.select :alert_type, 
+            options_for_select([
+              ['All Types', ''],
+              ['Brute Force Attack', 'brute_force_attack'],
+              ['Rate Limit Exceeded', 'rate_limit_exceeded'],
+              ['Suspicious Activity', 'suspicious_ip_activity'],
+              ['Path Traversal', 'path_traversal_attempt'],
+              ['SQL Injection', 'sql_injection_attempt'],
+              ['XSS Attempt', 'xss_attempt']
+            ], params[:alert_type]), 
+            {}, 
+            { class: "form-select" } %>
+        <label class="block text-xs text-gray-500 mt-1">Alert Type</label>
+      </div>
+      
+      <div>
+        <%= form.submit "Filter", class: "btn btn-primary" %>
+      </div>
+      
+      <% if params.except(:controller, :action, :page).any? %>
+        <div>
+          <%= link_to "Clear", admin_security_dashboard_alerts_path, class: "btn btn-outline" %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+
+  <!-- Alerts Table -->
+  <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alert</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Severity</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP Address</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Triggered</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <% @alerts.each do |alert| %>
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4">
+                <div class="flex items-start">
+                  <div class="flex-shrink-0">
+                    <% if alert.severity == 'critical' %>
+                      <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"></path>
+                        </svg>
+                      </div>
+                    <% elsif alert.severity == 'high' %>
+                      <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"></path>
+                        </svg>
+                      </div>
+                    <% else %>
+                      <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01"></path>
+                        </svg>
+                      </div>
+                    <% end %>
+                  </div>
+                  <div class="ml-4">
+                    <div class="text-sm font-medium text-gray-900"><%= alert.message %></div>
+                    <div class="text-sm text-gray-500"><%= alert.alert_type.humanize %></div>
+                    <% if alert.organization %>
+                      <div class="text-xs text-gray-400 mt-1"><%= alert.organization.name %></div>
+                    <% end %>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= alert.severity_badge_class %>">
+                  <%= alert.severity.capitalize %>
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= alert.status_badge_class %>">
+                  <%= alert.status.humanize %>
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <%= alert.ip_address || 'N/A' %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <div><%= alert.triggered_at.strftime("%b %d, %Y") %></div>
+                <div class="text-xs text-gray-400"><%= alert.triggered_at.strftime("%I:%M %p") %></div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <div class="flex items-center justify-end space-x-2">
+                  <% if alert.status == 'active' %>
+                    <%= button_to "Resolve", resolve_alert_admin_security_dashboard_path(alert), 
+                        method: :patch, 
+                        params: { resolution_notes: "Resolved by admin" },
+                        class: "text-green-600 hover:text-green-900 text-sm",
+                        form_class: "inline" %>
+                    <%= button_to "Dismiss", dismiss_alert_admin_security_dashboard_path(alert), 
+                        method: :patch, 
+                        params: { dismiss_reason: "False positive" },
+                        class: "text-gray-600 hover:text-gray-900 text-sm ml-2",
+                        form_class: "inline" %>
+                  <% elsif alert.status == 'investigating' %>
+                    <%= button_to "Resolve", resolve_alert_admin_security_dashboard_path(alert), 
+                        method: :patch, 
+                        params: { resolution_notes: "Investigation complete - resolved" },
+                        class: "text-green-600 hover:text-green-900 text-sm",
+                        form_class: "inline" %>
+                  <% else %>
+                    <span class="text-gray-400 text-sm">
+                      <%= alert.status.humanize %>
+                      <% if alert.resolved_by %>
+                        by <%= alert.resolved_by.full_name %>
+                      <% end %>
+                    </span>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if @alerts.empty? %>
+      <div class="p-12 text-center">
+        <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No security alerts found</h3>
+        <p class="text-gray-500">No alerts match your current filters.</p>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Pagination -->
+  <% if @alerts.respond_to?(:current_page) %>
+    <div class="flex items-center justify-between">
+      <div class="flex-1 flex justify-between sm:hidden">
+        <% if @alerts.prev_page %>
+          <%= link_to "Previous", admin_security_dashboard_alerts_path(page: @alerts.prev_page), class: "relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" %>
+        <% end %>
+        <% if @alerts.next_page %>
+          <%= link_to "Next", admin_security_dashboard_alerts_path(page: @alerts.next_page), class: "ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" %>
+        <% end %>
+      </div>
+      <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+        <div>
+          <p class="text-sm text-gray-700">
+            Showing <span class="font-medium"><%= (@alerts.current_page - 1) * @alerts.limit_value + 1 %></span> to 
+            <span class="font-medium"><%= [@alerts.current_page * @alerts.limit_value, @alerts.total_count].min %></span> of 
+            <span class="font-medium"><%= @alerts.total_count %></span> results
+          </p>
+        </div>
+        <div>
+          <%= paginate @alerts, theme: 'tailwind' if @alerts.respond_to?(:current_page) %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

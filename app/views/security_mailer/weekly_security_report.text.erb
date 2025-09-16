@@ -1,0 +1,71 @@
+📈 WEEKLY SECURITY REPORT
+<%= @start_date.strftime("%B %d") %> - <%= @end_date.strftime("%B %d, %Y") %>
+<%= @organization.name %>
+
+Hello <%= @admin.first_name %>,
+
+Here's your comprehensive security report for the week of <%= @start_date.strftime("%B %d") %> to <%= @end_date.strftime("%B %d, %Y") %>.
+
+SECURITY SUMMARY:
+=================
+Total Alerts: <%= @summary[:total_alerts] %>
+Critical Alerts: <%= @summary[:by_severity]['critical'] || 0 %>
+High Priority: <%= @summary[:by_severity]['high'] || 0 %>
+Medium Priority: <%= @summary[:by_severity]['medium'] || 0 %>
+Low Priority: <%= @summary[:by_severity]['low'] || 0 %>
+Resolved: <%= @summary[:resolved_count] %>
+Unresolved: <%= @summary[:unresolved_count] %>
+Resolution Rate: <%= @summary[:total_alerts] > 0 ? ((@summary[:resolved_count].to_f / @summary[:total_alerts]) * 100).round(1) : 0 %>%
+
+ALERT DISTRIBUTION BY TYPE:
+============================
+<% if @summary[:by_type].any? %>
+<% @summary[:by_type].each do |type, count| %>
+<%= "#{type.humanize}:".ljust(25) %> <%= count %>
+<% end %>
+<% else %>
+No alerts this week
+<% end %>
+
+TOP PRIORITY ALERTS:
+====================
+<% if @top_alerts.any? %>
+<% @top_alerts.each_with_index do |alert, index| %>
+<%= index + 1 %>. <%= alert.alert_type.humanize %> [<%= alert.severity.upcase %>]
+   <%= alert.message %>
+   Time: <%= alert.triggered_at.strftime("%B %d at %I:%M %p") %>
+   Status: <%= alert.status.humanize %>
+   
+<% end %>
+<% else %>
+🎉 No High Priority Alerts
+Your organization had no critical or high priority security alerts this week.
+
+<% end %>
+SECURITY RECOMMENDATIONS:
+==========================
+<% if @summary[:total_alerts] == 0 %>
+• Great job! No security incidents this week. Continue monitoring and maintaining security best practices.
+<% else %>
+<% if @summary[:unresolved_count] > 0 %>
+• ⚠️  ACTION REQUIRED: You have <%= @summary[:unresolved_count] %> unresolved security alert<%= @summary[:unresolved_count] > 1 ? 's' : '' %>. Please review and address these immediately.
+<% end %>
+<% if (@summary[:by_severity]['critical'] || 0) > 0 %>
+• 🚨 CRITICAL ALERT FOLLOW-UP: Ensure all critical alerts have been properly investigated and resolved.
+<% end %>
+• Review your security dashboard regularly to stay ahead of potential threats.
+• Consider implementing additional security measures if you're seeing repeated alert types.
+<% end %>
+• Schedule a security review meeting if you have questions about any alerts.
+
+QUICK ACTIONS:
+==============
+• View Security Dashboard: <%= admin_security_dashboard_index_url %>
+• Review All Alerts: <%= admin_security_dashboard_alerts_url %>
+• Check IP Blocks: <%= admin_security_dashboard_ip_blocks_url %>
+• View Audit Logs: <%= admin_security_dashboard_audit_logs_url %>
+
+---
+Report Period: <%= @start_date.strftime("%B %d, %Y") %> - <%= @end_date.strftime("%B %d, %Y") %>
+BrokerSync Security Team • Automated Weekly Report
+For questions about this report, contact your system administrator.

@@ -1,0 +1,278 @@
+<% content_for :title, "Security Dashboard" %>
+
+<div class="p-6 space-y-6">
+  <!-- Page Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">Security Dashboard</h1>
+      <p class="text-gray-600 mt-2">Real-time security monitoring and threat detection</p>
+    </div>
+    <div class="flex space-x-3">
+      <%= link_to admin_security_dashboard_alerts_path, class: "btn btn-outline" do %>
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.728-.833-2.498 0L4.316 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+        </svg>
+        View All Alerts
+      <% end %>
+      <%= link_to admin_security_dashboard_ip_blocks_path, class: "btn btn-primary" do %>
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+        </svg>
+        Manage IP Blocks
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Security Metrics Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- Total Alerts -->
+    <div class="bg-white p-6 rounded-lg shadow-sm border">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5-5-5h5v-5a7.5 7.5 0 017.5-7.5H19m-7 14v-2m0-4v.01"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-500">Total Alerts (24h)</p>
+          <p class="text-2xl font-bold text-gray-900"><%= @security_metrics[:total_alerts_24h] %></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Critical Alerts -->
+    <div class="bg-white p-6 rounded-lg shadow-sm border">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.728-.833-2.498 0L4.316 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-500">Critical Alerts</p>
+          <p class="text-2xl font-bold text-red-900"><%= @security_metrics[:critical_alerts_24h] %></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Blocked IPs -->
+    <div class="bg-white p-6 rounded-lg shadow-sm border">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18 21l3-3-2.636-2.636M5.636 5.636L3 3l3 3 2.636 2.636"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-500">Blocked IPs</p>
+          <p class="text-2xl font-bold text-orange-900"><%= @security_metrics[:blocked_ips] %></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Failed Logins -->
+    <div class="bg-white p-6 rounded-lg shadow-sm border">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-500">Failed Logins (24h)</p>
+          <p class="text-2xl font-bold text-yellow-900"><%= @security_metrics[:failed_logins_24h] %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Security Alerts Timeline -->
+    <div class="bg-white p-6 rounded-lg shadow-sm border">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Security Alerts Timeline</h3>
+      <div class="h-64" id="alertsChart"></div>
+    </div>
+
+    <!-- Login Failures Timeline -->
+    <div class="bg-white p-6 rounded-lg shadow-sm border">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Failed Login Attempts</h3>
+      <div class="h-64" id="loginsChart"></div>
+    </div>
+  </div>
+
+  <!-- Recent Activities Section -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Recent Security Alerts -->
+    <div class="bg-white rounded-lg shadow-sm border">
+      <div class="p-6 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold text-gray-900">Recent Security Alerts</h3>
+          <%= link_to "View All", admin_security_dashboard_alerts_path, class: "text-blue-600 hover:text-blue-700 text-sm font-medium" %>
+        </div>
+      </div>
+      <div class="divide-y divide-gray-200">
+        <% @recent_alerts.each do |alert| %>
+          <div class="p-4 hover:bg-gray-50">
+            <div class="flex items-start justify-between">
+              <div class="flex-1">
+                <div class="flex items-center space-x-2">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= alert.severity_badge_class %>">
+                    <%= alert.severity.capitalize %>
+                  </span>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= alert.status_badge_class %>">
+                    <%= alert.status.humanize %>
+                  </span>
+                </div>
+                <p class="text-sm font-medium text-gray-900 mt-1"><%= alert.message %></p>
+                <p class="text-sm text-gray-500"><%= alert.triggered_at.strftime("%B %d, %Y at %I:%M %p") %></p>
+              </div>
+              <div class="text-sm text-gray-400">
+                <%= alert.ip_address %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+        
+        <% if @recent_alerts.empty? %>
+          <div class="p-8 text-center">
+            <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <p class="text-gray-500">No recent security alerts</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Blocked IPs -->
+    <div class="bg-white rounded-lg shadow-sm border">
+      <div class="p-6 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold text-gray-900">Recently Blocked IPs</h3>
+          <%= link_to "Manage All", admin_security_dashboard_ip_blocks_path, class: "text-blue-600 hover:text-blue-700 text-sm font-medium" %>
+        </div>
+      </div>
+      <div class="divide-y divide-gray-200">
+        <% @blocked_ips.each do |ip_info| %>
+          <div class="p-4 hover:bg-gray-50">
+            <div class="flex items-start justify-between">
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-900"><%= ip_info[:ip_address] %></p>
+                <p class="text-sm text-gray-600"><%= ip_info[:reason] %></p>
+                <p class="text-sm text-gray-500">
+                  Blocked <%= time_ago_in_words(ip_info[:blocked_at]) %> ago
+                  <% if ip_info[:permanent] %>
+                    <span class="text-red-600 font-medium">(Permanent)</span>
+                  <% elsif ip_info[:expires_at] %>
+                    <span class="text-orange-600">(Expires <%= time_ago_in_words(ip_info[:expires_at]) %>)</span>
+                  <% end %>
+                </p>
+              </div>
+            </div>
+          </div>
+        <% end %>
+        
+        <% if @blocked_ips.empty? %>
+          <div class="p-8 text-center">
+            <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <p class="text-gray-500">No blocked IPs</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js Integration -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Fetch metrics data
+  fetch('<%= admin_security_dashboard_metrics_api_path %>')
+    .then(response => response.json())
+    .then(data => {
+      createAlertsChart(data.alerts_timeline);
+      createLoginsChart(data.login_failures_timeline);
+    })
+    .catch(error => console.error('Error loading metrics:', error));
+});
+
+function createAlertsChart(data) {
+  const ctx = document.getElementById('alertsChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.map(point => new Date(point.timestamp).toLocaleTimeString()),
+      datasets: [{
+        label: 'Security Alerts',
+        data: data.map(point => point.value),
+        borderColor: 'rgb(239, 68, 68)',
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 1
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          display: false
+        }
+      }
+    }
+  });
+}
+
+function createLoginsChart(data) {
+  const ctx = document.getElementById('loginsChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.map(point => new Date(point.timestamp).toLocaleTimeString()),
+      datasets: [{
+        label: 'Failed Logins',
+        data: data.map(point => point.value),
+        borderColor: 'rgb(245, 158, 11)',
+        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 1
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          display: false
+        }
+      }
+    }
+  });
+}
+</script>

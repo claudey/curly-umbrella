@@ -79,4 +79,37 @@ class SecurityMailer < ApplicationMailer
       subject: "Weekly Security Report - #{start_date.strftime('%m/%d')} to #{end_date.strftime('%m/%d')} - #{@organization.name}"
     )
   end
+
+  def critical_security_alert(user, alert)
+    @user = user
+    @alert = alert
+    @alert_data = alert.formatted_data
+    
+    mail(
+      to: @user.email,
+      subject: "🚨 Critical Security Alert: #{@alert.message}",
+      priority: 'high'
+    )
+  end
+
+  def ip_block_notification(user, ip_address, reason, permanent, duration)
+    @user = user
+    @ip_address = ip_address
+    @reason = reason
+    @permanent = permanent
+    @duration = duration
+    @blocked_at = Time.current
+    
+    subject = if permanent
+                "🛡️ IP Permanently Blocked: #{ip_address}"
+              else
+                "⏰ IP Temporarily Blocked: #{ip_address}"
+              end
+
+    mail(
+      to: @user.email,
+      subject: subject,
+      priority: 'high'
+    )
+  end
 end

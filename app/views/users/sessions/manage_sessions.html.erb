@@ -1,0 +1,234 @@
+<% content_for :title, "Active Sessions" %>
+
+<div class="p-6 space-y-6">
+  <!-- Page Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">Active Sessions</h1>
+      <p class="text-gray-600 mt-2">Manage your active login sessions across different devices</p>
+    </div>
+    <div class="flex space-x-3">
+      <%= link_to "Back to Dashboard", root_path, class: "btn btn-outline" %>
+      <% if @active_sessions.count > 1 %>
+        <%= link_to "Terminate All Other Sessions", terminate_other_sessions_path, 
+            method: :delete,
+            class: "btn btn-error",
+            confirm: "Are you sure you want to terminate all other sessions? This will log you out from all other devices." %>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Session Statistics -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="bg-white p-6 rounded-lg shadow-sm border">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-500">Active Sessions</p>
+          <p class="text-2xl font-bold text-gray-900"><%= @active_sessions.count %></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-sm border">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-500">Current Session</p>
+          <p class="text-2xl font-bold text-gray-900">1</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-sm border">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-500">Other Devices</p>
+          <p class="text-2xl font-bold text-gray-900"><%= [@active_sessions.count - 1, 0].max %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sessions List -->
+  <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <h3 class="text-lg font-semibold text-gray-900">Your Active Sessions</h3>
+      <p class="text-sm text-gray-600 mt-1">Sessions are automatically terminated after 8 hours or 30 minutes of inactivity</p>
+    </div>
+
+    <div class="divide-y divide-gray-200">
+      <% @active_sessions.each do |session_info| %>
+        <div class="p-6">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <div class="flex items-center space-x-3">
+                <!-- Device Icon -->
+                <div class="flex-shrink-0">
+                  <% if session_info[:user_agent]&.downcase&.include?('mobile') %>
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                      </svg>
+                    </div>
+                  <% else %>
+                    <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                      </svg>
+                    </div>
+                  <% end %>
+                </div>
+
+                <div class="flex-1">
+                  <div class="flex items-center space-x-2">
+                    <h4 class="text-lg font-medium text-gray-900">
+                      <% if session_info[:user_agent] %>
+                        <%= extract_browser_name(session_info[:user_agent]) %>
+                      <% else %>
+                        Unknown Browser
+                      <% end %>
+                    </h4>
+                    <% if session_info[:is_current] %>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        Current Session
+                      </span>
+                    <% end %>
+                  </div>
+                  
+                  <div class="mt-1 space-y-1">
+                    <p class="text-sm text-gray-600">
+                      <strong>IP Address:</strong> <%= session_info[:ip_address] || 'Unknown' %>
+                    </p>
+                    <% if session_info[:location] %>
+                      <p class="text-sm text-gray-600">
+                        <strong>Location:</strong> <%= session_info[:location] %>
+                      </p>
+                    <% end %>
+                    <p class="text-sm text-gray-600">
+                      <strong>Started:</strong> <%= session_info[:created_at].strftime("%B %d, %Y at %I:%M %p") %>
+                    </p>
+                    <p class="text-sm text-gray-600">
+                      <strong>Last Activity:</strong> <%= time_ago_in_words(session_info[:last_activity]) %> ago
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- User Agent Details (collapsed by default) -->
+              <% if session_info[:user_agent] %>
+                <details class="mt-4">
+                  <summary class="text-sm text-gray-500 cursor-pointer hover:text-gray-700">
+                    Show technical details
+                  </summary>
+                  <div class="mt-2 p-3 bg-gray-50 rounded text-xs text-gray-600 font-mono">
+                    <%= session_info[:user_agent] %>
+                  </div>
+                </details>
+              <% end %>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex-shrink-0 ml-6">
+              <% unless session_info[:is_current] %>
+                <%= link_to terminate_session_path(session_info[:session_id]), 
+                    method: :delete,
+                    class: "btn btn-sm btn-error",
+                    confirm: "Are you sure you want to terminate this session?" do %>
+                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                  Terminate
+                <% end %>
+              <% else %>
+                <div class="text-sm text-gray-500">
+                  Current session cannot be terminated
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <% if @active_sessions.empty? %>
+      <div class="p-12 text-center">
+        <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No active sessions</h3>
+        <p class="text-gray-500">There are no active sessions to display.</p>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Security Notice -->
+  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-sm font-medium text-blue-800">Security Notice</h3>
+        <div class="mt-2 text-sm text-blue-700">
+          <p>
+            If you see any sessions that you don't recognize, terminate them immediately and change your password. 
+            We recommend limiting active sessions and logging out from devices you no longer use.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% content_for :javascript do %>
+<script>
+// Auto-refresh the page every 5 minutes to show updated session info
+setTimeout(function() {
+  window.location.reload();
+}, 300000); // 5 minutes
+</script>
+<% end %>
+
+<%
+  # Helper method to extract browser name from user agent
+  def extract_browser_name(user_agent)
+    case user_agent.downcase
+    when /chrome/
+      "Google Chrome"
+    when /firefox/
+      "Mozilla Firefox"
+    when /safari/
+      "Safari"
+    when /edge/
+      "Microsoft Edge"
+    when /opera/
+      "Opera"
+    when /mobile/
+      "Mobile Browser"
+    else
+      "Unknown Browser"
+    end
+  end
+%>

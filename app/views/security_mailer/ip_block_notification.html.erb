@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= @permanent ? "🛡️" : "⏰" %> IP Address Blocked</title>
+  <style>
+    .container { max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; }
+    .header { background: #f59e0b; color: white; padding: 20px; text-align: center; }
+    .content { padding: 20px; background: #fff; }
+    .warning-box { background: #fef3cd; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; }
+    .details { background: #f9fafb; padding: 15px; border-radius: 5px; margin: 15px 0; }
+    .footer { background: #f3f4f6; padding: 15px; text-align: center; font-size: 12px; color: #6b7280; }
+    .button { display: inline-block; background: #f59e0b; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1><%= @permanent ? "🛡️" : "⏰" %> IP Address Blocked</h1>
+      <p>Security protection activated</p>
+    </div>
+    
+    <div class="content">
+      <p>Hello <%= @user.first_name %>,</p>
+      
+      <div class="warning-box">
+        <h3>IP Blocking Details</h3>
+        <p><strong>Blocked IP:</strong> <code><%= @ip_address %></code></p>
+        <p><strong>Block Type:</strong> <%= @permanent ? "Permanent" : "Temporary" %></p>
+        <p><strong>Reason:</strong> <%= @reason %></p>
+        <p><strong>Blocked At:</strong> <%= @blocked_at.strftime("%B %d, %Y at %I:%M %p %Z") %></p>
+        <% unless @permanent %>
+          <p><strong>Duration:</strong> <%= @duration %></p>
+          <p><strong>Expires:</strong> <%= (@blocked_at + @duration.seconds).strftime("%B %d, %Y at %I:%M %p %Z") %></p>
+        <% end %>
+      </div>
+      
+      <% if @permanent %>
+        <p>This IP address has been <strong>permanently blocked</strong> from accessing the BrokerSync platform due to security violations.</p>
+        
+        <h4>What this means:</h4>
+        <ul>
+          <li>The IP address <%= @ip_address %> can no longer access the platform</li>
+          <li>Any attempts to connect from this IP will be rejected</li>
+          <li>This block remains in effect until manually removed by an administrator</li>
+        </ul>
+        
+        <h4>If this was a mistake:</h4>
+        <ul>
+          <li>Contact your system administrator immediately</li>
+          <li>Provide the IP address and timestamp shown above</li>
+          <li>Explain why this IP should be unblocked</li>
+        </ul>
+      <% else %>
+        <p>This IP address has been <strong>temporarily blocked</strong> from accessing the BrokerSync platform due to suspicious activity.</p>
+        
+        <h4>What this means:</h4>
+        <ul>
+          <li>The IP address <%= @ip_address %> is temporarily blocked</li>
+          <li>Access will be automatically restored after <%= @duration %></li>
+          <li>The block will expire on <%= (@blocked_at + @duration.seconds).strftime("%B %d, %Y at %I:%M %p %Z") %></li>
+        </ul>
+        
+        <h4>What you can do:</h4>
+        <ul>
+          <li>Wait for the block to expire automatically</li>
+          <li>Contact your administrator if this was a mistake</li>
+          <li>Ensure you're following platform security guidelines</li>
+        </ul>
+      <% end %>
+      
+      <div class="details">
+        <h4>Security Information</h4>
+        <p>This action was taken to protect the security and integrity of the BrokerSync platform. Common reasons for IP blocking include:</p>
+        <ul>
+          <li>Multiple failed login attempts</li>
+          <li>Suspicious request patterns</li>
+          <li>Potential security attacks</li>
+          <li>Policy violations</li>
+        </ul>
+      </div>
+      
+      <p>
+        <a href="<%= security_dashboard_url %>" class="button">View Security Dashboard</a>
+      </p>
+    </div>
+    
+    <div class="footer">
+      <p>This is an automated security notification from BrokerSync.</p>
+      <p>For support, contact your system administrator.</p>
+    </div>
+  </div>
+</body>
+</html>

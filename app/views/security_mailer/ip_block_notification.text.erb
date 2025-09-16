@@ -1,0 +1,58 @@
+<%= @permanent ? "🛡️" : "⏰" %> IP ADDRESS BLOCKED
+
+Hello <%= @user.first_name %>,
+
+IP BLOCKING DETAILS:
+====================
+Blocked IP: <%= @ip_address %>
+Block Type: <%= @permanent ? "Permanent" : "Temporary" %>
+Reason: <%= @reason %>
+Blocked At: <%= @blocked_at.strftime("%B %d, %Y at %I:%M %p %Z") %>
+<% unless @permanent %>
+Duration: <%= @duration %>
+Expires: <%= (@blocked_at + @duration.seconds).strftime("%B %d, %Y at %I:%M %p %Z") %>
+<% end %>
+
+<% if @permanent %>
+PERMANENT BLOCK NOTICE:
+=======================
+This IP address has been PERMANENTLY BLOCKED from accessing the BrokerSync platform due to security violations.
+
+What this means:
+• The IP address <%= @ip_address %> can no longer access the platform
+• Any attempts to connect from this IP will be rejected
+• This block remains in effect until manually removed by an administrator
+
+If this was a mistake:
+• Contact your system administrator immediately
+• Provide the IP address and timestamp shown above
+• Explain why this IP should be unblocked
+<% else %>
+TEMPORARY BLOCK NOTICE:
+=======================
+This IP address has been TEMPORARILY BLOCKED from accessing the BrokerSync platform due to suspicious activity.
+
+What this means:
+• The IP address <%= @ip_address %> is temporarily blocked
+• Access will be automatically restored after <%= @duration %>
+• The block will expire on <%= (@blocked_at + @duration.seconds).strftime("%B %d, %Y at %I:%M %p %Z") %>
+
+What you can do:
+• Wait for the block to expire automatically
+• Contact your administrator if this was a mistake
+• Ensure you're following platform security guidelines
+<% end %>
+
+SECURITY INFORMATION:
+=====================
+This action was taken to protect the security and integrity of the BrokerSync platform. Common reasons for IP blocking include:
+• Multiple failed login attempts
+• Suspicious request patterns
+• Potential security attacks
+• Policy violations
+
+View Security Dashboard: <%= security_dashboard_url %>
+
+---
+This is an automated security notification from BrokerSync.
+For support, contact your system administrator.

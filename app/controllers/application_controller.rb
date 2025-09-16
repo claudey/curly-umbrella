@@ -4,12 +4,16 @@ class ApplicationController < ActionController::Base
 
   # Include security protection
   include SecurityProtection
+  include SessionSecurity
 
   # Set up acts_as_tenant for multi-tenancy
   set_current_tenant_through_filter
   before_action :set_current_tenant
   before_action :authenticate_user!
   before_action :configure_permitted_parameters, if: :devise_controller?
+
+  # Session management hooks
+  after_action :create_user_session, if: -> { user_signed_in? && session[:session_id].blank? }
 
   protected
 

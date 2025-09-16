@@ -51,6 +51,22 @@ Rails.application.routes.draw do
         get :analytics
       end
     end
+
+    # Security Dashboard routes
+    scope :security_dashboard, as: :security_dashboard do
+      get '/', to: 'security_dashboard#index', as: :index
+      get '/alerts', to: 'security_dashboard#alerts', as: :alerts
+      get '/ip_blocks', to: 'security_dashboard#ip_blocks', as: :ip_blocks
+      get '/rate_limits', to: 'security_dashboard#rate_limits', as: :rate_limits
+      get '/audit_logs', to: 'security_dashboard#audit_logs', as: :audit_logs
+      get '/metrics_api', to: 'security_dashboard#metrics_api', as: :metrics_api
+      
+      patch '/block_ip', to: 'security_dashboard#block_ip', as: :block_ip
+      patch '/unblock_ip', to: 'security_dashboard#unblock_ip', as: :unblock_ip
+      patch '/whitelist_ip', to: 'security_dashboard#whitelist_ip', as: :whitelist_ip
+      patch '/resolve_alert/:id', to: 'security_dashboard#resolve_alert', as: :resolve_alert
+      patch '/dismiss_alert/:id', to: 'security_dashboard#dismiss_alert', as: :dismiss_alert
+    end
   end
   namespace :insurance_companies do
     root "portal#dashboard"
@@ -96,7 +112,14 @@ Rails.application.routes.draw do
       get :print
     end
   end
-  devise_for :users
+  devise_for :users, controllers: {
+    sessions: 'users/sessions'
+  }
+  
+  # Session management routes
+  get '/sessions/manage', to: 'users/sessions#manage_sessions', as: :manage_sessions
+  delete '/sessions/terminate_others', to: 'users/sessions#terminate_other_sessions', as: :terminate_other_sessions
+  delete '/sessions/:session_id', to: 'users/sessions#terminate_session', as: :terminate_session
   
   # Multi-factor authentication routes
   resource :mfa, only: [:show] do

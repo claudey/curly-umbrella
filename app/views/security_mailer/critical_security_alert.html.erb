@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🚨 Critical Security Alert</title>
+  <style>
+    .container { max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; }
+    .header { background: #dc2626; color: white; padding: 20px; text-align: center; }
+    .content { padding: 20px; background: #fff; }
+    .alert-box { background: #fef2f2; border-left: 4px solid #dc2626; padding: 15px; margin: 20px 0; }
+    .details { background: #f9fafb; padding: 15px; border-radius: 5px; margin: 15px 0; }
+    .footer { background: #f3f4f6; padding: 15px; text-align: center; font-size: 12px; color: #6b7280; }
+    .button { display: inline-block; background: #dc2626; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🚨 CRITICAL SECURITY ALERT</h1>
+      <p>Immediate attention required</p>
+    </div>
+    
+    <div class="content">
+      <p>Hello <%= @user.first_name %>,</p>
+      
+      <div class="alert-box">
+        <h3>Security Alert Details</h3>
+        <p><strong>Alert Type:</strong> <%= @alert.alert_type.humanize %></p>
+        <p><strong>Severity:</strong> <span style="color: #dc2626; font-weight: bold;"><%= @alert.severity.upcase %></span></p>
+        <p><strong>Time:</strong> <%= @alert.triggered_at.strftime("%B %d, %Y at %I:%M %p %Z") %></p>
+        <p><strong>Message:</strong> <%= @alert.message %></p>
+      </div>
+      
+      <% if @alert_data.present? %>
+      <div class="details">
+        <h4>Technical Details</h4>
+        <% @alert_data.each do |key, value| %>
+          <p><strong><%= key.to_s.humanize %>:</strong> <%= value %></p>
+        <% end %>
+      </div>
+      <% end %>
+      
+      <p>This is a critical security alert that requires immediate attention. Please:</p>
+      <ul>
+        <li>Review the alert details above</li>
+        <li>Check your recent account activity</li>
+        <li>Change your password if you suspect unauthorized access</li>
+        <li>Contact your system administrator if you have any concerns</li>
+      </ul>
+      
+      <p>
+        <a href="<%= security_dashboard_url %>" class="button">View Security Dashboard</a>
+      </p>
+      
+      <p>If you believe this alert is legitimate but expected, you can safely ignore this message. However, if you suspect unauthorized activity, please take immediate action to secure your account.</p>
+    </div>
+    
+    <div class="footer">
+      <p>This is an automated security notification from BrokerSync.</p>
+      <p>For support, contact your system administrator.</p>
+    </div>
+  </div>
+</body>
+</html>

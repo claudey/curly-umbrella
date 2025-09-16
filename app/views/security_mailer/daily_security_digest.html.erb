@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📊 Daily Security Digest</title>
+  <style>
+    .container { max-width: 700px; margin: 0 auto; font-family: Arial, sans-serif; }
+    .header { background: #1f2937; color: white; padding: 20px; text-align: center; }
+    .content { padding: 20px; background: #fff; }
+    .summary-box { background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0; }
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0; }
+    .stat-item { background: white; padding: 15px; border-radius: 5px; text-align: center; border: 1px solid #e5e7eb; }
+    .stat-number { font-size: 24px; font-weight: bold; color: #1f2937; }
+    .stat-label { font-size: 12px; color: #6b7280; text-transform: uppercase; }
+    .alert-item { background: #fef2f2; border-left: 4px solid #dc2626; padding: 10px; margin: 10px 0; }
+    .alert-medium { background: #fef3cd; border-left-color: #f59e0b; }
+    .alert-low { background: #f0f9ff; border-left-color: #3b82f6; }
+    .footer { background: #f3f4f6; padding: 15px; text-align: center; font-size: 12px; color: #6b7280; }
+    .button { display: inline-block; background: #1f2937; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin: 10px 0; }
+    .no-alerts { text-align: center; padding: 40px; color: #6b7280; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📊 Daily Security Digest</h1>
+      <p><%= @date.strftime("%B %d, %Y") %> - <%= @organization.name %></p>
+    </div>
+    
+    <div class="content">
+      <p>Hello <%= @admin.first_name %>,</p>
+      
+      <div class="summary-box">
+        <h3>Security Summary for <%= @date.strftime("%B %d, %Y") %></h3>
+        
+        <div class="stat-grid">
+          <div class="stat-item">
+            <div class="stat-number"><%= @summary[:total_alerts] || 0 %></div>
+            <div class="stat-label">Total Alerts</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number" style="color: #dc2626;"><%= @summary[:critical_count] || 0 %></div>
+            <div class="stat-label">Critical</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number" style="color: #f59e0b;"><%= @summary[:high_count] || 0 %></div>
+            <div class="stat-label">High</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number" style="color: #10b981;"><%= @summary[:resolved_count] || 0 %></div>
+            <div class="stat-label">Resolved</div>
+          </div>
+        </div>
+      </div>
+      
+      <% if @alerts.any? %>
+        <h3>Security Alerts from Today</h3>
+        <% @alerts.each do |alert| %>
+          <div class="alert-item <%= "alert-#{alert.severity}" if %w[medium low].include?(alert.severity) %>">
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+              <div>
+                <h4 style="margin: 0 0 5px 0; color: #1f2937;"><%= alert.alert_type.humanize %></h4>
+                <p style="margin: 0 0 5px 0; font-size: 14px;"><%= alert.message %></p>
+                <p style="margin: 0; font-size: 12px; color: #6b7280;">
+                  <%= alert.triggered_at.strftime("%I:%M %p") %> • 
+                  <span style="text-transform: uppercase; font-weight: bold; color: <%= alert.severity == 'critical' ? '#dc2626' : alert.severity == 'high' ? '#f59e0b' : '#3b82f6' %>;">
+                    <%= alert.severity %>
+                  </span>
+                </p>
+              </div>
+              <div style="text-align: right;">
+                <span style="font-size: 12px; padding: 4px 8px; border-radius: 12px; background: <%= alert.status == 'resolved' ? '#dcfce7' : '#fef3cd' %>; color: <%= alert.status == 'resolved' ? '#166534' : '#92400e' %>;">
+                  <%= alert.status.humanize %>
+                </span>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="no-alerts">
+          <h3>🎉 No Security Alerts Today</h3>
+          <p>Your organization had no security incidents today. Great job!</p>
+        </div>
+      <% end %>
+      
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="<%= admin_security_dashboard_index_url %>" class="button">View Full Security Dashboard</a>
+      </div>
+      
+      <div style="background: #f0f9ff; padding: 15px; border-radius: 5px; margin: 20px 0;">
+        <h4 style="margin: 0 0 10px 0; color: #1e40af;">💡 Security Tip of the Day</h4>
+        <p style="margin: 0; font-size: 14px; color: #1e40af;">
+          Regular security monitoring helps identify threats early. Review your security dashboard weekly to stay ahead of potential issues.
+        </p>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <p>This digest covers security events from <%= @date.strftime("%B %d, %Y") %></p>
+      <p>BrokerSync Security Team • Automated Daily Report</p>
+    </div>
+  </div>
+</body>
+</html>

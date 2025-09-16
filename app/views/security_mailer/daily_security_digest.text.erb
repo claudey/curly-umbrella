@@ -1,0 +1,41 @@
+📊 DAILY SECURITY DIGEST
+<%= @date.strftime("%B %d, %Y") %> - <%= @organization.name %>
+
+Hello <%= @admin.first_name %>,
+
+SECURITY SUMMARY FOR <%= @date.strftime("%B %d, %Y").upcase %>:
+========================================================
+Total Alerts: <%= @summary[:total_alerts] || 0 %>
+Critical: <%= @summary[:critical_count] || 0 %>
+High: <%= @summary[:high_count] || 0 %>
+Resolved: <%= @summary[:resolved_count] || 0 %>
+
+<% if @alerts.any? %>
+SECURITY ALERTS FROM TODAY:
+===========================
+<% @alerts.each do |alert| %>
+• <%= alert.alert_type.humanize %> [<%= alert.severity.upcase %>]
+  <%= alert.message %>
+  Time: <%= alert.triggered_at.strftime("%I:%M %p") %>
+  Status: <%= alert.status.humanize %>
+  
+<% end %>
+<% else %>
+🎉 NO SECURITY ALERTS TODAY
+============================
+Your organization had no security incidents today. Great job!
+
+<% end %>
+💡 SECURITY TIP OF THE DAY:
+===========================
+Regular security monitoring helps identify threats early. Review your security dashboard weekly to stay ahead of potential issues.
+
+QUICK ACTIONS:
+==============
+• View Full Security Dashboard: <%= admin_security_dashboard_index_url %>
+• Review Unresolved Alerts: <%= admin_security_dashboard_alerts_url %>
+• Check IP Blocks: <%= admin_security_dashboard_ip_blocks_url %>
+
+---
+This digest covers security events from <%= @date.strftime("%B %d, %Y") %>
+BrokerSync Security Team • Automated Daily Report

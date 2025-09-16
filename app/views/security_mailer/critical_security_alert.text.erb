@@ -1,0 +1,37 @@
+🚨 CRITICAL SECURITY ALERT 🚨
+
+Hello <%= @user.first_name %>,
+
+SECURITY ALERT DETAILS:
+========================
+Alert Type: <%= @alert.alert_type.humanize %>
+Severity: <%= @alert.severity.upcase %>
+Time: <%= @alert.triggered_at.strftime("%B %d, %Y at %I:%M %p %Z") %>
+Message: <%= @alert.message %>
+
+<% if @alert_data.present? %>
+TECHNICAL DETAILS:
+==================
+<% @alert_data.each do |key, value| %>
+<%= key.to_s.humanize %>: <%= value %>
+<% end %>
+<% end %>
+
+IMMEDIATE ACTION REQUIRED:
+==========================
+This is a critical security alert that requires immediate attention. Please:
+
+• Review the alert details above
+• Check your recent account activity
+• Change your password if you suspect unauthorized access
+• Contact your system administrator if you have any concerns
+
+NEXT STEPS:
+===========
+View Security Dashboard: <%= security_dashboard_url %>
+
+If you believe this alert is legitimate but expected, you can safely ignore this message. However, if you suspect unauthorized activity, please take immediate action to secure your account.
+
+---
+This is an automated security notification from BrokerSync.
+For support, contact your system administrator.
