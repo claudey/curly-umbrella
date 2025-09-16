@@ -10,10 +10,36 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_16_061010) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_16_204033) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
+
+  create_table "analytics_reports", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.bigint "created_by_id", null: false
+    t.bigint "scheduled_by_id"
+    t.string "name", limit: 255, null: false
+    t.text "description"
+    t.string "report_type", limit: 50, null: false
+    t.string "status", limit: 20, default: "draft", null: false
+    t.string "frequency", limit: 20
+    t.json "configuration", default: {}
+    t.json "data", default: {}
+    t.json "metadata", default: {}
+    t.datetime "started_at", precision: nil
+    t.datetime "completed_at", precision: nil
+    t.datetime "last_generated_at", precision: nil
+    t.text "error_message"
+    t.decimal "generation_time_seconds", precision: 10, scale: 3
+    t.bigint "file_size"
+    t.datetime "discarded_at", precision: nil
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_analytics_reports_on_created_by_id"
+    t.index ["organization_id"], name: "index_analytics_reports_on_organization_id"
+    t.index ["scheduled_by_id"], name: "index_analytics_reports_on_scheduled_by_id"
+  end
 
   create_table "api_keys", force: :cascade do |t|
     t.bigint "user_id", null: false
@@ -676,6 +702,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_16_061010) do
     t.index ["user_id"], name: "index_whatsapp_logs_on_user_id"
   end
 
+  add_foreign_key "analytics_reports", "organizations"
+  add_foreign_key "analytics_reports", "users", column: "created_by_id"
+  add_foreign_key "analytics_reports", "users", column: "scheduled_by_id"
   add_foreign_key "api_keys", "organizations"
   add_foreign_key "api_keys", "users"
   add_foreign_key "application_distributions", "insurance_applications"

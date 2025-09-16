@@ -212,6 +212,21 @@ Rails.application.routes.draw do
     end
   end
   
+  # Executive Dashboard routes
+  scope :executive, as: :executive_dashboard do
+    get '/', to: 'executive_dashboard#index', as: :index
+    get '/analytics', to: 'executive_dashboard#analytics', as: :analytics
+    get '/trends', to: 'executive_dashboard#trends', as: :trends
+    get '/forecasting', to: 'executive_dashboard#forecasting', as: :forecasting
+    get '/performance', to: 'executive_dashboard#performance', as: :performance
+    get '/reports/:id', to: 'executive_dashboard#reports', as: :report
+    get '/live_metrics', to: 'executive_dashboard#live_metrics', as: :live_metrics
+    get '/export', to: 'executive_dashboard#export_dashboard', as: :export
+    
+    post '/reports', to: 'executive_dashboard#create_report', as: :create_report
+    post '/reports/:id/generate', to: 'executive_dashboard#generate_report', as: :generate_report
+  end
+  
   # Root route
   root "home#index"
 end
