@@ -1,0 +1,305 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require 'colorize'
+
+class TestRunner
+  def initialize
+    @options = {
+      type: :all,
+      parallel: false,
+      coverage: false,
+      format: 'progress',
+      fail_fast: false,
+      profile: false,
+      verbose: false
+    }
+    
+    @test_types = {
+      models: 'spec/models',
+      services: 'spec/services', 
+      controllers: 'spec/controllers',
+      requests: 'spec/requests',
+      integration: 'spec/integration',
+      performance: 'spec/performance',
+      security: 'spec/security',
+      features: 'spec/features'
+    }
+  end
+  
+  def parse_options
+    OptionParser.new do |opts|
+      opts.banner = "Usage: bin/test [options]"
+      opts.separator ""
+      opts.separator "Test Types:"
+      
+      @test_types.each do |type, path|
+        opts.on("--#{type}", "Run #{type} tests only") do
+          @options[:type] = type
+        end
+      end
+      
+      opts.separator ""
+      opts.separator "Options:"
+      
+      opts.on("-p", "--parallel", "Run tests in parallel") do
+        @options[:parallel] = true
+      end
+      
+      opts.on("-c", "--coverage", "Generate coverage report") do
+        @options[:coverage] = true
+      end
+      
+      opts.on("-f", "--format FORMAT", "Output format (progress, documentation, json)") do |format|
+        @options[:format] = format
+      end
+      
+      opts.on("--fail-fast", "Stop on first failure") do
+        @options[:fail_fast] = true
+      end
+      
+      opts.on("--profile", "Show slowest tests") do
+        @options[:profile] = true
+      end
+      
+      opts.on("-v", "--verbose", "Verbose output") do
+        @options[:verbose] = true
+      end
+      
+      opts.on("--ci", "Continuous Integration mode") do
+        @options[:ci] = true
+        @options[:coverage] = true
+        @options[:format] = 'json'
+        @options[:fail_fast] = true
+      end
+      
+      opts.on("-h", "--help", "Show this help") do
+        puts opts
+        exit
+      end
+    end.parse!
+  end
+  
+  def run
+    puts "🚀 BrokerSync Test Suite".colorize(:blue).bold
+    puts "=" * 50
+    
+    setup_environment
+    
+    if @options[:type] == :all
+      run_all_tests
+    else
+      run_specific_tests(@options[:type])
+    end
+    
+    generate_reports if @options[:coverage] || @options[:ci]
+    
+    puts "\n✅ Test run completed!".colorize(:green).bold
+  end
+  
+  private
+  
+  def setup_environment
+    puts "Setting up test environment...".colorize(:yellow)
+    
+    # Ensure test database is ready
+    puts "  📊 Preparing test database..."
+    system("bundle exec rails db:test:prepare RAILS_ENV=test", out: File::NULL)
+    
+    # Clean up previous test artifacts
+    puts "  🧹 Cleaning up previous test runs..."
+    FileUtils.rm_rf('coverage') if Dir.exist?('coverage')
+    FileUtils.rm_rf('tmp/test_results') if Dir.exist?('tmp/test_results')
+    
+    # Create results directory
+    FileUtils.mkdir_p('tmp/test_results')
+    
+    puts "  ✅ Environment ready\n"
+  end
+  
+  def run_all_tests
+    puts "Running all test suites...".colorize(:cyan).bold
+    
+    test_results = {}
+    total_start_time = Time.now
+    
+    @test_types.each do |type, path|
+      next unless Dir.exist?(path) && Dir.glob("#{path}/**/*_spec.rb").any?
+      
+      puts "\n📋 Running #{type.to_s.capitalize} Tests".colorize(:blue)
+      puts "-" * 40
+      
+      result = run_test_suite(type, path)
+      test_results[type] = result
+    end
+    
+    total_time = Time.now - total_start_time
+    
+    puts "\n" + "=" * 50
+    puts "📊 Test Summary".colorize(:blue).bold
+    puts "=" * 50
+    
+    test_results.each do |type, result|
+      status_color = result[:success] ? :green : :red
+      status_icon = result[:success] ? "✅" : "❌"
+      
+      puts "#{status_icon} #{type.to_s.capitalize.ljust(15)} #{result[:examples]} examples, #{result[:failures]} failures (#{result[:time].round(2)}s)".colorize(status_color)
+    end
+    
+    puts "\nTotal execution time: #{total_time.round(2)}s".colorize(:yellow)
+    
+    # Overall success
+    overall_success = test_results.values.all? { |result| result[:success] }
+    if overall_success
+      puts "\n🎉 All tests passed!".colorize(:green).bold
+    else
+      puts "\n💥 Some tests failed!".colorize(:red).bold
+      exit 1 if @options[:ci]
+    end
+  end
+  
+  def run_specific_tests(type)
+    path = @test_types[type]
+    
+    unless Dir.exist?(path)
+      puts "❌ Test directory '#{path}' not found!".colorize(:red)
+      exit 1
+    end
+    
+    puts "Running #{type.to_s.capitalize} Tests...".colorize(:cyan).bold
+    puts "-" * 40
+    
+    result = run_test_suite(type, path)
+    
+    if result[:success]
+      puts "\n✅ #{type.to_s.capitalize} tests passed!".colorize(:green).bold
+    else
+      puts "\n❌ #{type.to_s.capitalize} tests failed!".colorize(:red).bold
+      exit 1 if @options[:ci]
+    end
+  end
+  
+  def run_test_suite(type, path)
+    start_time = Time.now
+    
+    # Build RSpec command
+    cmd = build_rspec_command(path)
+    
+    # Set environment variables based on test type
+    env_vars = build_environment_variables(type)
+    
+    # Run the tests
+    puts "Executing: #{cmd}".colorize(:light_black) if @options[:verbose]
+    
+    success = system(env_vars, cmd)
+    execution_time = Time.now - start_time
+    
+    # Parse results from output file if using json format
+    results = parse_test_results(type) if @options[:format] == 'json'
+    
+    {
+      success: success,
+      time: execution_time,
+      examples: results&.dig(:examples) || 0,
+      failures: results&.dig(:failures) || 0
+    }
+  end
+  
+  def build_rspec_command(path)
+    cmd_parts = ["bundle exec rspec #{path}"]
+    
+    # Add format option
+    cmd_parts << "--format #{@options[:format]}"
+    
+    # Add JSON output for CI/reporting
+    if @options[:format] == 'json' || @options[:ci]
+      cmd_parts << "--format json --out tmp/test_results/rspec_results.json"
+    end
+    
+    # Add coverage if requested
+    if @options[:coverage]
+      cmd_parts << "--require spec_helper"
+    end
+    
+    # Add fail fast option
+    cmd_parts << "--fail-fast" if @options[:fail_fast]
+    
+    # Add profiling
+    cmd_parts << "--profile 10" if @options[:profile]
+    
+    # Add parallel execution
+    if @options[:parallel]
+      require 'parallel_tests'
+      cmd_parts[0] = "bundle exec parallel_rspec #{path}"
+    end
+    
+    cmd_parts.join(" ")
+  end
+  
+  def build_environment_variables(type)
+    env_vars = {}
+    
+    case type
+    when :performance
+      env_vars['PERFORMANCE_TESTS'] = 'true'
+      env_vars['RUN_SLOW_TESTS'] = 'true'
+    when :security
+      env_vars['SECURITY_TESTS'] = 'true'
+    when :integration, :features
+      env_vars['RUN_SLOW_TESTS'] = 'true'
+    when :requests
+      env_vars['API_TESTS'] = 'true'
+    end
+    
+    # CI environment
+    if @options[:ci]
+      env_vars['CI'] = 'true'
+      env_vars['RAILS_ENV'] = 'test'
+      env_vars['COVERAGE'] = 'true'
+    end
+    
+    env_vars
+  end
+  
+  def parse_test_results(type)
+    results_file = "tmp/test_results/rspec_results.json"
+    return nil unless File.exist?(results_file)
+    
+    begin
+      results = JSON.parse(File.read(results_file), symbolize_names: true)
+      {
+        examples: results.dig(:summary, :example_count) || 0,
+        failures: results.dig(:summary, :failure_count) || 0,
+        pending: results.dig(:summary, :pending_count) || 0
+      }
+    rescue JSON::ParserError
+      nil
+    end
+  end
+  
+  def generate_reports
+    puts "\n📈 Generating Reports...".colorize(:yellow)
+    
+    # Generate coverage report
+    if @options[:coverage]
+      puts "  📊 Code coverage report..."
+      system("bundle exec simplecov", out: File::NULL)
+    end
+    
+    # Generate test documentation
+    puts "  📚 Test documentation..."
+    system("GENERATE_TEST_REPORT=true bundle exec rspec --dry-run", out: File::NULL)
+    
+    # Security audit
+    puts "  🔒 Security audit..."
+    system("bundle exec brakeman -q -o tmp/test_results/security_report.html", out: File::NULL)
+    system("bundle exec bundler-audit", out: File::NULL)
+    
+    puts "  ✅ Reports generated in tmp/test_results/"
+  end
+end
+
+# Run the test runner
+runner = TestRunner.new
+runner.parse_options
+runner.run

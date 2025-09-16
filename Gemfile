@@ -56,6 +56,21 @@ group :development, :test do
   gem "faker", "~> 3.5"
   gem "shoulda-matchers", "~> 6.4"
   gem "database_cleaner-active_record", "~> 2.2"
+  
+  # Feature testing
+  gem "capybara", "~> 3.40"
+  gem "selenium-webdriver", "~> 4.25"
+  
+  # Performance testing
+  gem "benchmark-ips", "~> 2.14"
+  gem "memory_profiler", "~> 1.1"
+  
+  # API testing
+  gem "webmock", "~> 3.24"
+  gem "vcr", "~> 6.3"
+  
+  # Security testing
+  gem "bundler-audit", "~> 0.9"
 end
 
 group :development do

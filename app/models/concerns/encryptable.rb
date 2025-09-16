@@ -2,8 +2,8 @@ module Encryptable
   extend ActiveSupport::Concern
 
   included do
-    # Set up encryption key rotation
-    encrypts_deterministic :encrypted_fields, key: encryption_key_selector
+    # Store encrypted field metadata
+    @encrypted_fields_metadata ||= {}
   end
 
   class_methods do

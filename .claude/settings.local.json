@@ -14,7 +14,8 @@
       "Bash(bin/dev:*)",
       "Bash(rm:*)",
       "Bash(bin/rails db:migrate)",
-      "Bash(bin/rails:*)"
+      "Bash(bin/rails:*)",
+      "Bash(chmod:*)"
     ],
     "deny": [],
     "ask": []

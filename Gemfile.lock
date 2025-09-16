@@ -103,6 +103,7 @@ GEM
     bcrypt (3.1.20)
     bcrypt_pbkdf (1.1.1)
     benchmark (0.4.1)
+    benchmark-ips (2.14.0)
     bigdecimal (3.2.3)
     bindex (0.8.1)
     bootsnap (1.18.6)
@@ -117,9 +118,24 @@ GEM
     bullet (8.0.8)
       activesupport (>= 3.0.0)
       uniform_notifier (~> 1.11)
+    bundler-audit (0.9.2)
+      bundler (>= 1.2.0, < 3)
+      thor (~> 1.0)
+    capybara (3.40.0)
+      addressable
+      matrix
+      mini_mime (>= 0.1.3)
+      nokogiri (~> 1.11)
+      rack (>= 1.6.0)
+      rack-test (>= 0.6.3)
+      regexp_parser (>= 1.5, < 3.0)
+      xpath (~> 3.2)
     chunky_png (1.4.0)
     concurrent-ruby (1.3.5)
     connection_pool (2.5.4)
+    crack (1.0.0)
+      bigdecimal
+      rexml
     crass (1.0.6)
     csv (3.3.5)
     database_cleaner-active_record (2.2.2)
@@ -175,6 +191,7 @@ GEM
       raabro (~> 1.4)
     globalid (1.2.1)
       activesupport (>= 6.1)
+    hashdiff (1.2.1)
     httparty (0.23.1)
       csv
       mini_mime (>= 1.0.0)
@@ -234,6 +251,8 @@ GEM
       net-pop
       net-smtp
     marcel (1.0.4)
+    matrix (0.4.3)
+    memory_profiler (1.1.0)
     method_source (1.1.0)
     mini_mime (1.1.5)
     minitest (5.25.5)
@@ -363,6 +382,7 @@ GEM
     responders (3.1.1)
       actionpack (>= 5.2)
       railties (>= 5.2)
+    rexml (3.4.4)
     rotp (6.3.0)
     rqrcode (2.2.0)
       chunky_png (~> 1.0)
@@ -414,7 +434,14 @@ GEM
       rubocop-performance (>= 1.24)
       rubocop-rails (>= 2.30)
     ruby-progressbar (1.13.0)
+    rubyzip (3.1.0)
     securerandom (0.4.1)
+    selenium-webdriver (4.35.0)
+      base64 (~> 0.2)
+      logger (~> 1.4)
+      rexml (~> 3.2, >= 3.2.5)
+      rubyzip (>= 1.2.2, < 4.0)
+      websocket (~> 1.0)
     shoulda-matchers (6.5.0)
       activesupport (>= 5.2.0)
     solid_cable (3.0.12)
@@ -475,6 +502,8 @@ GEM
     uniform_notifier (1.18.0)
     uri (1.0.3)
     useragent (0.16.11)
+    vcr (6.3.1)
+      base64
     view_component (3.23.2)
       activesupport (>= 5.2.0, < 8.1)
       concurrent-ruby (~> 1)
@@ -486,6 +515,11 @@ GEM
       activemodel (>= 6.0.0)
       bindex (>= 0.4.0)
       railties (>= 6.0.0)
+    webmock (3.25.1)
+      addressable (>= 2.8.0)
+      crack (>= 0.3.2)
+      hashdiff (>= 0.4.0, < 2.0.0)
+    websocket (1.2.11)
     websocket-driver (0.8.0)
       base64
       websocket-extensions (>= 0.1.0)
@@ -494,6 +528,8 @@ GEM
       activesupport
       ostruct
     wkhtmltopdf-binary (0.12.6.10)
+    xpath (3.2.0)
+      nokogiri (~> 1.8)
     zeitwerk (2.7.3)
 
 PLATFORMS
@@ -511,10 +547,13 @@ DEPENDENCIES
   acts_as_tenant (~> 1.0)
   audited (~> 5.8)
   aws-sdk-s3 (~> 1.199)
+  benchmark-ips (~> 2.14)
   bootsnap
   brakeman
   brevo (~> 2.0)
   bullet
+  bundler-audit (~> 0.9)
+  capybara (~> 3.40)
   database_cleaner-active_record (~> 2.2)
   debug
   devise (~> 4.9)
@@ -529,6 +568,7 @@ DEPENDENCIES
   kamal
   kaminari (~> 1.2)
   lexxy (~> 0.1.6.beta)
+  memory_profiler (~> 1.1)
   newrelic_rpm (~> 9.19)
   pg (~> 1.1)
   phosphor_icons (~> 0.3)
@@ -542,6 +582,7 @@ DEPENDENCIES
   rqrcode (~> 2.2)
   rspec-rails (~> 7.1)
   rubocop-rails-omakase
+  selenium-webdriver (~> 4.25)
   shoulda-matchers (~> 6.4)
   solid_cable
   solid_cache
@@ -552,8 +593,10 @@ DEPENDENCIES
   turbo-rails
   twilio-ruby (~> 7.3)
   tzinfo-data
+  vcr (~> 6.3)
   view_component (~> 3.0)
   web-console
+  webmock (~> 3.24)
   wicked_pdf (~> 2.8)
   wkhtmltopdf-binary (~> 0.12)
 
