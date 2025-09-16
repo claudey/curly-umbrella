@@ -307,6 +307,11 @@ GEM
     raabro (1.4.0)
     racc (1.8.1)
     rack (3.2.1)
+    rack-attack (6.7.0)
+      rack (>= 1.0, < 4)
+    rack-cors (3.0.0)
+      logger
+      rack (>= 3.0.14)
     rack-session (2.1.1)
       base64 (>= 0.1.0)
       rack (>= 3.0.0)
@@ -520,6 +525,7 @@ DEPENDENCIES
   httparty (~> 0.22)
   importmap-rails
   jbuilder
+  jwt (~> 2.9)
   kamal
   kaminari (~> 1.2)
   lexxy (~> 0.1.6.beta)
@@ -528,6 +534,8 @@ DEPENDENCIES
   phosphor_icons (~> 0.3)
   propshaft
   puma (>= 5.0)
+  rack-attack (~> 6.7)
+  rack-cors (~> 3.0)
   rails (~> 8.0.2)
   redis (~> 5.0)
   rotp (~> 6.3)

@@ -57,29 +57,15 @@ Rails.application.configure do
     end
   end
 
-  # Configure statement timeout and connection settings for all environments
+  # Configure additional database optimizations
   config.after_initialize do
-    ActiveRecord::Base.configurations.configurations.each do |env_config|
-      next unless env_config.adapter == 'postgresql'
-      
-      # Set optimal connection parameters
-      env_config.configuration_hash.merge!({
-        # Connection pooling optimizations
-        pool: ENV.fetch("DB_POOL_SIZE", Rails.env.production? ? 25 : 5).to_i,
-        checkout_timeout: ENV.fetch("DB_CHECKOUT_TIMEOUT", 10).to_i,
-        reaping_frequency: ENV.fetch("DB_REAPING_FREQUENCY", 60).to_i,
-        
-        # Connection parameters
-        connect_timeout: ENV.fetch("DB_CONNECT_TIMEOUT", 5).to_i,
-        
-        # PostgreSQL specific optimizations
-        variables: {
-          statement_timeout: Rails.env.production? ? '30s' : '60s',
-          lock_timeout: '10s',
-          idle_in_transaction_session_timeout: '60s'
-        }
-      })
-    end
+    # Set custom connection pool configurations through environment variables
+    # These can be set in database.yml or through ENV vars:
+    # DB_POOL_SIZE, DB_CHECKOUT_TIMEOUT, DB_REAPING_FREQUENCY, DB_CONNECT_TIMEOUT
+    
+    # Log current connection pool settings
+    Rails.logger.info "[DB] Connection pool size: #{ActiveRecord::Base.connection_pool.size}"
+    Rails.logger.info "[DB] Connection adapter: #{ActiveRecord::Base.connection.adapter_name}"
   end
 end
 

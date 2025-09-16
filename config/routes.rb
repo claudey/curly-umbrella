@@ -175,10 +175,42 @@ Rails.application.routes.draw do
   end
   
   # API routes
-  mount BrokersyncApi => '/api'
-  
-  # API documentation route
-  mount GrapeSwaggerRails::Engine => '/api/docs' if defined?(GrapeSwaggerRails)
+  namespace :api do
+    namespace :v1 do
+      resources :applications, except: [:destroy] do
+        member do
+          post :submit
+          get :documents
+          get :quotes
+        end
+      end
+      
+      resources :quotes, except: [:destroy] do
+        member do
+          post :accept
+          post :generate_pdf
+        end
+      end
+      
+      resources :webhooks do
+        member do
+          post :test
+          get :deliveries
+        end
+      end
+      
+      resources :analytics, only: [] do
+        collection do
+          get :usage
+          get :dashboard
+          get :performance
+          get :export
+          get :top_endpoints
+          get :trends
+        end
+      end
+    end
+  end
   
   # Root route
   root "home#index"

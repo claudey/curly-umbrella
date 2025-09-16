@@ -3,6 +3,39 @@ class Document < ApplicationRecord
   acts_as_tenant :organization
   audited except: [:checksum, :file_size]
 
+  # Document type constants
+  DOCUMENT_TYPES = %w[
+    application_form
+    driver_license
+    vehicle_registration
+    insurance_certificate
+    claim_form
+    policy_document
+    quote_document
+    payment_receipt
+    inspection_report
+    medical_report
+    other
+  ].freeze
+
+  # Access level constants
+  ACCESS_LEVELS = %w[
+    public
+    private
+    confidential
+    restricted
+  ].freeze
+
+  # Category constants
+  CATEGORIES = %w[
+    legal
+    financial
+    medical
+    technical
+    administrative
+    compliance
+  ].freeze
+
   belongs_to :organization
   belongs_to :user
   belongs_to :documentable, polymorphic: true
