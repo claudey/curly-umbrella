@@ -105,3 +105,12 @@ gem "redis", "~> 5.0"
 
 # Application Performance Monitoring
 gem "newrelic_rpm", "~> 9.19"
+
+# API Development
+gem "jwt", "~> 2.9"
+gem "rack-cors", "~> 2.0"
+gem "rack-attack", "~> 6.7"
+gem "grape", "~> 2.1"
+gem "grape-entity", "~> 1.0"
+gem "grape-swagger", "~> 2.1"
+gem "grape-swagger-rails", "~> 0.4"

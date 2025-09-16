@@ -174,6 +174,12 @@ Rails.application.routes.draw do
     get :export_report, action: :export_security_report, as: :export_security_report
   end
   
+  # API routes
+  mount BrokersyncApi => '/api'
+  
+  # API documentation route
+  mount GrapeSwaggerRails::Engine => '/api/docs' if defined?(GrapeSwaggerRails)
+  
   # Root route
   root "home#index"
 end
