@@ -5,6 +5,9 @@ class AuditLog < ApplicationRecord
 
   validates :action, presence: true
   validates :resource_type, presence: true
+  
+  # Callbacks for notifications
+  after_create :trigger_audit_notifications, if: :should_trigger_notifications?
 
   enum severity: {
     info: 'info',
@@ -381,5 +384,43 @@ class AuditLog < ApplicationRecord
 
   def number_with_delimiter(number)
     number.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse
+  end
+  
+  # Notification trigger methods
+  def should_trigger_notifications?
+    # Don't trigger notifications for system-generated audit logs about notifications
+    return false if action.include?('notification_') || action.include?('digest_')
+    
+    # Don't trigger for very old logs (in case of bulk imports)
+    return false if created_at < 1.hour.ago
+    
+    # Don't trigger for info-level authentication events (too noisy)
+    return false if category == 'authentication' && severity == 'info' && action == 'login_success'
+    
+    # Trigger for anything warning level or above
+    severity.in?(['warning', 'error', 'critical']) ||
+    # Or for specific important actions regardless of severity
+    important_action? ||
+    # Or for financial/compliance events
+    category.in?(['financial', 'compliance', 'security'])
+  end
+  
+  def important_action?
+    important_actions = %w[
+      create update delete destroy
+      approve reject submit
+      role_change permission_change
+      export bulk_operation mass_operation
+      login_failure unauthorized_access
+    ]
+    
+    important_actions.any? { |action_pattern| action.include?(action_pattern) }
+  end
+  
+  def trigger_audit_notifications
+    # Use background job to avoid blocking the main request
+    AuditNotificationJob.perform_later(self.id)
+  rescue => e
+    Rails.logger.error "Failed to trigger audit notification for audit log #{id}: #{e.message}"
   end
 end
