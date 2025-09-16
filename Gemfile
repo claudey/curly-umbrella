@@ -102,3 +102,6 @@ gem "kaminari", "~> 1.2"
 
 # Performance optimization
 gem "redis", "~> 5.0"
+
+# Application Performance Monitoring
+gem "newrelic_rpm", "~> 9.19"

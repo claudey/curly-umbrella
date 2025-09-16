@@ -1,0 +1,214 @@
+# frozen_string_literal: true
+
+# Production Monitoring Configuration for BrokerSync
+# This file contains production-specific settings for comprehensive monitoring and performance tracking
+
+Rails.application.configure do
+  # New Relic Application Performance Monitoring
+  config.newrelic_agent_enabled = true
+  
+  # Enhanced logging for production monitoring
+  config.log_level = :info
+  config.log_tags = [:request_id, :subdomain]
+  
+  # Performance monitoring settings
+  config.force_ssl = true
+  config.ssl_options = { redirect: { status: 308 } }
+  
+  # Security headers for monitoring
+  config.force_ssl = true
+  config.ssl_options = {
+    hsts: {
+      expires: 31536000,
+      includeSubdomains: true,
+      preload: true
+    }
+  }
+  
+  # Custom middleware for performance tracking
+  config.middleware.use(Class.new do
+    def initialize(app)
+      @app = app
+    end
+    
+    def call(env)
+      start_time = Time.current
+      
+      begin
+        status, headers, response = @app.call(env)
+        
+        # Track response metrics
+        duration = Time.current - start_time
+        request = Rack::Request.new(env)
+        
+        # Log performance metrics for monitoring
+        Rails.logger.info "[PERFORMANCE] #{request.request_method} #{request.path} - #{status} in #{(duration * 1000).round(2)}ms"
+        
+        # Track business-critical endpoint performance
+        if request.path.match?(/\/(applications|quotes|documents|policies)/)
+          NewRelicInstrumentationService.track_business_event('CriticalEndpointAccessed', {
+            endpoint: request.path,
+            method: request.request_method,
+            duration_ms: (duration * 1000).round(2),
+            status_code: status
+          })
+        end
+        
+        [status, headers, response]
+      rescue => error
+        # Enhanced error tracking for production
+        Rails.logger.error "[ERROR] #{error.class.name}: #{error.message}"
+        Rails.logger.error error.backtrace.join("\n")
+        
+        # Track critical errors
+        ErrorTrackingService.track_error(error, {
+          request_path: env['PATH_INFO'],
+          request_method: env['REQUEST_METHOD'],
+          remote_ip: env['REMOTE_ADDR'],
+          user_agent: env['HTTP_USER_AGENT']
+        })
+        
+        raise
+      end
+    end
+  end)
+  
+  # Background job monitoring
+  config.active_job.queue_adapter = :solid_queue
+  
+  # Enhanced Active Record logging for monitoring
+  config.active_record.logger = ActiveSupport::Logger.new(STDOUT)
+  config.active_record.verbose_query_logs = false # Disable in production for performance
+  
+  # Cache performance monitoring
+  config.cache_store = :solid_cache_store
+  
+  # Asset compilation monitoring
+  config.assets.compile = false
+  config.assets.digest = true
+  config.assets.version = ENV['ASSETS_VERSION'] || '1.0'
+  
+  # Custom instrumentation for business metrics
+  config.after_initialize do
+    # Set up business metrics collection
+    if defined?(BusinessMetricsCollectionJob)
+      # Schedule business metrics collection every hour in production
+      BusinessMetricsCollectionJob.set(cron: '0 * * * *').perform_later
+    end
+    
+    # Set up backup health monitoring
+    if defined?(BackupRecord)
+      # Monitor backup health every 4 hours
+      Rails.logger.info "Setting up backup health monitoring"
+      
+      Thread.new do
+        loop do
+          begin
+            sleep(14400) # 4 hours
+            
+            # Check backup health and alert if needed
+            health_summary = BackupRecord.backup_health_summary
+            
+            if health_summary[:failed_backups] > 0
+              NewRelicInstrumentationService.track_business_event('BackupFailureAlert', {
+                failed_count: health_summary[:failed_backups],
+                total_backups: health_summary[:total_backups],
+                last_successful: BackupRecord.successful.recent.first&.created_at&.iso8601
+              })
+            end
+            
+            # Track backup metrics
+            NewRelicInstrumentationService.record_business_metric('backup_success_rate', 
+              ((health_summary[:successful_backups].to_f / health_summary[:total_backups] * 100).round(2) rescue 0))
+            
+          rescue => e
+            Rails.logger.error "Backup health monitoring error: #{e.message}"
+          end
+        end
+      end
+    end
+    
+    # Monitor Redis health
+    if defined?(Redis)
+      Thread.new do
+        loop do
+          begin
+            sleep(300) # 5 minutes
+            
+            redis_info = Redis.current.info
+            NewRelicInstrumentationService.record_business_metric('redis_memory_usage_mb', 
+              (redis_info['used_memory'].to_i / 1.megabyte).round(2))
+            NewRelicInstrumentationService.record_business_metric('redis_connected_clients', 
+              redis_info['connected_clients'].to_i)
+            
+          rescue => e
+            Rails.logger.warn "Redis monitoring error: #{e.message}"
+          end
+        end
+      end
+    end
+    
+    # Set up database connection pool monitoring
+    Thread.new do
+      loop do
+        begin
+          sleep(300) # 5 minutes
+          
+          pool = ActiveRecord::Base.connection_pool
+          NewRelicInstrumentationService.record_business_metric('db_connection_pool_size', pool.size)
+          NewRelicInstrumentationService.record_business_metric('db_active_connections', 
+            pool.connections.count(&:in_use?))
+          NewRelicInstrumentationService.record_business_metric('db_available_connections', 
+            pool.size - pool.connections.count(&:in_use?))
+          
+        rescue => e
+          Rails.logger.warn "Database pool monitoring error: #{e.message}"
+        end
+      end
+    end
+  end
+  
+  # Security monitoring
+  config.force_ssl = true
+  
+  # Custom security headers
+  config.force_ssl_options = {
+    exclude: ->(request) { request.path =~ /health|status/ }
+  }
+  
+  # Enhanced session security
+  config.session_store :cookie_store, {
+    key: '_brokersync_session',
+    secure: true,
+    httponly: true,
+    same_site: :lax
+  }
+  
+  # GDPR and compliance logging
+  config.filter_parameters += [
+    :password, :password_confirmation, :ssn, :social_security_number,
+    :credit_card, :credit_card_number, :cvv, :api_key, :access_token,
+    :secret, :private_key, :bank_account, :routing_number
+  ]
+end
+
+# Environment Variables for Production Monitoring
+# Add these to your production environment configuration:
+#
+# NEW_RELIC_LICENSE_KEY=your_license_key_here
+# NEW_RELIC_APP_NAME=BrokerSync (Production)
+# NEW_RELIC_ACCOUNT_ID=your_account_id_here
+# NEW_RELIC_INFINITE_TRACING_TRACE_OBSERVER_HOST=your_trace_observer_host
+# APP_VERSION=1.0.0
+# GIT_COMMIT=your_git_commit_hash
+# DEPLOYMENT_TIME=2024-12-16T10:00:00Z
+# SERVER_ROLE=web
+# RAILS_ENV=production
+# RACK_ENV=production
+
+# Additional monitoring environment variables:
+# MONITORING_ALERTS_EMAIL=alerts@brokersync.com
+# SLACK_WEBHOOK_URL=your_slack_webhook_for_alerts
+# PAGERDUTY_INTEGRATION_KEY=your_pagerduty_key
+# DATADOG_API_KEY=your_datadog_key (if using additional monitoring)
+# HONEYBADGER_API_KEY=your_honeybadger_key (alternative error tracking)

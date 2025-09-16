@@ -1,0 +1,271 @@
+#
+# This file configures the New Relic Agent. New Relic monitors Ruby, Java,
+# .NET, PHP, Python, Node, and Go applications with deep visibility and low
+# overhead. For more information, visit www.newrelic.com.
+#
+# Generated December 16, 2024
+#
+# This configuration file is custom generated for BrokerSync
+#
+# For full documentation of agent configuration options, please refer to
+# https://docs.newrelic.com/docs/agents/ruby-agent/installation-configuration/ruby-agent-configuration
+
+common: &default_settings
+  # Required license key associated with your New Relic account.
+  license_key: <%= ENV['NEW_RELIC_LICENSE_KEY'] %>
+
+  # Your application name. Renaming here affects where data displays in New
+  # Relic. For more details, see https://docs.newrelic.com/docs/apm/new-relic-apm/maintenance/renaming-applications
+  app_name: BrokerSync
+
+  # To disable the agent regardless of other settings, uncomment the following:
+  # agent_enabled: false
+
+  # Logging level for the agent. Valid values: off, fatal, error, warn, info, debug
+  log_level: info
+
+  # Environment detection. Valid values: auto, development, test, staging, production
+  # The agent will attempt to detect the environment automatically if set to 'auto'
+  environment: auto
+
+  # High Security Mode
+  # https://docs.newrelic.com/docs/agents/manage-apm-agents/configuration/high-security-mode
+  high_security: false
+
+  # Custom attributes configuration
+  custom_attributes:
+    app_version: <%= ENV['APP_VERSION'] || '1.0.0' %>
+    deployment_environment: <%= ENV['RAILS_ENV'] %>
+    git_commit: <%= ENV['GIT_COMMIT'] || 'unknown' %>
+
+  # Transaction tracer captures deep information about slow transactions
+  transaction_tracer:
+    # Enable transaction tracer
+    enabled: true
+    
+    # Threshold in seconds. If the response time of a controller action exceeds
+    # this threshold, a transaction trace will be recorded.
+    transaction_threshold: apdex_f
+    
+    # Duration in seconds to capture transaction traces
+    record_sql: raw
+    
+    # Maximum number of transaction traces to store per minute
+    limit_segments: 4000
+    
+    # Maximum length of a SQL query to record in transaction traces
+    explain_threshold: 0.5
+    
+    # Top N slow queries to capture
+    top_n: 20
+
+  # Error collector captures information about uncaught exceptions
+  error_collector:
+    # Enable error collection
+    enabled: true
+    
+    # Capture source code around error locations
+    capture_source: true
+    
+    # Ignore these status codes when collecting errors
+    ignore_status_codes: 404,405
+    
+    # Maximum number of error traces per minute
+    max_count_per_minute: 20
+    
+    # Record the parameters of errors
+    capture_attributes: true
+
+  # Browser Monitoring (Real User Monitoring)
+  browser_monitoring:
+    # Enable Real User Monitoring
+    auto_instrument: true
+
+  # Application Logging in Context
+  application_logging:
+    enabled: true
+    
+    # Forward application logs to New Relic
+    forwarding:
+      enabled: true
+      max_samples_stored: 10000
+      
+    # Local log decoration with linking metadata  
+    local_decorating:
+      enabled: true
+      
+    # Capture and forward metrics based on application log data
+    metrics:
+      enabled: true
+
+  # Custom Events
+  custom_events:
+    enabled: true
+    max_samples_stored: 30000
+
+  # Custom Metrics
+  custom_metrics:
+    enabled: true
+
+  # Infinite Tracing
+  # Requires a Trace Observer
+  infinite_tracing:
+    trace_observer:
+      host: <%= ENV['NEW_RELIC_INFINITE_TRACING_TRACE_OBSERVER_HOST'] %>
+
+  # Distributed Tracing
+  distributed_tracing:
+    enabled: true
+
+  # Custom Instrumentation for BrokerSync-specific components
+  instrumentation:
+    # Instrument our custom services
+    disable_active_support_notifications: false
+    
+    # Background job instrumentation
+    disable_active_job: false
+    
+    # Database instrumentation
+    disable_active_record: false
+    
+    # Redis instrumentation  
+    disable_redis: false
+    
+    # HTTP client instrumentation
+    disable_net_http: false
+    disable_httparty: false
+    
+    # View instrumentation
+    disable_action_view: false
+
+  # Attributes configuration
+  attributes:
+    enabled: true
+    
+    # Include these attributes in traces and error collection
+    include:
+      - user.id
+      - user.email
+      - organization.id
+      - organization.name
+      - request.headers.userAgent
+      - request.headers.referer
+      - session.id
+      
+    # Exclude sensitive attributes
+    exclude:
+      - request.headers.authorization
+      - request.headers.cookie
+      - request.headers.x-*
+      - message.headers.*
+      - password
+      - ssn
+      - credit_card
+      - api_key
+      - secret
+
+# Environment-specific configurations
+development:
+  <<: *default_settings
+  # Override default settings for development
+  app_name: BrokerSync (Development)
+  
+  # Reduce data collection in development
+  monitor_mode: false
+  
+  # Enable agent in development for testing
+  agent_enabled: true
+  
+  # More verbose logging in development
+  log_level: debug
+  
+  # Capture all transactions in development
+  transaction_tracer:
+    transaction_threshold: 0.001
+    
+  # Capture more errors in development
+  error_collector:
+    ignore_status_codes: ''
+
+test:
+  <<: *default_settings
+  # Disable New Relic in test environment
+  monitor_mode: false
+  agent_enabled: false
+
+staging:
+  <<: *default_settings
+  app_name: BrokerSync (Staging)
+  
+  # Enable monitoring in staging
+  monitor_mode: true
+  agent_enabled: true
+  
+  # Staging-specific settings
+  log_level: info
+  
+  # Capture performance data but with reduced overhead
+  transaction_tracer:
+    transaction_threshold: 0.5
+    
+  # Standard error collection
+  error_collector:
+    enabled: true
+
+production:
+  <<: *default_settings
+  app_name: BrokerSync (Production)
+  
+  # Full monitoring in production
+  monitor_mode: true
+  agent_enabled: true
+  
+  # Production logging level
+  log_level: info
+  
+  # Production-optimized transaction tracing
+  transaction_tracer:
+    enabled: true
+    transaction_threshold: apdex_f
+    record_sql: obfuscated
+    explain_threshold: 0.5
+    
+  # Production error collection
+  error_collector:
+    enabled: true
+    capture_source: false
+    ignore_status_codes: 404,405
+    
+  # Enable browser monitoring in production
+  browser_monitoring:
+    auto_instrument: true
+    
+  # Production application logging
+  application_logging:
+    enabled: true
+    forwarding:
+      enabled: true
+      max_samples_stored: 10000
+    local_decorating:
+      enabled: false
+    metrics:
+      enabled: true
+      
+  # Production custom events
+  custom_events:
+    enabled: true
+    max_samples_stored: 30000
+    
+  # Security settings for production
+  high_security: false
+  
+  # Distributed tracing for microservices
+  distributed_tracing:
+    enabled: true
+    
+  # Custom attributes for production monitoring
+  custom_attributes:
+    app_version: <%= ENV['APP_VERSION'] || '1.0.0' %>
+    deployment_environment: production
+    git_commit: <%= ENV['GIT_COMMIT'] || 'unknown' %>
+    server_role: <%= ENV['SERVER_ROLE'] || 'web' %>
