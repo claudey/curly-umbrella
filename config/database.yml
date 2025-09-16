@@ -17,7 +17,15 @@ default: &default
   encoding: unicode
   # For details on connection pooling, see Rails configuration guide
   # https://guides.rubyonrails.org/configuring.html#database-pooling
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  pool: <%= ENV.fetch("DB_POOL_SIZE") { ENV.fetch("RAILS_MAX_THREADS") { 5 } } %>
+  checkout_timeout: <%= ENV.fetch("DB_CHECKOUT_TIMEOUT", 10) %>
+  reaping_frequency: <%= ENV.fetch("DB_REAPING_FREQUENCY", 60) %>
+  connect_timeout: <%= ENV.fetch("DB_CONNECT_TIMEOUT", 5) %>
+  # Connection-level statement timeout
+  variables:
+    statement_timeout: <%= ENV.fetch("DB_STATEMENT_TIMEOUT", "60s") %>
+    lock_timeout: <%= ENV.fetch("DB_LOCK_TIMEOUT", "10s") %>
+    idle_in_transaction_session_timeout: <%= ENV.fetch("DB_IDLE_TIMEOUT", "60s") %>
 
 
 development:
@@ -84,15 +92,31 @@ production:
     database: brokersync_production
     username: brokersync
     password: <%= ENV["BROKERSYNC_DATABASE_PASSWORD"] %>
+    pool: <%= ENV.fetch("DB_POOL_SIZE", 25) %>
+    checkout_timeout: <%= ENV.fetch("DB_CHECKOUT_TIMEOUT", 15) %>
+    reaping_frequency: <%= ENV.fetch("DB_REAPING_FREQUENCY", 30) %>
+    variables:
+      statement_timeout: <%= ENV.fetch("DB_STATEMENT_TIMEOUT", "30s") %>
+      lock_timeout: <%= ENV.fetch("DB_LOCK_TIMEOUT", "10s") %>
+      idle_in_transaction_session_timeout: <%= ENV.fetch("DB_IDLE_TIMEOUT", "30s") %>
   cache:
     <<: *primary_production
     database: brokersync_production_cache
     migrations_paths: db/cache_migrate
+    pool: <%= ENV.fetch("CACHE_DB_POOL_SIZE", 10) %>
+    variables:
+      statement_timeout: <%= ENV.fetch("CACHE_DB_STATEMENT_TIMEOUT", "10s") %>
   queue:
     <<: *primary_production
     database: brokersync_production_queue
     migrations_paths: db/queue_migrate
+    pool: <%= ENV.fetch("QUEUE_DB_POOL_SIZE", 15) %>
+    variables:
+      statement_timeout: <%= ENV.fetch("QUEUE_DB_STATEMENT_TIMEOUT", "60s") %>
   cable:
     <<: *primary_production
     database: brokersync_production_cable
     migrations_paths: db/cable_migrate
+    pool: <%= ENV.fetch("CABLE_DB_POOL_SIZE", 5) %>
+    variables:
+      statement_timeout: <%= ENV.fetch("CABLE_DB_STATEMENT_TIMEOUT", "5s") %>

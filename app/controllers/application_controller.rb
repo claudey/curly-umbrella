@@ -5,6 +5,9 @@ class ApplicationController < ActionController::Base
   # Include security protection
   include SecurityProtection
   include SessionSecurity
+  
+  # Include comprehensive audit logging
+  include ControllerAuditLogging
 
   # Set up acts_as_tenant for multi-tenancy
   set_current_tenant_through_filter

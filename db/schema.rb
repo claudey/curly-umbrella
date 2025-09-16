@@ -10,9 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_15_232437) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_16_061010) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+  enable_extension "pg_trgm"
 
   create_table "api_keys", force: :cascade do |t|
     t.bigint "user_id", null: false
@@ -59,12 +60,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_232437) do
     t.index ["distributed_by_id"], name: "index_application_distributions_on_distributed_by_id"
     t.index ["distribution_method"], name: "index_application_distributions_on_distribution_method"
     t.index ["insurance_application_id", "insurance_company_id"], name: "idx_unique_ins_app_company_distribution", unique: true
+    t.index ["insurance_application_id", "match_score"], name: "idx_app_dist_app_score"
     t.index ["insurance_application_id", "status"], name: "idx_on_insurance_application_id_status_ad7ef16d99"
     t.index ["insurance_application_id"], name: "index_application_distributions_on_insurance_application_id"
+    t.index ["insurance_company_id", "created_at"], name: "idx_app_dist_company_created"
     t.index ["insurance_company_id"], name: "index_application_distributions_on_insurance_company_id"
     t.index ["match_score"], name: "index_application_distributions_on_match_score"
     t.index ["motor_application_id", "insurance_company_id"], name: "idx_unique_app_company_distribution", unique: true
     t.index ["motor_application_id"], name: "index_application_distributions_on_motor_application_id"
+    t.index ["status", "created_at"], name: "idx_app_dist_status_created"
     t.index ["status"], name: "index_application_distributions_on_status"
   end
 
@@ -89,8 +93,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_232437) do
     t.index ["category", "severity"], name: "index_audit_logs_on_category_and_severity"
     t.index ["created_at"], name: "index_audit_logs_on_created_at"
     t.index ["ip_address"], name: "index_audit_logs_on_ip_address"
+    t.index ["organization_id", "action", "created_at"], name: "idx_audit_logs_org_action_created"
     t.index ["organization_id", "created_at"], name: "index_audit_logs_on_organization_id_and_created_at"
     t.index ["organization_id"], name: "index_audit_logs_on_organization_id"
+    t.index ["resource_type", "resource_id"], name: "idx_audit_logs_resource"
+    t.index ["user_id", "action", "created_at"], name: "idx_audit_logs_user_action_created"
     t.index ["user_id", "created_at"], name: "index_audit_logs_on_user_id_and_created_at"
     t.index ["user_id"], name: "index_audit_logs_on_user_id"
   end
@@ -165,9 +172,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_232437) do
     t.datetime "updated_at", null: false
     t.datetime "discarded_at"
     t.index ["discarded_at"], name: "index_clients_on_discarded_at"
+    t.index ["email"], name: "idx_clients_email_gin", opclass: :gin_trgm_ops, using: :gin
     t.index ["email"], name: "index_clients_on_email"
     t.index ["first_name", "last_name"], name: "index_clients_on_first_name_and_last_name"
+    t.index ["first_name"], name: "idx_clients_first_name_gin", opclass: :gin_trgm_ops, using: :gin
     t.index ["id_number"], name: "index_clients_on_id_number"
+    t.index ["last_name"], name: "idx_clients_last_name_gin", opclass: :gin_trgm_ops, using: :gin
     t.index ["organization_id"], name: "index_clients_on_organization_id"
     t.index ["phone"], name: "index_clients_on_phone"
   end
@@ -230,14 +240,22 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_232437) do
     t.datetime "updated_at", null: false
     t.index ["archived_by_id"], name: "index_documents_on_archived_by_id"
     t.index ["category"], name: "index_documents_on_category"
+    t.index ["description"], name: "idx_documents_description_gin", opclass: :gin_trgm_ops, using: :gin
     t.index ["documentable_type", "documentable_id"], name: "index_documents_on_documentable"
     t.index ["documentable_type", "documentable_id"], name: "index_documents_on_documentable_type_and_documentable_id"
+    t.index ["expires_at"], name: "idx_documents_expires_at", where: "(expires_at IS NOT NULL)"
     t.index ["expires_at"], name: "index_documents_on_expires_at"
     t.index ["is_archived", "archived_at"], name: "index_documents_on_is_archived_and_archived_at"
     t.index ["is_current", "version"], name: "index_documents_on_is_current_and_version"
+    t.index ["name"], name: "idx_documents_name_gin", opclass: :gin_trgm_ops, using: :gin
+    t.index ["organization_id", "created_at"], name: "idx_documents_org_created"
+    t.index ["organization_id", "document_type", "created_at"], name: "idx_documents_org_type_created"
+    t.index ["organization_id", "document_type"], name: "idx_documents_org_type"
     t.index ["organization_id", "document_type"], name: "index_documents_on_organization_id_and_document_type"
+    t.index ["organization_id", "expires_at"], name: "idx_documents_org_expires", where: "(expires_at IS NOT NULL)"
     t.index ["organization_id"], name: "index_documents_on_organization_id"
     t.index ["tags"], name: "index_documents_on_tags", using: :gin
+    t.index ["user_id", "created_at"], name: "idx_documents_user_created"
     t.index ["user_id"], name: "index_documents_on_user_id"
   end
 
@@ -268,17 +286,23 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_232437) do
     t.integer "distribution_count", default: 0
     t.index ["application_number", "organization_id"], name: "idx_on_application_number_organization_id_9dd04114b0", unique: true
     t.index ["approved_by_id"], name: "index_insurance_applications_on_approved_by_id"
+    t.index ["client_id", "status"], name: "idx_insurance_apps_client_status"
     t.index ["client_id"], name: "idx_insurance_applications_client_id"
     t.index ["client_id"], name: "index_insurance_applications_on_client_id"
     t.index ["discarded_at"], name: "index_insurance_applications_on_discarded_at"
     t.index ["distributed_at"], name: "index_insurance_applications_on_distributed_at"
     t.index ["distribution_count"], name: "index_insurance_applications_on_distribution_count"
     t.index ["insurance_type", "status"], name: "index_insurance_applications_on_insurance_type_and_status"
+    t.index ["organization_id", "created_at"], name: "idx_insurance_apps_org_created"
+    t.index ["organization_id", "insurance_type"], name: "idx_insurance_apps_org_type"
+    t.index ["organization_id", "status", "insurance_type"], name: "idx_insurance_apps_org_status_type"
+    t.index ["organization_id", "status"], name: "idx_insurance_apps_org_status"
     t.index ["organization_id", "status"], name: "index_insurance_applications_on_organization_id_and_status"
     t.index ["organization_id"], name: "index_insurance_applications_on_organization_id"
     t.index ["rejected_by_id"], name: "index_insurance_applications_on_rejected_by_id"
     t.index ["reviewed_by_id"], name: "index_insurance_applications_on_reviewed_by_id"
     t.index ["submitted_at"], name: "index_insurance_applications_on_submitted_at"
+    t.index ["user_id", "status"], name: "idx_insurance_apps_user_status"
     t.index ["user_id"], name: "idx_insurance_applications_user_id"
     t.index ["user_id"], name: "index_insurance_applications_on_user_id"
   end
@@ -415,8 +439,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_232437) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["created_at"], name: "index_notifications_on_created_at"
+    t.index ["organization_id", "created_at"], name: "idx_notifications_org_created"
     t.index ["organization_id", "notification_type"], name: "index_notifications_on_organization_id_and_notification_type"
     t.index ["organization_id"], name: "index_notifications_on_organization_id"
+    t.index ["user_id", "created_at"], name: "idx_notifications_user_created"
+    t.index ["user_id", "read_at"], name: "idx_notifications_user_read"
     t.index ["user_id", "read_at"], name: "index_notifications_on_user_id_and_read_at"
     t.index ["user_id"], name: "index_notifications_on_user_id"
   end
@@ -479,13 +506,20 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_232437) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "insurance_application_id"
+    t.index ["expires_at"], name: "idx_quotes_expires_at"
     t.index ["expires_at"], name: "index_quotes_on_expires_at"
     t.index ["insurance_application_id", "expires_at"], name: "index_quotes_on_insurance_application_id_and_expires_at"
+    t.index ["insurance_application_id", "status"], name: "idx_quotes_app_status"
     t.index ["insurance_application_id", "status"], name: "index_quotes_on_insurance_application_id_and_status"
     t.index ["insurance_application_id"], name: "index_quotes_on_insurance_application_id"
+    t.index ["insurance_company_id", "status"], name: "idx_quotes_company_status"
     t.index ["insurance_company_id"], name: "index_quotes_on_insurance_company_id"
     t.index ["motor_application_id", "insurance_company_id"], name: "index_quotes_on_motor_application_id_and_insurance_company_id"
     t.index ["motor_application_id"], name: "index_quotes_on_motor_application_id"
+    t.index ["organization_id", "created_at"], name: "idx_quotes_org_created"
+    t.index ["organization_id", "expires_at"], name: "idx_quotes_org_expires"
+    t.index ["organization_id", "status", "created_at"], name: "idx_quotes_org_status_created"
+    t.index ["organization_id", "status"], name: "idx_quotes_org_status"
     t.index ["organization_id", "status"], name: "index_quotes_on_organization_id_and_status"
     t.index ["organization_id"], name: "index_quotes_on_organization_id"
     t.index ["quote_number"], name: "index_quotes_on_quote_number", unique: true
@@ -537,13 +571,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_232437) do
     t.text "resolution_notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["alert_type", "triggered_at"], name: "idx_security_alerts_type_triggered"
     t.index ["alert_type"], name: "index_security_alerts_on_alert_type"
+    t.index ["organization_id", "severity"], name: "idx_security_alerts_org_severity"
     t.index ["organization_id", "severity"], name: "index_security_alerts_on_organization_id_and_severity"
+    t.index ["organization_id", "status"], name: "idx_security_alerts_org_status"
     t.index ["organization_id", "status"], name: "index_security_alerts_on_organization_id_and_status"
+    t.index ["organization_id", "triggered_at"], name: "idx_security_alerts_org_triggered"
     t.index ["organization_id", "triggered_at"], name: "index_security_alerts_on_organization_id_and_triggered_at"
     t.index ["organization_id"], name: "index_security_alerts_on_organization_id"
     t.index ["resolved_by_id"], name: "index_security_alerts_on_resolved_by_id"
     t.index ["severity"], name: "index_security_alerts_on_severity"
+    t.index ["status", "triggered_at"], name: "idx_security_alerts_status_triggered"
     t.index ["status"], name: "index_security_alerts_on_status"
     t.index ["triggered_at"], name: "index_security_alerts_on_triggered_at"
   end
@@ -608,6 +647,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_15_232437) do
     t.boolean "sms_enabled", default: false, null: false
     t.string "whatsapp_number"
     t.boolean "whatsapp_enabled", default: false, null: false
+    t.index ["email", "organization_id"], name: "idx_users_email_org"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["mfa_secret"], name: "index_users_on_mfa_secret"
     t.index ["organization_id"], name: "index_users_on_organization_id"

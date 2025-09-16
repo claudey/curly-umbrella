@@ -12,7 +12,9 @@
       "Bash(pkill:*)",
       "Bash(npm install:*)",
       "Bash(bin/dev:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(bin/rails db:migrate)",
+      "Bash(bin/rails:*)"
     ],
     "deny": [],
     "ask": []

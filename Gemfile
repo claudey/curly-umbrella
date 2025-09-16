@@ -61,6 +61,8 @@ end
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
+  # N+1 query detection [https://github.com/flyerhzm/bullet]
+  gem "bullet"
 end
 
 gem "tailwindcss-rails", "~> 4.3"
