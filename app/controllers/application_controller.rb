@@ -2,6 +2,9 @@ class ApplicationController < ActionController::Base
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern
 
+  # Include security protection
+  include SecurityProtection
+
   # Set up acts_as_tenant for multi-tenancy
   set_current_tenant_through_filter
   before_action :set_current_tenant

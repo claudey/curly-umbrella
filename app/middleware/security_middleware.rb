@@ -75,28 +75,25 @@ class SecurityMiddleware
     
     return false unless limit_key
 
-    # Use Redis for rate limiting
-    redis = Redis.current
-    current_count = redis.get("rate_limit:#{limit_key}:#{ip_address}")
+    # Use Rails.cache for rate limiting (fallback when Redis not available)
+    cache_key = "rate_limit:#{limit_key}:#{ip_address}"
+    current_count = Rails.cache.fetch(cache_key, expires_in: window.seconds) { 0 }
 
-    if current_count && current_count.to_i >= limit_count
+    if current_count >= limit_count
       # Check if user is authenticated for higher limits
       if authenticated_request?(request)
-        return current_count.to_i >= (limit_count * 2) # Double limit for authenticated users
+        return current_count >= (limit_count * 2) # Double limit for authenticated users
       end
       return true
     end
 
     # Increment counter
-    redis.multi do |multi|
-      multi.incr("rate_limit:#{limit_key}:#{ip_address}")
-      multi.expire("rate_limit:#{limit_key}:#{ip_address}", window)
-    end
+    Rails.cache.write(cache_key, current_count + 1, expires_in: window.seconds)
 
     false
-  rescue Redis::BaseError => e
+  rescue StandardError => e
     Rails.logger.error "Rate limiting error: #{e.message}"
-    false # Allow request if Redis is down
+    false # Allow request if cache is down
   end
 
   def get_rate_limit_params(request)
@@ -230,11 +227,11 @@ class SecurityMiddleware
 
   def check_for_auto_block(ip_address)
     # Check if this IP has hit rate limits multiple times
-    redis = Redis.current
     rate_limit_key = "rate_limit_violations:#{ip_address}"
     
-    violations = redis.incr(rate_limit_key)
-    redis.expire(rate_limit_key, 3600) # 1 hour window
+    violations = Rails.cache.fetch(rate_limit_key, expires_in: 1.hour) { 0 }
+    violations += 1
+    Rails.cache.write(rate_limit_key, violations, expires_in: 1.hour)
     
     if violations >= 5 # 5 rate limit violations in an hour
       IpBlockingService.block_ip(
@@ -243,7 +240,7 @@ class SecurityMiddleware
         duration: 2.hours
       )
     end
-  rescue Redis::BaseError => e
+  rescue StandardError => e
     Rails.logger.error "Auto-block check error: #{e.message}"
   end
 
@@ -266,7 +263,9 @@ class SecurityMiddleware
 
   def create_security_alert(type, message, data, severity)
     # Queue the alert creation to avoid blocking the request
-    SecurityAlertJob.perform_later(type, message, data, severity)
+    # Try to get current organization from the request context
+    organization_id = ActsAsTenant.current_tenant&.id
+    SecurityAlertJob.perform_later(type, message, data, severity, organization_id)
   end
 
   def blocked_html_response

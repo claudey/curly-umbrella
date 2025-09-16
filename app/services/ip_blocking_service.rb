@@ -3,9 +3,10 @@
 class IpBlockingService
   include Singleton
 
-  # Cache blocked IPs in Redis for fast lookup
+  # Cache blocked IPs for fast lookup
   BLOCKED_IPS_KEY = 'security:blocked_ips'
   TEMPORARY_BLOCK_KEY = 'security:temp_blocked_ips'
+  WHITELIST_KEY = 'security:ip_whitelist'
   DEFAULT_BLOCK_DURATION = 1.hour
 
   def self.block_ip(ip_address, reason, duration: DEFAULT_BLOCK_DURATION, permanent: false)
@@ -44,12 +45,14 @@ class IpBlockingService
       blocked_by: 'system'
     }
 
-    # Store in Redis for fast lookup
+    # Store in cache for fast lookup
     if permanent
-      redis.hset(BLOCKED_IPS_KEY, ip_address, block_data.to_json)
+      blocked_ips = Rails.cache.fetch(BLOCKED_IPS_KEY, expires_in: nil) { {} }
+      blocked_ips[ip_address] = block_data
+      Rails.cache.write(BLOCKED_IPS_KEY, blocked_ips, expires_in: nil)
     else
-      redis.hset(TEMPORARY_BLOCK_KEY, ip_address, block_data.to_json)
-      redis.expire("#{TEMPORARY_BLOCK_KEY}:#{ip_address}", duration.to_i)
+      temp_key = "#{TEMPORARY_BLOCK_KEY}:#{ip_address}"
+      Rails.cache.write(temp_key, block_data, expires_in: duration)
     end
 
     # Log the block action
@@ -80,10 +83,14 @@ class IpBlockingService
   def unblock_ip(ip_address, reason = nil)
     return false if ip_address.blank?
 
-    # Remove from both permanent and temporary blocks
-    redis.hdel(BLOCKED_IPS_KEY, ip_address)
-    redis.hdel(TEMPORARY_BLOCK_KEY, ip_address)
-    redis.del("#{TEMPORARY_BLOCK_KEY}:#{ip_address}")
+    # Remove from permanent blocks
+    blocked_ips = Rails.cache.fetch(BLOCKED_IPS_KEY, expires_in: nil) { {} }
+    blocked_ips.delete(ip_address)
+    Rails.cache.write(BLOCKED_IPS_KEY, blocked_ips, expires_in: nil)
+
+    # Remove from temporary blocks
+    temp_key = "#{TEMPORARY_BLOCK_KEY}:#{ip_address}"
+    Rails.cache.delete(temp_key)
 
     Rails.logger.info "IP #{ip_address} unblocked: #{reason || 'Manual unblock'}"
 
@@ -108,25 +115,13 @@ class IpBlockingService
     return false if ip_address.blank? || local_ip?(ip_address)
 
     # Check permanent blocks
-    permanent_block = redis.hget(BLOCKED_IPS_KEY, ip_address)
-    return true if permanent_block
+    blocked_ips = Rails.cache.fetch(BLOCKED_IPS_KEY, expires_in: nil) { {} }
+    return true if blocked_ips[ip_address]
 
     # Check temporary blocks
-    temp_block = redis.hget(TEMPORARY_BLOCK_KEY, ip_address)
-    if temp_block
-      block_data = JSON.parse(temp_block)
-      blocked_until = block_data['blocked_until']
-      
-      if blocked_until && Time.current.to_i > blocked_until
-        # Block has expired, remove it
-        redis.hdel(TEMPORARY_BLOCK_KEY, ip_address)
-        return false
-      end
-      
-      return true
-    end
-
-    false
+    temp_key = "#{TEMPORARY_BLOCK_KEY}:#{ip_address}"
+    temp_block = Rails.cache.read(temp_key)
+    temp_block.present?
   rescue StandardError => e
     Rails.logger.error "Error checking IP block status for #{ip_address}: #{e.message}"
     false
@@ -136,30 +131,30 @@ class IpBlockingService
     return nil unless blocked?(ip_address)
 
     # Check permanent blocks first
-    permanent_block = redis.hget(BLOCKED_IPS_KEY, ip_address)
-    if permanent_block
-      data = JSON.parse(permanent_block)
+    blocked_ips = Rails.cache.fetch(BLOCKED_IPS_KEY, expires_in: nil) { {} }
+    if blocked_ips[ip_address]
+      data = blocked_ips[ip_address]
       return {
         ip_address: ip_address,
-        reason: data['reason'],
-        blocked_at: Time.at(data['blocked_at']),
+        reason: data[:reason],
+        blocked_at: Time.at(data[:blocked_at]),
         permanent: true,
         expires_at: nil,
-        blocked_by: data['blocked_by']
+        blocked_by: data[:blocked_by]
       }
     end
 
     # Check temporary blocks
-    temp_block = redis.hget(TEMPORARY_BLOCK_KEY, ip_address)
+    temp_key = "#{TEMPORARY_BLOCK_KEY}:#{ip_address}"
+    temp_block = Rails.cache.read(temp_key)
     if temp_block
-      data = JSON.parse(temp_block)
       return {
         ip_address: ip_address,
-        reason: data['reason'],
-        blocked_at: Time.at(data['blocked_at']),
+        reason: temp_block[:reason],
+        blocked_at: Time.at(temp_block[:blocked_at]),
         permanent: false,
-        expires_at: data['blocked_until'] ? Time.at(data['blocked_until']) : nil,
-        blocked_by: data['blocked_by']
+        expires_at: temp_block[:blocked_until] ? Time.at(temp_block[:blocked_until]) : nil,
+        blocked_by: temp_block[:blocked_by]
       }
     end
 
@@ -267,7 +262,6 @@ class IpBlockingService
 
   # Whitelist management
   def add_to_whitelist(ip_address, reason)
-    whitelist_key = 'security:ip_whitelist'
     whitelist_data = {
       ip_address: ip_address,
       reason: reason,
@@ -275,7 +269,9 @@ class IpBlockingService
       added_by: 'system'
     }
 
-    redis.hset(whitelist_key, ip_address, whitelist_data.to_json)
+    whitelist = Rails.cache.fetch(WHITELIST_KEY, expires_in: nil) { {} }
+    whitelist[ip_address] = whitelist_data
+    Rails.cache.write(WHITELIST_KEY, whitelist, expires_in: nil)
     
     # Also unblock if currently blocked
     unblock_ip(ip_address, "Added to whitelist: #{reason}")
@@ -286,18 +282,11 @@ class IpBlockingService
   def whitelisted?(ip_address)
     return false if ip_address.blank?
     
-    whitelist_key = 'security:ip_whitelist'
-    redis.hexists(whitelist_key, ip_address)
+    whitelist = Rails.cache.fetch(WHITELIST_KEY, expires_in: nil) { {} }
+    whitelist.key?(ip_address)
   end
 
   private
-
-  def redis
-    @redis ||= Redis.current
-  rescue StandardError
-    # Fallback to in-memory storage if Redis is not available
-    @memory_store ||= {}
-  end
 
   def local_ip?(ip_address)
     # Don't block local/private IPs
