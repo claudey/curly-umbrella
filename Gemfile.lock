@@ -253,7 +253,6 @@ GEM
     marcel (1.0.4)
     matrix (0.4.3)
     memory_profiler (1.1.0)
-    method_source (1.1.0)
     mini_mime (1.1.5)
     minitest (5.25.5)
     msgpack (1.8.0)
@@ -504,10 +503,9 @@ GEM
     useragent (0.16.11)
     vcr (6.3.1)
       base64
-    view_component (3.23.2)
-      activesupport (>= 5.2.0, < 8.1)
+    view_component (4.0.2)
+      activesupport (>= 7.1.0, < 8.1)
       concurrent-ruby (~> 1)
-      method_source (~> 1.0)
     warden (1.2.9)
       rack (>= 2.0.9)
     web-console (4.2.1)
@@ -594,7 +592,7 @@ DEPENDENCIES
   twilio-ruby (~> 7.3)
   tzinfo-data
   vcr (~> 6.3)
-  view_component (~> 3.0)
+  view_component (~> 4.0)
   web-console
   webmock (~> 3.24)
   wicked_pdf (~> 2.8)
