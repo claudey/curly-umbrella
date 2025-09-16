@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class SecurityAlertJob < ApplicationJob
-  queue_as :default
+  queue_as :critical
 
   def perform(alert_type, message, data, severity, organization_id = nil)
     organization = organization_id ? Organization.find(organization_id) : ActsAsTenant.current_tenant

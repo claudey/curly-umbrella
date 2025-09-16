@@ -97,3 +97,6 @@ gem "audited", "~> 5.8"
 
 # Pagination
 gem "kaminari", "~> 1.2"
+
+# Performance optimization
+gem "redis", "~> 5.0"
