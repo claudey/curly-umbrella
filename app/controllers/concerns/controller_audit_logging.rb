@@ -6,7 +6,7 @@ module ControllerAuditLogging
   included do
     before_action :set_audit_context
     around_action :audit_controller_action
-    after_action :log_data_access, only: [:show, :index]
+    after_action :log_data_access, if: :should_log_data_access?
   end
   
   private
@@ -199,13 +199,20 @@ module ControllerAuditLogging
     case exception
     when ActiveRecord::RecordNotFound, ActionController::RoutingError
       'warning'
-    when SecurityError, CanCan::AccessDenied
+    when SecurityError
       'error'
     when StandardError
       'error'
     else
       'critical'
     end
+  end
+
+  def should_log_data_access?
+    # Only log for index actions and not for authentication controllers
+    action_name == 'index' && 
+    !controller_name.include?('session') && 
+    !controller_name.include?('registration')
   end
   
   def controller_audit_details

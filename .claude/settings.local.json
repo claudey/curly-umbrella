@@ -15,7 +15,10 @@
       "Bash(rm:*)",
       "Bash(bin/rails db:migrate)",
       "Bash(bin/rails:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(ruby:*)",
+      "Read(//Applications/**)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []

@@ -9,14 +9,14 @@ class AuditLog < ApplicationRecord
   # Callbacks for notifications
   after_create :trigger_audit_notifications, if: :should_trigger_notifications?
 
-  enum severity: {
+  enum :severity, {
     info: 'info',
     warning: 'warning',
     error: 'error',
     critical: 'critical'
   }
 
-  enum category: {
+  enum :category, {
     authentication: 'authentication',
     authorization: 'authorization',
     data_access: 'data_access',
@@ -281,7 +281,7 @@ class AuditLog < ApplicationRecord
     {
       timestamp: Time.current.iso8601,
       application: 'BrokerSync',
-      version: Rails.application.config.version rescue '1.0.0'
+      version: (Rails.application.config.version rescue '1.0.0')
     }
   end
 

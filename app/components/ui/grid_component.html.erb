@@ -1,0 +1,9 @@
+<div class="<%= grid_classes %>" <%= tag.attributes(options) %>>
+  <% if columns? %>
+    <% columns.each do |column| %>
+      <%= column %>
+    <% end %>
+  <% elsif content.present? %>
+    <%= content %>
+  <% end %>
+</div>

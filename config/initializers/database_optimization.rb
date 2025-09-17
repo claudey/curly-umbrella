@@ -48,7 +48,7 @@ Rails.application.configure do
           loop do
             sleep 30
             pool = ActiveRecord::Base.connection_pool
-            Rails.logger.debug "[DB Pool] Size: #{pool.size}, Checked out: #{pool.checked_out_size}, Available: #{pool.available_count}"
+            Rails.logger.debug "[DB Pool] Size: #{pool.size}, Checked out: #{pool.size - pool.available_count}, Available: #{pool.available_count}"
           rescue => e
             Rails.logger.error "Connection pool monitoring error: #{e.message}"
           end
@@ -76,7 +76,7 @@ module ActiveRecord
       def pool_stats
         {
           size: size,
-          checked_out: checked_out_size,
+          checked_out: size - available_count,
           available: available_count,
           connections: connections.size,
           busy_connections: connections.count(&:in_use?)

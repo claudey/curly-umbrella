@@ -1,0 +1,81 @@
+<div id="<%= id %>" class="<%= modal_classes %>" style="<%= 'display: none;' unless open %>">
+  <!-- Backdrop -->
+  <div <%= tag.attributes(backdrop_attributes) %></div>
+
+  <!-- Dialog -->
+  <div class="<%= dialog_classes %>" role="dialog" aria-modal="true" aria-labelledby="<%= id %>-title">
+    <div class="flex flex-col h-full">
+      <% if show_header? %>
+        <div class="<%= header_classes %>">
+          <% if header? %>
+            <%= header %>
+          <% else %>
+            <div class="flex-1">
+              <% if title.present? %>
+                <h3 id="<%= id %>-title" class="text-lg font-semibold text-neutral-900">
+                  <%= title %>
+                </h3>
+              <% end %>
+            </div>
+          <% end %>
+          
+          <% if closable %>
+            <button type="button" 
+                    class="<%= close_button_classes %>"
+                    onclick="document.getElementById('<%= id %>').style.display = 'none'"
+                    aria-label="Close modal">
+              <%= helpers.phosphor_icon(:x, size: Ui::DesignSystem::ICON_SIZES[:md]) %>
+            </button>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% if body? %>
+        <div class="<%= body_classes %>">
+          <%= body %>
+        </div>
+      <% elsif content.present? %>
+        <div class="<%= body_classes %>">
+          <%= content %>
+        </div>
+      <% end %>
+
+      <% if show_footer? %>
+        <div class="<%= footer_classes %>">
+          <%= footer %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Modal functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('<%= id %>');
+    
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && modal.style.display !== 'none') {
+        <% if closable %>
+          modal.style.display = 'none';
+        <% end %>
+      }
+    });
+    
+    // Prevent body scroll when modal is open
+    const observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+          if (modal.style.display === 'none') {
+            document.body.style.overflow = '';
+          } else {
+            document.body.style.overflow = 'hidden';
+          }
+        }
+      });
+    });
+    
+    observer.observe(modal, { attributes: true });
+  });
+</script>

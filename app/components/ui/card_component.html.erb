@@ -1,39 +1,51 @@
-<div class="<%= card_classes %>">
+<%= content_tag tag_name, **tag_options do %>
   <% if show_image? %>
-    <figure>
-      <%= image_tag image, alt: title || "Card image" %>
-    </figure>
+    <div class="overflow-hidden rounded-t-lg">
+      <%= image_tag image, alt: title || "Card image", class: "w-full h-48 object-cover" %>
+    </div>
   <% end %>
 
-  <div class="card-body">
+  <div class="<%= 'space-y-4' unless padding == false %>">
     <% if show_header? %>
       <% if header? %>
         <%= header %>
       <% else %>
-        <% if title.present? %>
-          <h2 class="card-title"><%= title %></h2>
-        <% end %>
-        <% if subtitle.present? %>
-          <p class="text-base-content/70"><%= subtitle %></p>
-        <% end %>
+        <div class="space-y-1">
+          <% if title.present? %>
+            <h3 class="text-lg font-semibold text-neutral-900"><%= title %></h3>
+          <% end %>
+          <% if subtitle.present? %>
+            <p class="text-sm text-neutral-600"><%= subtitle %></p>
+          <% end %>
+        </div>
       <% end %>
     <% end %>
 
     <% if body? %>
-      <%= body %>
+      <div class="text-neutral-700">
+        <%= body %>
+      </div>
     <% elsif content.present? %>
-      <%= content %>
+      <div class="text-neutral-700">
+        <%= content %>
+      </div>
     <% end %>
 
     <% if show_footer? %>
-      <div class="card-actions justify-end">
-        <% if actions? %>
-          <% actions.each do |action| %>
-            <%= action %>
-          <% end %>
+      <div class="flex items-center justify-between pt-2">
+        <% if footer? %>
+          <div class="text-sm text-neutral-500">
+            <%= footer %>
+          </div>
         <% end %>
-        <%= footer if footer? %>
+        <% if actions? %>
+          <div class="flex space-x-2">
+            <% actions.each do |action| %>
+              <%= action %>
+            <% end %>
+          </div>
+        <% end %>
       </div>
     <% end %>
   </div>
-</div>
+<% end %>

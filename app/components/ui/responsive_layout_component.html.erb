@@ -1,0 +1,70 @@
+<div class="<%= wrapper_classes %>">
+  <div class="<%= layout_classes %>">
+    <% if header? %>
+      <header class="<%= header_classes %>">
+        <%= header %>
+      </header>
+    <% end %>
+
+    <% if show_sidebar? && (layout == "sidebar_left" || layout == "dashboard") %>
+      <aside class="<%= sidebar_classes %>">
+        <div class="<%= 'hidden ' + breakpoint + ':block' if show_mobile_nav? %>">
+          <%= sidebar %>
+        </div>
+      </aside>
+    <% end %>
+
+    <main class="<%= main_classes %>">
+      <% if main_content? %>
+        <%= main_content %>
+      <% elsif content.present? %>
+        <%= content %>
+      <% end %>
+    </main>
+
+    <% if show_sidebar? && layout == "sidebar_right" %>
+      <aside class="<%= sidebar_classes %>">
+        <div class="<%= 'hidden ' + breakpoint + ':block' if show_mobile_nav? %>">
+          <%= sidebar %>
+        </div>
+      </aside>
+    <% end %>
+
+    <% if footer? %>
+      <footer class="<%= footer_classes %>">
+        <%= footer %>
+      </footer>
+    <% end %>
+
+    <% if show_mobile_nav? %>
+      <!-- Mobile Navigation -->
+      <nav class="<%= mobile_nav_classes %>">
+        <div class="px-4 py-2 max-h-64 overflow-y-auto">
+          <%= sidebar %>
+        </div>
+      </nav>
+    <% end %>
+  </div>
+</div>
+
+<script>
+  // Handle mobile navigation toggle
+  document.addEventListener('DOMContentLoaded', function() {
+    // Add padding bottom to main content when mobile nav is present
+    <% if show_mobile_nav? %>
+      const main = document.querySelector('main');
+      if (main && window.innerWidth < <%= Ui::DesignSystem::BREAKPOINTS[breakpoint.to_sym]&.to_i || 1024 %>) {
+        main.style.paddingBottom = '5rem';
+      }
+      
+      // Update padding on resize
+      window.addEventListener('resize', function() {
+        if (window.innerWidth < <%= Ui::DesignSystem::BREAKPOINTS[breakpoint.to_sym]&.to_i || 1024 %>) {
+          main.style.paddingBottom = '5rem';
+        } else {
+          main.style.paddingBottom = '';
+        }
+      });
+    <% end %>
+  });
+</script>

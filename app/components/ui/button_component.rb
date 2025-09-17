@@ -1,6 +1,8 @@
 class Ui::ButtonComponent < ViewComponent::Base
-  VARIANTS = %w[primary secondary accent neutral ghost link].freeze
-  SIZES = %w[xs sm md lg].freeze
+  include Ui::DesignSystem
+
+  VARIANTS = %w[primary secondary success warning error outline ghost].freeze
+  SIZES = %w[xs sm md lg xl].freeze
 
   def initialize(
     variant: "primary",
@@ -9,15 +11,12 @@ class Ui::ButtonComponent < ViewComponent::Base
     disabled: false,
     loading: false,
     wide: false,
-    circle: false,
-    square: false,
-    glass: false,
-    no_animation: false,
     icon: nil,
     icon_position: :left,
     href: nil,
     method: nil,
     data: {},
+    class: nil,
     **options
   )
     @variant = variant.to_s
@@ -26,15 +25,12 @@ class Ui::ButtonComponent < ViewComponent::Base
     @disabled = disabled
     @loading = loading
     @wide = wide
-    @circle = circle
-    @square = square
-    @glass = glass
-    @no_animation = no_animation
     @icon = icon
     @icon_position = icon_position.to_sym
     @href = href
     @method = method
     @data = data
+    @additional_classes = binding.local_variable_get(:class)
     @options = options
 
     validate_variant!
@@ -43,8 +39,8 @@ class Ui::ButtonComponent < ViewComponent::Base
 
   private
 
-  attr_reader :variant, :size, :outline, :disabled, :loading, :wide, :circle, :square, :glass, :no_animation,
-              :icon, :icon_position, :href, :method, :data, :options
+  attr_reader :variant, :size, :outline, :disabled, :loading, :wide,
+              :icon, :icon_position, :href, :method, :data, :additional_classes, :options
 
   def tag_name
     href ? :a : :button
@@ -69,18 +65,20 @@ class Ui::ButtonComponent < ViewComponent::Base
   end
 
   def button_classes
-    classes = ["btn"]
-    classes << "btn-#{variant}" if VARIANTS.include?(variant)
-    classes << "btn-#{size}" if SIZES.include?(size)
-    classes << "btn-outline" if outline
-    classes << "btn-wide" if wide
-    classes << "btn-circle" if circle
-    classes << "btn-square" if square
-    classes << "btn-glass" if glass
-    classes << "no-animation" if no_animation
-    classes << "loading" if loading
+    # Use the design system button classes
+    design_variant = outline ? :outline : variant.to_sym
+    base_classes = Ui::DesignSystem.button_classes(
+      variant: design_variant,
+      size: size.to_sym,
+      disabled: disabled
+    )
 
-    classes.join(" ")
+    additional_classes_array = []
+    additional_classes_array << "w-full" if wide
+    additional_classes_array << "relative" if loading
+    additional_classes_array << additional_classes if additional_classes
+
+    [base_classes, *additional_classes_array].compact.join(" ")
   end
 
   def disabled_state
@@ -107,19 +105,36 @@ class Ui::ButtonComponent < ViewComponent::Base
 
   def icon_size
     case size
-    when "xs" then 3
-    when "sm" then 4
-    when "md" then 4
-    when "lg" then 5
-    else 4
+    when "xs" then Ui::DesignSystem::ICON_SIZES[:xs]
+    when "sm" then Ui::DesignSystem::ICON_SIZES[:sm]
+    when "md" then Ui::DesignSystem::ICON_SIZES[:md]
+    when "lg" then Ui::DesignSystem::ICON_SIZES[:lg]
+    when "xl" then Ui::DesignSystem::ICON_SIZES[:xl]
+    else Ui::DesignSystem::ICON_SIZES[:md]
     end
   end
 
   def content_classes
     classes = []
-    classes << "flex" << "items-center" << "justify-center" if show_icon?
-    classes << "space-x-2" if show_icon? && content.present?
+    if show_icon?
+      classes << "flex" << "items-center" << "justify-center"
+      classes << "space-x-2" if content.present?
+    end
     classes.join(" ")
+  end
+
+  def loading_spinner
+    return unless loading
+
+    content_tag :span, class: "absolute inset-0 flex items-center justify-center" do
+      content_tag :svg, 
+        class: "animate-spin h-#{icon_size} w-#{icon_size} text-current",
+        fill: "none",
+        viewBox: "0 0 24 24" do
+        concat content_tag(:circle, nil, class: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", "stroke-width": "4")
+        concat content_tag(:path, nil, class: "opacity-75", fill: "currentColor", d: "m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z")
+      end
+    end
   end
 
   def validate_variant!

@@ -1,0 +1,88 @@
+<div class="<%= form_classes %>">
+  <!-- Form Sections -->
+  <% if form_sections? %>
+    <% form_sections.each do |section| %>
+      <div class="<%= section.send(:section_classes) %>">
+        <% if section.send(:show_header?) %>
+          <div class="<%= section.send(:header_classes) %>">
+            <% if section.title.present? %>
+              <h3 class="<%= section.send(:title_classes) %>">
+                <%= section.title %>
+              </h3>
+            <% end %>
+            <% if section.description.present? %>
+              <p class="<%= section.send(:description_classes) %>">
+                <%= section.description %>
+              </p>
+            <% end %>
+          </div>
+        <% end %>
+
+        <div class="space-y-4">
+          <% section.fields.each do |field| %>
+            <div class="<%= field.send(:field_wrapper_classes) %>">
+              <%= field.send(:render_field) %>
+            </div>
+          <% end %>
+        </div>
+
+        <% if section.content.present? %>
+          <%= section.content %>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <!-- Individual Form Fields -->
+  <% if form_fields? %>
+    <% form_fields.each do |field| %>
+      <div class="<%= field.send(:field_wrapper_classes) %>">
+        <%= field.send(:render_field) %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <!-- Direct Content -->
+  <% if content.present? && !form_sections? && !form_fields? %>
+    <%= content %>
+  <% end %>
+
+  <!-- Form Actions -->
+  <% if form_actions? %>
+    <div class="<%= actions_classes %>">
+      <%= form_actions %>
+    </div>
+  <% end %>
+</div>
+
+<style>
+  /* Ensure form inputs are properly sized on iOS */
+  @supports (-webkit-appearance: none) {
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="tel"],
+    input[type="url"],
+    textarea,
+    select {
+      font-size: 16px;
+    }
+  }
+
+  /* Responsive form improvements */
+  @media (max-width: 640px) {
+    .responsive-form input,
+    .responsive-form textarea,
+    .responsive-form select {
+      font-size: 16px; /* Prevents zoom on iOS */
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    
+    .responsive-form button {
+      min-height: 44px; /* Touch target size */
+      font-size: 16px;
+    }
+  }
+</style>

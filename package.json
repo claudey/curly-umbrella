@@ -1,0 +1,8 @@
+{
+  "name": "brokersync-monitoring",
+  "version": "1.0.0",
+  "description": "Browser monitoring for BrokerSync",
+  "dependencies": {
+    "playwright": "^1.40.0"
+  }
+}

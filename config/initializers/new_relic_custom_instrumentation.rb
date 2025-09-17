@@ -152,12 +152,25 @@ if defined?(NewRelic::Agent) && NewRelic::Agent.config[:agent_enabled]
           # Call original method
           error_record = original_track_error(exception, context)
           
+          # Handle both single record and array cases, but only if it's an actual record
+          record_for_tracking = if error_record.is_a?(Array)
+            error_record.first
+          else
+            error_record
+          end
+          
+          # Only extract attributes if record_for_tracking responds to the methods (is an actual record)
+          tracking_context = context.dup
+          if record_for_tracking.respond_to?(:id) && !record_for_tracking.is_a?(ActiveSupport::Logger)
+            tracking_context.merge!(
+              error_record_id: record_for_tracking.id,
+              severity: record_for_tracking.respond_to?(:severity) ? record_for_tracking.severity : nil,
+              category: record_for_tracking.respond_to?(:category) ? record_for_tracking.category : nil
+            )
+          end
+          
           # Also track in New Relic
-          NewRelicInstrumentationService.track_application_error(exception, context.merge(
-            error_record_id: error_record&.id,
-            severity: error_record&.severity,
-            category: error_record&.category
-          ))
+          NewRelicInstrumentationService.track_application_error(exception, tracking_context)
           
           error_record
         end

@@ -1,0 +1,13 @@
+<%= content_tag tag_name, **tag_options do %>
+  <% if show_icon? %>
+    <%= helpers.phosphor_icon(icon, size: icon_size, class: "mr-1") %>
+  <% end %>
+  
+  <%= content %>
+  
+  <% if removable %>
+    <button type="button" class="ml-1 hover:opacity-70" onclick="this.parentElement.remove()">
+      <%= helpers.phosphor_icon(:x, size: icon_size) %>
+    </button>
+  <% end %>
+<% end %>

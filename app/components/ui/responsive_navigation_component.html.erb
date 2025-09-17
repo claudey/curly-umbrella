@@ -1,0 +1,70 @@
+<nav class="<%= nav_classes %>" x-data="{ mobileMenuOpen: false }">
+  <div class="<%= container_classes %>">
+    <div class="<%= inner_nav_classes %>">
+      <!-- Brand -->
+      <div class="<%= brand_classes %>">
+        <% if brand? %>
+          <%= brand %>
+        <% end %>
+      </div>
+
+      <!-- Desktop Navigation -->
+      <div class="<%= desktop_nav_classes %>">
+        <% nav_items.each do |nav_item| %>
+          <%= nav_item %>
+        <% end %>
+      </div>
+
+      <!-- Right side items -->
+      <div class="flex items-center space-x-4">
+        <!-- User Menu -->
+        <% if user_menu? %>
+          <div class="<%= user_menu_classes %>">
+            <%= user_menu %>
+          </div>
+        <% end %>
+
+        <!-- Mobile menu button -->
+        <button type="button" 
+                class="<%= mobile_button_classes %>"
+                @click="mobileMenuOpen = !mobileMenuOpen"
+                aria-controls="mobile-menu" 
+                :aria-expanded="mobileMenuOpen">
+          <span class="sr-only">Open main menu</span>
+          <!-- Menu icon when menu is closed -->
+          <svg x-show="!mobileMenuOpen" class="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          <!-- X icon when menu is open -->
+          <svg x-show="mobileMenuOpen" class="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile menu -->
+  <div class="<%= mobile_menu_classes %>" 
+       x-show="mobileMenuOpen" 
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:enter-start="opacity-0 transform scale-95"
+       x-transition:enter-end="opacity-100 transform scale-100"
+       x-transition:leave="transition ease-in duration-150"
+       x-transition:leave-start="opacity-100 transform scale-100"
+       x-transition:leave-end="opacity-0 transform scale-95"
+       @click.away="mobileMenuOpen = false">
+    <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+      <% nav_items.each do |nav_item| %>
+        <%= nav_item %>
+      <% end %>
+    </div>
+  </div>
+</nav>
+
+<script>
+  // Initialize Alpine.js for mobile menu if not already loaded
+  if (typeof Alpine === 'undefined') {
+    document.head.insertAdjacentHTML('beforeend', '<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"><\/script>');
+  }
+</script>

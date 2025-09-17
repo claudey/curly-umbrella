@@ -1,0 +1,88 @@
+<div class="<%= wrapper_classes %>">
+  <!-- Desktop Table -->
+  <div class="<%= desktop_table_classes %>">
+    <div class="<%= table_container_classes %>">
+      <table class="<%= table_classes %>">
+        <% if columns? %>
+          <thead class="<%= thead_classes %>">
+            <tr>
+              <% columns.each do |column| %>
+                <th scope="col" class="<%= column.header_classes %>">
+                  <% if column.sortable %>
+                    <button type="button" class="group inline-flex items-center">
+                      <%= column.content %>
+                      <span class="ml-2 flex-none rounded text-neutral-400 group-hover:text-neutral-500">
+                        <%= helpers.phosphor_icon(:arrows_vertical, size: 14) %>
+                      </span>
+                    </button>
+                  <% else %>
+                    <%= column.content %>
+                  <% end %>
+                </th>
+              <% end %>
+            </tr>
+          </thead>
+        <% end %>
+
+        <% if rows? %>
+          <tbody class="<%= tbody_classes %>">
+            <% rows.each_with_index do |row, index| %>
+              <% if row.href %>
+                <tr class="<%= row.send(:row_classes) %>" onclick="window.location.href='<%= row.href %>'">
+              <% else %>
+                <tr class="<%= row.send(:row_classes) %> <%= 'bg-neutral-50' if striped && index.odd? %>">
+              <% end %>
+                <% row.cells.each do |cell| %>
+                  <td class="<%= cell.send(:cell_classes) %>">
+                    <%= cell.content %>
+                  </td>
+                <% end %>
+              </tr>
+            <% end %>
+          </tbody>
+        <% end %>
+      </table>
+    </div>
+  </div>
+
+  <!-- Mobile Cards -->
+  <% if mobile_cards && rows? %>
+    <div class="<%= mobile_cards_classes %>">
+      <% rows.each do |row| %>
+        <% if row.href %>
+          <a href="<%= row.href %>" class="block">
+            <div class="<%= row.send(:mobile_card_classes) %> hover:shadow-md transition-shadow">
+        <% else %>
+          <div class="<%= row.send(:mobile_card_classes) %>">
+        <% end %>
+              <% row.cells.each do |cell| %>
+                <div class="<%= cell.send(:mobile_cell_classes) %>">
+                  <span class="text-sm font-medium text-neutral-500">
+                    <%= cell.send(:mobile_label) %>:
+                  </span>
+                  <span class="text-sm text-neutral-900">
+                    <%= cell.content %>
+                  </span>
+                </div>
+              <% end %>
+        <% if row.href %>
+            </div>
+          </a>
+        <% else %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <!-- Empty State -->
+  <% if !rows? || rows.empty? %>
+    <div class="text-center py-12">
+      <div class="text-neutral-400 mb-4">
+        <%= helpers.phosphor_icon(:table, size: 48) %>
+      </div>
+      <h3 class="text-lg font-medium text-neutral-900 mb-2">No data available</h3>
+      <p class="text-neutral-500">There are no records to display in this table.</p>
+    </div>
+  <% end %>
+</div>

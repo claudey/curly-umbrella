@@ -73,44 +73,6 @@ class Document < ApplicationRecord
   scope :by_tags, ->(tags) { where('tags && ARRAY[?]', Array(tags)) }
   scope :recent, -> { order(created_at: :desc) }
 
-  # Document types
-  DOCUMENT_TYPES = %w[
-    application_form
-    insurance_policy
-    claim_form
-    identity_document
-    proof_of_income
-    medical_report
-    vehicle_registration
-    property_deed
-    financial_statement
-    correspondence
-    contract
-    invoice
-    receipt
-    certificate
-    legal_document
-    compliance_document
-    audit_report
-    other
-  ].freeze
-
-  # Access levels
-  ACCESS_LEVELS = %w[private organization public].freeze
-
-  # Categories
-  CATEGORIES = %w[
-    underwriting
-    claims
-    legal
-    financial
-    compliance
-    marketing
-    operations
-    hr
-    it
-    general
-  ].freeze
 
   def file_attached?
     file.attached?

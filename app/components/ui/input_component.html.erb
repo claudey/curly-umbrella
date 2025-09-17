@@ -1,0 +1,26 @@
+<div class="<%= wrapper_classes %>">
+  <% if show_label? %>
+    <label for="<%= name %>" class="<%= label_classes %>">
+      <%= label %>
+      <% if required %>
+        <span class="text-error-500 ml-1">*</span>
+      <% end %>
+    </label>
+  <% end %>
+
+  <div class="relative">
+    <% if show_icon? %>
+      <div class="<%= icon_classes %>">
+        <%= helpers.phosphor_icon(icon, size: icon_size) %>
+      </div>
+    <% end %>
+    
+    <%= tag.input(**input_attributes) %>
+  </div>
+
+  <% if show_hint? %>
+    <div id="<%= name %>_hint" class="<%= hint_classes %>">
+      <%= hint_text %>
+    </div>
+  <% end %>
+</div>

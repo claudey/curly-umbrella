@@ -3,6 +3,13 @@
 class Users::SessionsController < Devise::SessionsController
   include SessionSecurity
   
+  layout 'auth'
+  
+  # Override Devise's new action
+  def new
+    super
+  end
+  
   # Override Devise's create action to add session management
   def create
     self.resource = warden.authenticate!(auth_options)
