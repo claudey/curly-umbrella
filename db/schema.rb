@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_16_204033) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_17_054432) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -283,6 +283,26 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_16_204033) do
     t.index ["tags"], name: "index_documents_on_tags", using: :gin
     t.index ["user_id", "created_at"], name: "idx_documents_user_created"
     t.index ["user_id"], name: "index_documents_on_user_id"
+  end
+
+  create_table "feature_flags", force: :cascade do |t|
+    t.string "key"
+    t.string "name"
+    t.text "description"
+    t.boolean "enabled"
+    t.integer "percentage"
+    t.text "user_groups"
+    t.text "conditions"
+    t.json "metadata"
+    t.bigint "created_by_id"
+    t.bigint "updated_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "organization_id"
+    t.index ["created_by_id"], name: "index_feature_flags_on_created_by_id"
+    t.index ["key"], name: "index_feature_flags_on_key", unique: true
+    t.index ["organization_id"], name: "index_feature_flags_on_organization_id"
+    t.index ["updated_by_id"], name: "index_feature_flags_on_updated_by_id"
   end
 
   create_table "insurance_applications", force: :cascade do |t|
@@ -723,6 +743,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_16_204033) do
   add_foreign_key "documents", "organizations"
   add_foreign_key "documents", "users"
   add_foreign_key "documents", "users", column: "archived_by_id"
+  add_foreign_key "feature_flags", "organizations"
+  add_foreign_key "feature_flags", "users", column: "created_by_id"
+  add_foreign_key "feature_flags", "users", column: "updated_by_id"
   add_foreign_key "insurance_applications", "clients"
   add_foreign_key "insurance_applications", "organizations"
   add_foreign_key "insurance_applications", "users"

@@ -67,6 +67,21 @@ Rails.application.routes.draw do
       patch '/resolve_alert/:id', to: 'security_dashboard#resolve_alert', as: :resolve_alert
       patch '/dismiss_alert/:id', to: 'security_dashboard#dismiss_alert', as: :dismiss_alert
     end
+    
+    # Feature Flag Management routes
+    resources :feature_flags do
+      member do
+        patch :toggle
+      end
+      
+      collection do
+        patch :bulk_toggle
+        get :export
+        post :import
+        get :health
+        post :clear_cache
+      end
+    end
   end
   namespace :insurance_companies do
     root "portal#dashboard"
@@ -209,6 +224,20 @@ Rails.application.routes.draw do
           get :trends
         end
       end
+      
+      resources :feature_flags do
+        member do
+          post :toggle
+        end
+        
+        collection do
+          get :check
+          get :health
+          post :bulk_update
+          get :export
+          post :import
+        end
+      end
     end
   end
   
@@ -225,6 +254,16 @@ Rails.application.routes.draw do
     
     post '/reports', to: 'executive_dashboard#create_report', as: :create_report
     post '/reports/:id/generate', to: 'executive_dashboard#generate_report', as: :generate_report
+  end
+  
+  # API Documentation routes
+  scope :developers, as: :developers do
+    get '/', to: 'api_docs#index', as: :api_docs
+    get '/playground', to: 'api_docs#playground', as: :api_playground
+    post '/try', to: 'api_docs#try_endpoint', as: :try_api_endpoint
+    post '/code-example', to: 'api_docs#generate_code_example', as: :generate_code_example
+    get '/postman', to: 'api_docs#download_postman_collection', as: :download_postman_collection
+    get '/openapi', to: 'api_docs#download_openapi_spec', as: :download_openapi_spec
   end
   
   # Root route

@@ -6,9 +6,24 @@ if [ -z "${LD_PRELOAD+x}" ]; then
     export LD_PRELOAD
 fi
 
+# Wait for database to be ready
+echo "Waiting for database to be ready..."
+until ./bin/rails runner "ActiveRecord::Base.connection.execute('SELECT 1')" >/dev/null 2>&1; do
+  echo "Database is unavailable - sleeping"
+  sleep 1
+done
+echo "Database is ready!"
+
 # If running the rails server then create or migrate existing database
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
+  echo "Preparing database..."
   ./bin/rails db:prepare
+  
+  # Seed the database if needed (only in development/staging)
+  if [ "$RAILS_ENV" != "production" ]; then
+    echo "Seeding database..."
+    ./bin/rails db:seed
+  fi
 fi
 
 exec "${@}"
