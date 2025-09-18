@@ -19,7 +19,7 @@ class HomeController < ApplicationController
   def load_document_metrics
     # Document statistics for current organization
     documents_scope = Document.where(organization: @current_org)
-    
+
     @document_metrics = {
       total_documents: documents_scope.count,
       active_documents: documents_scope.not_archived.count,
@@ -32,7 +32,7 @@ class HomeController < ApplicationController
 
     # Document type breakdown
     @document_type_breakdown = documents_scope.group(:document_type).count
-    
+
     # Storage usage by month (simple grouping)
     @monthly_storage = documents_scope
       .where(created_at: 6.months.ago..Time.current)
@@ -57,7 +57,7 @@ class HomeController < ApplicationController
 
     # Recent document versions
     @recent_versions = Document.where(organization: @current_org)
-                              .where('version > 1')
+                              .where("version > 1")
                               .includes(:user)
                               .order(updated_at: :desc)
                               .limit(5)
@@ -79,26 +79,26 @@ class HomeController < ApplicationController
                              .distinct
                              .count,
       total_applications: defined?(MotorApplication) ? MotorApplication.where(organization: @current_org).count : 0,
-      pending_quotes: defined?(Quote) ? Quote.joins(:user).where(users: { organization: @current_org }).pending.count : 0
+      pending_quotes: 0 # Placeholder until Quote model associations are fixed
     }
   end
 
   def load_upcoming_tasks
     # Upcoming document-related tasks and deadlines
     @upcoming_tasks = []
-    
+
     # Expiring documents
     expiring_docs = Document.where(organization: @current_org)
                            .expiring_soon(14)
                            .limit(5)
-    
+
     expiring_docs.each do |doc|
       @upcoming_tasks << {
-        type: 'expiring_document',
+        type: "expiring_document",
         title: "Document expiring: #{doc.name}",
         description: "Expires on #{doc.expires_at.strftime('%B %d, %Y')}",
         due_date: doc.expires_at,
-        priority: doc.expiring_soon?(3) ? 'high' : 'medium',
+        priority: doc.expiring_soon?(3) ? "high" : "medium",
         url: document_path(doc)
       }
     end
@@ -108,20 +108,20 @@ class HomeController < ApplicationController
                              .archived
                              .where(archived_at: 1.week.ago..Time.current)
                              .limit(3)
-    
+
     archived_recent.each do |doc|
       @upcoming_tasks << {
-        type: 'archived_document',
+        type: "archived_document",
         title: "Recently archived: #{doc.name}",
         description: "Archived #{time_ago_in_words(doc.archived_at)} ago",
         due_date: doc.archived_at + 30.days, # Review in 30 days
-        priority: 'low',
+        priority: "low",
         url: document_path(doc)
       }
     end
 
     # Sort tasks by priority and due date
-    @upcoming_tasks.sort_by! { |task| [task[:priority] == 'high' ? 0 : 1, task[:due_date]] }
+    @upcoming_tasks.sort_by! { |task| [ task[:priority] == "high" ? 0 : 1, task[:due_date] ] }
     @upcoming_tasks = @upcoming_tasks.first(10)
   end
 end

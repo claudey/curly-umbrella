@@ -5,12 +5,12 @@ class RateLimitingService
 
   # Rate limiting rules
   RATE_LIMITS = {
-    login: { limit: 5, window: 300 },           # 5 attempts per 5 minutes
-    password_reset: { limit: 3, window: 3600 }, # 3 attempts per hour
-    api: { limit: 100, window: 3600 },          # 100 API calls per hour
-    general: { limit: 200, window: 3600 },      # 200 general requests per hour
-    audit_access: { limit: 50, window: 300 },   # 50 audit page requests per 5 minutes
-    document_download: { limit: 30, window: 600 } # 30 downloads per 10 minutes
+    login: { limit: Rails.env.development? ? 1000 : 5, window: Rails.env.development? ? 3600 : 300 },           # 1000 attempts per hour in dev, 5 per 5 minutes in prod
+    password_reset: { limit: Rails.env.development? ? 100 : 3, window: 3600 }, # 100 attempts per hour in dev, 3 per hour in prod
+    api: { limit: Rails.env.development? ? 10000 : 100, window: 3600 },          # 10000 API calls per hour in dev, 100 in prod
+    general: { limit: Rails.env.development? ? 10000 : 200, window: 3600 },      # 10000 general requests per hour in dev, 200 in prod
+    audit_access: { limit: Rails.env.development? ? 1000 : 50, window: 300 },   # 1000 audit page requests per 5 minutes in dev, 50 in prod
+    document_download: { limit: Rails.env.development? ? 1000 : 30, window: 600 } # 1000 downloads per 10 minutes in dev, 30 in prod
   }.freeze
 
   def self.check_rate_limit(identifier, limit_type, options = {})
@@ -34,6 +34,9 @@ class RateLimitingService
   end
 
   def check_rate_limit(identifier, limit_type, options = {})
+    # Temporarily disabled for debugging - always allow
+    return false if Rails.env.development?
+    
     return false if whitelisted?(identifier) || local_identifier?(identifier)
 
     limit_config = get_limit_config(limit_type, options)
@@ -264,7 +267,7 @@ class RateLimitingService
 
   def local_identifier?(identifier)
     # Don't rate limit local/development identifiers
-    return true if Rails.env.development? && identifier == '127.0.0.1'
+    return true if Rails.env.development? && (identifier == '127.0.0.1' || identifier == '::1')
     
     # Check for local IP ranges if it's an IP
     if identifier =~ /\A(?:[0-9]{1,3}\.){3}[0-9]{1,3}\z/

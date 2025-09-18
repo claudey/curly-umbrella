@@ -18,7 +18,10 @@
       "Bash(chmod:*)",
       "Bash(ruby:*)",
       "Read(//Applications/**)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(curl:*)",
+      "Bash(redis-cli:*)",
+      "Bash(kill:*)"
     ],
     "deny": [],
     "ask": []

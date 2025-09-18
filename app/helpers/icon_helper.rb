@@ -1,20 +1,147 @@
 module IconHelper
+  # Generic icon helper that wraps phosphor_icon for backward compatibility
+  def icon(name, **options)
+    # Extract class from options and convert to css_class
+    css_class = options.delete(:class)
+
+    # Map common icon names to phosphor icon names
+    icon_mapping = {
+      # Basic icons
+      "bell" => :bell,
+      "bell-slash" => :bell_slash,
+      "check" => :check,
+      "check-circle" => :check_circle,
+      "user" => :user,
+      "settings" => :gear,
+      "cog-6-tooth" => :gear_six,
+      "home" => :house,
+      "dashboard" => :squares_four,
+      "logout" => :sign_out,
+      "login" => :sign_in,
+      "search" => :magnifying_glass,
+      "magnifying-glass" => :magnifying_glass,
+      "plus" => :plus,
+      "squares-plus" => :squares_plus,
+      "minus" => :minus,
+      "edit" => :pencil,
+      "delete" => :trash,
+      "save" => :floppy_disk,
+      "close" => :x,
+      "x-mark" => :x,
+      "menu" => :list,
+      "bars-3" => :list,
+      "eye" => :eye,
+      "printer" => :printer,
+      "clock" => :clock,
+      "calendar" => :calendar,
+
+      # Arrows
+      "arrow-right" => :arrow_right,
+      "arrow-left" => :arrow_left,
+      "arrow-up" => :arrow_up,
+      "arrow-down" => :arrow_down,
+      "arrow-path" => :arrow_clockwise,
+      "arrow-down-tray" => :arrow_down_tray,
+      "arrow-up-tray" => :arrow_up_tray,
+      "chevron-up" => :chevron_up,
+      "chevron-down" => :chevron_down,
+      "chevron-up-down" => :chevron_up_down,
+
+      # Chart and data icons
+      "chart-bar" => :chart_bar,
+      "chart-line" => :chart_line,
+      "view-columns" => :columns,
+
+      # Document icons
+      "clipboard-document-list" => :clipboard_text,
+      "clipboard-document" => :clipboard_text,
+      "document-text" => :file_text,
+      "file-text" => :file_text,
+      "paper-airplane" => :paper_plane,
+      "inbox" => :inbox,
+
+      # UI icons
+      "ellipsis-vertical" => :dots_three_vertical,
+      "hand-thumb-up" => :thumbs_up,
+      "exclamation-triangle" => :warning_triangle,
+      "information-circle" => :info,
+      "question-mark-circle" => :question,
+      "shield-check" => :shield_check,
+      "truck" => :truck,
+      "building-office" => :buildings,
+      "banknotes" => :bank,
+      "archive-box-x-mark" => :archive_box_x,
+      "x-circle" => :x_circle,
+      "sparkles" => :sparkle,
+      "device-phone-mobile" => :device_mobile,
+      "list-bullet" => :list_bullets,
+      "arrows-pointing-out" => :arrows_out,
+      "folder" => :folder,
+      "buildings" => :buildings,
+      "users" => :users,
+
+      # Additional mapped icons (avoiding duplicates)
+      "pencil" => :pencil,
+      "trash" => :trash,
+      "floppy-disk" => :floppy_disk,
+      "x" => :x,
+      "list" => :list,
+      "gear" => :gear,
+      "house" => :house,
+      "squares_four" => :squares_four,
+      "sign_out" => :sign_out,
+      "sign_in" => :sign_in,
+      "magnifying_glass" => :magnifying_glass,
+      "paper_plane" => :paper_plane,
+      "clipboard_text" => :clipboard_text,
+      "file_text" => :file_text,
+      "chart_bar" => :chart_bar,
+      "chart_line" => :chart_line,
+      "columns" => :columns,
+      "dots_three_vertical" => :dots_three_vertical,
+      "thumbs_up" => :thumbs_up,
+      "warning" => :warning,
+      "info" => :info,
+      "question" => :question,
+      "shield_check" => :shield_check,
+      "bank" => :bank,
+      "archive_box_x" => :archive_box_x,
+      "x_circle" => :x_circle,
+      "sparkle" => :sparkle,
+      "device_mobile" => :device_mobile,
+      "list_bullets" => :list_bullets,
+      "arrows_out" => :arrows_out
+    }
+
+    # Use mapped name or convert string to symbol
+    phosphor_name = icon_mapping[name] || name.to_sym
+
+    # Convert Tailwind size classes to numeric sizes
+    size = 20 # default
+    if css_class
+      size_match = css_class.match(/w-(\d+)/)
+      size = size_match[1].to_i if size_match
+    end
+
+    phosphor_icon(phosphor_name, css_class: css_class, size: size, **options)
+  end
+
   def phosphor_icon(name, variant: :regular, size: 20, css_class: nil, **options)
     # Convert string names to symbols for consistency
     name = name.to_sym if name.is_a?(String)
     variant = variant.to_sym if variant.is_a?(String)
-    
+
     # Default CSS classes
-    classes = ["w-#{size_to_class(size)}", "h-#{size_to_class(size)}"]
+    classes = [ "w-#{size_to_class(size)}", "h-#{size_to_class(size)}" ]
     classes << css_class if css_class.present?
-    
+
     # Set default attributes
     svg_options = {
       class: classes.join(" "),
       fill: "currentColor",
       viewBox: "0 0 256 256"
     }.merge(options)
-    
+
     # Generate the icon using the phosphor_icons gem
     phosphor_icon_tag(name, variant: variant, **svg_options)
   rescue StandardError

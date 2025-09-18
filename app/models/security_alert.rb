@@ -10,25 +10,26 @@ class SecurityAlert < ApplicationRecord
   validates :status, presence: true, inclusion: { in: %w[active investigating resolved dismissed] }
   validates :triggered_at, presence: true
 
-  enum severity: {
+  enum :severity, {
     low: 'low',
     medium: 'medium', 
     high: 'high',
     critical: 'critical'
   }
 
-  enum status: {
+  enum :status, {
     active: 'active',
     investigating: 'investigating',
     resolved: 'resolved',
     dismissed: 'dismissed'
   }
 
-  enum alert_type: {
+  enum :alert_type, {
     multiple_failed_logins: 'multiple_failed_logins',
     suspicious_ip_activity: 'suspicious_ip_activity',
     rapid_user_activity: 'rapid_user_activity',
     unusual_login_location: 'unusual_login_location',
+    new_login_location: 'new_login_location',
     concurrent_sessions: 'concurrent_sessions',
     unauthorized_access_attempt: 'unauthorized_access_attempt',
     privilege_escalation_attempt: 'privilege_escalation_attempt',

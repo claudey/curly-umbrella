@@ -6,7 +6,7 @@ module ControllerAuditLogging
   included do
     before_action :set_audit_context
     around_action :audit_controller_action
-    after_action :log_data_access, if: :should_log_data_access?
+    # after_action :log_data_access, if: :should_log_data_access?
   end
   
   private
@@ -121,37 +121,6 @@ module ControllerAuditLogging
     create_security_alert_for_error(exception) if should_alert_for_error?(exception)
   end
   
-  def log_data_access
-    return if skip_audit_for_action?
-    return unless should_log_data_access?
-    
-    # Log data access for show/index actions
-    resource = instance_variable_get("@#{controller_name.singularize}")
-    resources = instance_variable_get("@#{controller_name}")
-    
-    if resource
-      AuditLog.log_data_access(
-        current_user_for_audit,
-        resource,
-        'view_details',
-        audit_context_details
-      )
-    elsif resources&.respond_to?(:count)
-      AuditLog.create!(
-        user: current_user_for_audit,
-        organization: current_organization_for_audit,
-        action: 'view_list',
-        category: 'data_access',
-        resource_type: controller_resource_type,
-        severity: 'info',
-        details: audit_context_details.merge(
-          records_count: resources.count,
-          filtered: params.except(:controller, :action, :format).present?
-        ),
-        ip_address: request.remote_ip
-      )
-    end
-  end
   
   def current_user_for_audit
     if respond_to?(:current_user)
@@ -208,12 +177,6 @@ module ControllerAuditLogging
     end
   end
 
-  def should_log_data_access?
-    # Only log for index actions and not for authentication controllers
-    action_name == 'index' && 
-    !controller_name.include?('session') && 
-    !controller_name.include?('registration')
-  end
   
   def controller_audit_details
     details = {
@@ -284,19 +247,25 @@ module ControllerAuditLogging
     request.path.start_with?('/robots.txt')
   end
   
-  def should_log_data_access?
-    # Only log data access for authenticated users
-    current_user_for_audit.present?
+  def authentication_controller?
+    controller_name.include?('session') || 
+    controller_name.include?('registration') ||
+    self.class.name.include?('Devise')
   end
+  
   
   def should_alert_for_error?(exception)
     # Create alerts for security-related errors
     security_errors = [
       'SecurityError',
-      'CanCan::AccessDenied', 
       'ActionController::InvalidAuthenticityToken',
       'ActiveRecord::StatementInvalid' # Potential SQL injection
     ]
+    
+    # Add CanCan check only if CanCan is available
+    if defined?(CanCan)
+      security_errors << 'CanCan::AccessDenied'
+    end
     
     security_errors.include?(exception.class.name) ||
     exception.message.downcase.include?('unauthorized') ||

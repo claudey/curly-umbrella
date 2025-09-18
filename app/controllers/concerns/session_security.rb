@@ -12,7 +12,11 @@ module SessionSecurity
   private
 
   def track_session_activity
-    return unless current_user && session[:session_id]
+    return if login_action? # Skip during login process
+    return unless current_user
+    
+    # If no session_id exists yet, it will be created by after_action callback
+    return unless session[:session_id]
 
     # Check if session is still valid
     unless SessionManagementService.is_session_valid?(current_user, session[:session_id])
@@ -29,6 +33,7 @@ module SessionSecurity
   end
 
   def validate_session_security
+    return if login_action? # Skip during login process
     return unless current_user && session[:session_id]
 
     # Additional security validations
@@ -38,7 +43,13 @@ module SessionSecurity
   end
 
   def update_session_activity
+    return if login_action? # Skip during login process
     return unless current_user && session[:session_id]
+
+    # Clear the just_logged_in flag after first successful page load
+    if session[:just_logged_in]
+      session.delete(:just_logged_in)
+    end
 
     request_info = {
       ip_address: get_client_ip,
@@ -228,6 +239,12 @@ module SessionSecurity
     else
       session[:last_activity_at] = Time.current.iso8601
     end
+  end
+
+  def login_action?
+    # Skip session security checks during login process and immediate redirect after login
+    (controller_name == 'sessions' && action_name == 'create') ||
+    (controller_name == 'home' && action_name == 'index' && session[:just_logged_in])
   end
 
   def detect_location_from_ip(ip_address)

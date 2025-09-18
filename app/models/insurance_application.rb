@@ -5,6 +5,12 @@ class InsuranceApplication < ApplicationRecord
   acts_as_tenant :organization
   audited except: [:application_data]
 
+  # Insurance types
+  INSURANCE_TYPES = %w[fire motor liability general_accident bonds].freeze
+  
+  # Application statuses
+  STATUSES = %w[draft submitted under_review approved rejected].freeze
+
   belongs_to :organization
   belongs_to :client
   belongs_to :user
@@ -39,12 +45,6 @@ class InsuranceApplication < ApplicationRecord
   scope :approved, -> { where(status: 'approved') }
   scope :rejected, -> { where(status: 'rejected') }
   scope :recent, -> { order(created_at: :desc) }
-
-  # Insurance types
-  INSURANCE_TYPES = %w[fire motor liability general_accident bonds].freeze
-  
-  # Application statuses
-  STATUSES = %w[draft submitted under_review approved rejected].freeze
 
   # Insurance type configurations
   INSURANCE_TYPE_CONFIG = {

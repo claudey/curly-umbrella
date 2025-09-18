@@ -13,7 +13,7 @@ class ApiKey < ApplicationRecord
   scope :expired, -> { where('expires_at < ?', Time.current) }
   scope :not_expired, -> { where('expires_at IS NULL OR expires_at > ?', Time.current) }
 
-  enum access_level: {
+  enum :access_level, {
     read_only: 'read_only',
     read_write: 'read_write',
     admin: 'admin'

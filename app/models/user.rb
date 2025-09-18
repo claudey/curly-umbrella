@@ -15,6 +15,7 @@ class User < ApplicationRecord
   has_many :notifications, dependent: :destroy
   has_many :sms_logs, dependent: :destroy
   has_many :whatsapp_logs, dependent: :destroy
+  has_many :documents, dependent: :destroy
 
   # User roles
   enum :role, {
