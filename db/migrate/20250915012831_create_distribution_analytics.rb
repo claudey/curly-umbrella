@@ -9,11 +9,11 @@ class CreateDistributionAnalytics < ActiveRecord::Migration[8.0]
 
       t.timestamps
     end
-    
+
     add_index :distribution_analytics, :event_type
     add_index :distribution_analytics, :occurred_at
-    add_index :distribution_analytics, [:motor_application_id, :event_type]
-    add_index :distribution_analytics, [:insurance_company_id, :event_type]
-    add_index :distribution_analytics, [:occurred_at, :event_type]
+    add_index :distribution_analytics, [ :motor_application_id, :event_type ]
+    add_index :distribution_analytics, [ :insurance_company_id, :event_type ]
+    add_index :distribution_analytics, [ :occurred_at, :event_type ]
   end
 end

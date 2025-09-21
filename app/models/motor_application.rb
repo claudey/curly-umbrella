@@ -5,9 +5,9 @@ class MotorApplication < ApplicationRecord
 
   belongs_to :organization
   belongs_to :client
-  belongs_to :reviewed_by, class_name: 'User', optional: true
-  belongs_to :approved_by, class_name: 'User', optional: true
-  belongs_to :rejected_by, class_name: 'User', optional: true
+  belongs_to :reviewed_by, class_name: "User", optional: true
+  belongs_to :approved_by, class_name: "User", optional: true
+  belongs_to :rejected_by, class_name: "User", optional: true
 
   has_many :quotes, dependent: :destroy
   has_many :documents, as: :documentable, dependent: :destroy
@@ -19,8 +19,8 @@ class MotorApplication < ApplicationRecord
   validates :vehicle_year, numericality: { greater_than: 1900, less_than_or_equal_to: Date.current.year + 1 }
   validates :driver_license_number, :driver_license_expiry, presence: true
   validates :coverage_type, :coverage_start_date, :coverage_end_date, presence: true
-  validates :driver_has_claims, inclusion: { in: [true, false] }
-  
+  validates :driver_has_claims, inclusion: { in: [ true, false ] }
+
   validates :driver_claims_details, presence: true, if: :driver_has_claims?
   validates :rejection_reason, presence: true, if: :rejected?
   validates :sum_insured, :premium_amount, numericality: { greater_than: 0 }, allow_blank: true
@@ -34,10 +34,10 @@ class MotorApplication < ApplicationRecord
 
   scope :by_status, ->(status) { where(status: status) }
   scope :submitted, -> { where(status: %w[submitted under_review approved rejected]) }
-  scope :pending_review, -> { where(status: 'submitted') }
-  scope :under_review, -> { where(status: 'under_review') }
-  scope :approved, -> { where(status: 'approved') }
-  scope :rejected, -> { where(status: 'rejected') }
+  scope :pending_review, -> { where(status: "submitted") }
+  scope :under_review, -> { where(status: "under_review") }
+  scope :approved, -> { where(status: "approved") }
+  scope :rejected, -> { where(status: "rejected") }
   scope :recent, -> { order(created_at: :desc) }
 
   VEHICLE_CATEGORIES = %w[private commercial motorcycle truck].freeze
@@ -47,23 +47,23 @@ class MotorApplication < ApplicationRecord
   TRANSMISSION_TYPES = %w[manual automatic cvt].freeze
 
   def draft?
-    status == 'draft'
+    status == "draft"
   end
 
   def submitted?
-    status == 'submitted'
+    status == "submitted"
   end
 
   def under_review?
-    status == 'under_review'
+    status == "under_review"
   end
 
   def approved?
-    status == 'approved'
+    status == "approved"
   end
 
   def rejected?
-    status == 'rejected'
+    status == "rejected"
   end
 
   def can_edit?
@@ -83,10 +83,10 @@ class MotorApplication < ApplicationRecord
 
     transaction do
       update!(
-        status: 'submitted',
+        status: "submitted",
         submitted_at: Time.current
       )
-      
+
       # Send notification for new application
       NotificationService.new_application_submitted(self)
     end
@@ -96,16 +96,16 @@ class MotorApplication < ApplicationRecord
     return false unless can_review?
 
     old_status = status
-    
+
     transaction do
       update!(
-        status: 'under_review',
+        status: "under_review",
         reviewed_at: Time.current,
         reviewed_by: user
       )
-      
+
       # Send status update notification
-      NotificationService.application_status_updated(self, old_status, 'under_review')
+      NotificationService.application_status_updated(self, old_status, "under_review")
     end
   end
 
@@ -113,16 +113,16 @@ class MotorApplication < ApplicationRecord
     return false unless under_review?
 
     old_status = status
-    
+
     transaction do
       update!(
-        status: 'approved',
+        status: "approved",
         approved_at: Time.current,
         approved_by: user
       )
-      
+
       # Send status update notification
-      NotificationService.application_status_updated(self, old_status, 'approved')
+      NotificationService.application_status_updated(self, old_status, "approved")
     end
   end
 
@@ -130,28 +130,28 @@ class MotorApplication < ApplicationRecord
     return false unless under_review?
 
     old_status = status
-    
+
     transaction do
       update!(
-        status: 'rejected',
+        status: "rejected",
         rejected_at: Time.current,
         rejected_by: user,
         rejection_reason: reason
       )
-      
+
       # Send status update notification
-      NotificationService.application_status_updated(self, old_status, 'rejected')
+      NotificationService.application_status_updated(self, old_status, "rejected")
     end
   end
 
   def status_badge_class
     case status
-    when 'draft' then 'badge-ghost'
-    when 'submitted' then 'badge-info'
-    when 'under_review' then 'badge-warning'
-    when 'approved' then 'badge-success'
-    when 'rejected' then 'badge-error'
-    else 'badge-ghost'
+    when "draft" then "badge-ghost"
+    when "submitted" then "badge-info"
+    when "under_review" then "badge-warning"
+    when "approved" then "badge-success"
+    when "rejected" then "badge-error"
+    else "badge-ghost"
     end
   end
 
@@ -201,7 +201,7 @@ class MotorApplication < ApplicationRecord
     last_number = organization.motor_applications
                              .where("application_number LIKE ?", "#{prefix}%")
                              .maximum(:application_number)&.slice(-4..-1)&.to_i || 0
-    
+
     self.application_number = "#{prefix}#{(last_number + 1).to_s.rjust(4, '0')}"
   end
 
@@ -214,13 +214,13 @@ class MotorApplication < ApplicationRecord
   def coverage_end_date_after_start_date
     return unless coverage_start_date && coverage_end_date
 
-    errors.add(:coverage_end_date, 'must be after start date') if coverage_end_date <= coverage_start_date
+    errors.add(:coverage_end_date, "must be after start date") if coverage_end_date <= coverage_start_date
   end
 
   def driver_license_not_expired
     return unless driver_license_expiry
 
-    errors.add(:driver_license_expiry, 'cannot be in the past') if driver_license_expiry < Date.current
+    errors.add(:driver_license_expiry, "cannot be in the past") if driver_license_expiry < Date.current
   end
 
   def valid_for_submission?

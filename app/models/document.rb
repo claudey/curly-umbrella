@@ -1,7 +1,7 @@
 class Document < ApplicationRecord
   include Discard::Model
   acts_as_tenant :organization
-  audited except: [:checksum, :file_size]
+  audited except: [ :checksum, :file_size ]
 
   # Document type constants
   DOCUMENT_TYPES = %w[
@@ -39,23 +39,23 @@ class Document < ApplicationRecord
   belongs_to :organization
   belongs_to :user
   belongs_to :documentable, polymorphic: true
-  belongs_to :archived_by, class_name: 'User', optional: true
+  belongs_to :archived_by, class_name: "User", optional: true
 
   has_one_attached :file
-  
+
   validates :name, presence: true
   validates :document_type, presence: true, inclusion: { in: DOCUMENT_TYPES }
   validates :version, presence: true, numericality: { greater_than: 0 }
   validates :access_level, presence: true, inclusion: { in: ACCESS_LEVELS }
   validates :category, inclusion: { in: CATEGORIES }, allow_blank: true
-  
+
   validate :file_attachment_required
   validate :expires_at_in_future, if: :expires_at?
 
   before_save :set_file_metadata, if: :file_attached?
   before_save :set_checksum, if: :file_attached?
-  after_commit :ensure_single_current_version, on: [:create, :update]
-  
+  after_commit :ensure_single_current_version, on: [ :create, :update ]
+
   # Notification callbacks
   after_create_commit :notify_document_uploaded
   after_update_commit :notify_document_updated, if: :should_notify_update?
@@ -70,7 +70,7 @@ class Document < ApplicationRecord
   scope :by_type, ->(type) { where(document_type: type) }
   scope :expiring_soon, ->(days = 30) { where(expires_at: Time.current..days.days.from_now) }
   scope :expired, -> { where(expires_at: ...Time.current) }
-  scope :by_tags, ->(tags) { where('tags && ARRAY[?]', Array(tags)) }
+  scope :by_tags, ->(tags) { where("tags && ARRAY[?]", Array(tags)) }
   scope :recent, -> { order(created_at: :desc) }
 
 
@@ -94,17 +94,17 @@ class Document < ApplicationRecord
   end
 
   def human_file_size
-    return 'Unknown' unless file_size
-    
-    units = ['B', 'KB', 'MB', 'GB', 'TB']
+    return "Unknown" unless file_size
+
+    units = [ "B", "KB", "MB", "GB", "TB" ]
     size = file_size.to_f
     unit_index = 0
-    
+
     while size >= 1024 && unit_index < units.length - 1
       size /= 1024
       unit_index += 1
     end
-    
+
     "#{size.round(1)} #{units[unit_index]}"
   end
 
@@ -118,11 +118,11 @@ class Document < ApplicationRecord
 
   def can_be_viewed_by?(user)
     case access_level
-    when 'public'
+    when "public"
       true
-    when 'organization'
+    when "organization"
       user.organization_id == organization_id
-    when 'private'
+    when "private"
       user == self.user || user.can_manage_organization?(organization)
     else
       false
@@ -141,7 +141,7 @@ class Document < ApplicationRecord
 
   def archive!(user, reason = nil)
     return false if is_archived?
-    
+
     transaction do
       update!(
         is_archived: true,
@@ -154,7 +154,7 @@ class Document < ApplicationRecord
 
   def restore!(user)
     return false unless is_archived?
-    
+
     transaction do
       update!(
         is_archived: false,
@@ -173,7 +173,7 @@ class Document < ApplicationRecord
         document_type: document_type,
         name: name
       ).update_all(is_current: false)
-      
+
       # Create new version
       new_document = self.class.create!(
         name: name,
@@ -195,7 +195,7 @@ class Document < ApplicationRecord
         is_current: true,
         metadata: attributes[:metadata] || {}
       )
-      
+
       new_document.file.attach(new_file)
       new_document
     end
@@ -210,44 +210,44 @@ class Document < ApplicationRecord
   end
 
   def previous_version
-    version_history.where('version < ?', version).first
+    version_history.where("version < ?", version).first
   end
 
   def next_version
-    version_history.where('version > ?', version).first
+    version_history.where("version > ?", version).first
   end
 
   def is_image?
     return false unless content_type
-    content_type.start_with?('image/')
+    content_type.start_with?("image/")
   end
 
   def is_pdf?
-    content_type == 'application/pdf'
+    content_type == "application/pdf"
   end
 
   def is_text?
     return false unless content_type
-    content_type.start_with?('text/') || 
+    content_type.start_with?("text/") ||
     %w[application/json application/xml].include?(content_type)
   end
 
   def icon_class
     case content_type
     when /^image\//
-      'ph-image'
-    when 'application/pdf'
-      'ph-file-pdf'
-    when /^text\//, 'application/json', 'application/xml'
-      'ph-file-text'
+      "ph-image"
+    when "application/pdf"
+      "ph-file-pdf"
+    when /^text\//, "application/json", "application/xml"
+      "ph-file-text"
     when /excel/, /spreadsheet/
-      'ph-file-xls'
+      "ph-file-xls"
     when /word/, /document/
-      'ph-file-doc'
+      "ph-file-doc"
     when /zip/, /compressed/
-      'ph-file-zip'
+      "ph-file-zip"
     else
-      'ph-file'
+      "ph-file"
     end
   end
 
@@ -277,30 +277,30 @@ class Document < ApplicationRecord
 
   def set_file_metadata
     return unless file_attached?
-    
+
     self.file_size = file.blob.byte_size
     self.content_type = file.blob.content_type
   end
 
   def set_checksum
     return unless file_attached?
-    
+
     self.checksum = file.blob.checksum
   end
 
   def file_attachment_required
-    errors.add(:file, 'must be attached') unless file_attached?
+    errors.add(:file, "must be attached") unless file_attached?
   end
 
   def expires_at_in_future
     return unless expires_at
-    
-    errors.add(:expires_at, 'must be in the future') if expires_at <= Time.current
+
+    errors.add(:expires_at, "must be in the future") if expires_at <= Time.current
   end
 
   def ensure_single_current_version
     return unless is_current? && saved_change_to_is_current?
-    
+
     # Ensure only one current version exists for the same document
     self.class.where(
       documentable: documentable,

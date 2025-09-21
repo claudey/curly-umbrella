@@ -1,6 +1,6 @@
 module AuthorizationHelper
   # UI authorization helpers for views
-  
+
   def show_if_authorized(action, resource = nil, context = {}, &block)
     if can?(action, resource, context)
       capture(&block) if block_given?
@@ -43,11 +43,11 @@ module AuthorizationHelper
   end
 
   def show_for_admins(&block)
-    show_for_roles('super_admin', 'admin', &block)
+    show_for_roles("super_admin", "admin", &block)
   end
 
   def show_for_super_admin(&block)
-    show_for_roles('super_admin', &block)
+    show_for_roles("super_admin", &block)
   end
 
   def show_for_minimum_level(level, &block)
@@ -110,7 +110,7 @@ module AuthorizationHelper
     if can?(action, resource, context)
       active_class = current_page?(path) ? "active" : ""
       css_classes = "#{html_options[:class]} #{active_class}".strip
-      
+
       content_tag(:li, class: css_classes) do
         link_to(name, path, html_options.except(:class))
       end
@@ -152,10 +152,10 @@ module AuthorizationHelper
   # Status badge helpers with authorization
   def status_badge_with_actions(resource, status_field = :status)
     current_status = resource.public_send(status_field)
-    
+
     content_tag(:div, class: "flex items-center space-x-2") do
       concat(content_tag(:span, current_status.humanize, class: "badge badge-#{status_color(current_status)}"))
-      
+
       # Show status change buttons if authorized
       if can?(:update, resource)
         available_transitions = status_transitions_for(resource, status_field)
@@ -221,7 +221,7 @@ module AuthorizationHelper
               "Export #{format.upcase}",
               export_path(resource_type, format: format),
               class: "btn btn-outline btn-sm",
-              data: { 
+              data: {
                 turbo_method: :post,
                 confirm: "Export #{resource_type.to_s.humanize} data as #{format.upcase}?"
               }
@@ -237,21 +237,21 @@ module AuthorizationHelper
     return if selected_ids.empty?
 
     authorized_actions = []
-    authorized_actions << { name: 'Delete', action: :destroy, class: 'btn-error' } if can?(:destroy, resource_type)
-    authorized_actions << { name: 'Archive', action: :archive, class: 'btn-warning' } if can?(:archive, resource_type)
-    authorized_actions << { name: 'Export', action: :export, class: 'btn-info' } if can?(:export, resource_type)
+    authorized_actions << { name: "Delete", action: :destroy, class: "btn-error" } if can?(:destroy, resource_type)
+    authorized_actions << { name: "Archive", action: :archive, class: "btn-warning" } if can?(:archive, resource_type)
+    authorized_actions << { name: "Export", action: :export, class: "btn-info" } if can?(:export, resource_type)
 
     return if authorized_actions.empty?
 
     content_tag(:div, class: "bulk-actions") do
       form_with url: bulk_action_path(resource_type), method: :patch, local: true do |form|
-        concat(form.hidden_field :selected_ids, value: selected_ids.join(','))
-        
+        concat(form.hidden_field :selected_ids, value: selected_ids.join(","))
+
         authorized_actions.each do |action|
           concat(
             form.submit(
               action[:name],
-              name: 'bulk_action',
+              name: "bulk_action",
               value: action[:action],
               class: "btn btn-sm #{action[:class]}",
               data: { confirm: "Are you sure you want to #{action[:name].downcase} #{selected_ids.size} items?" }
@@ -266,19 +266,19 @@ module AuthorizationHelper
 
   def status_color(status)
     case status.to_s.downcase
-    when 'active', 'approved', 'completed' then 'success'
-    when 'pending', 'draft', 'in_review' then 'warning'
-    when 'rejected', 'cancelled', 'expired' then 'error'
-    else 'info'
+    when "active", "approved", "completed" then "success"
+    when "pending", "draft", "in_review" then "warning"
+    when "rejected", "cancelled", "expired" then "error"
+    else "info"
     end
   end
 
   def status_transitions_for(resource, status_field)
     # This would be customized per resource type
     case resource.class.name
-    when 'Application'
+    when "Application"
       application_status_transitions(resource)
-    when 'Quote'
+    when "Quote"
       quote_status_transitions(resource)
     else
       []
@@ -288,11 +288,11 @@ module AuthorizationHelper
   def application_status_transitions(application)
     transitions = []
     case application.status
-    when 'draft'
-      transitions << { label: 'Submit', path: submit_application_path(application), class: 'btn-primary', confirm: 'Submit application?' }
-    when 'submitted'
-      transitions << { label: 'Approve', path: approve_application_path(application), class: 'btn-success', confirm: 'Approve application?' } if can?(:approve, application)
-      transitions << { label: 'Reject', path: reject_application_path(application), class: 'btn-error', confirm: 'Reject application?' } if can?(:reject, application)
+    when "draft"
+      transitions << { label: "Submit", path: submit_application_path(application), class: "btn-primary", confirm: "Submit application?" }
+    when "submitted"
+      transitions << { label: "Approve", path: approve_application_path(application), class: "btn-success", confirm: "Approve application?" } if can?(:approve, application)
+      transitions << { label: "Reject", path: reject_application_path(application), class: "btn-error", confirm: "Reject application?" } if can?(:reject, application)
     end
     transitions
   end
@@ -300,11 +300,11 @@ module AuthorizationHelper
   def quote_status_transitions(quote)
     transitions = []
     case quote.status
-    when 'draft'
-      transitions << { label: 'Send', path: send_quote_path(quote), class: 'btn-primary', confirm: 'Send quote to client?' }
-    when 'sent'
-      transitions << { label: 'Accept', path: accept_quote_path(quote), class: 'btn-success', confirm: 'Accept quote?' } if can?(:accept, quote)
-      transitions << { label: 'Decline', path: decline_quote_path(quote), class: 'btn-error', confirm: 'Decline quote?' } if can?(:decline, quote)
+    when "draft"
+      transitions << { label: "Send", path: send_quote_path(quote), class: "btn-primary", confirm: "Send quote to client?" }
+    when "sent"
+      transitions << { label: "Accept", path: accept_quote_path(quote), class: "btn-success", confirm: "Accept quote?" } if can?(:accept, quote)
+      transitions << { label: "Decline", path: decline_quote_path(quote), class: "btn-error", confirm: "Decline quote?" } if can?(:decline, quote)
     end
     transitions
   end

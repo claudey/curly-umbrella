@@ -33,7 +33,7 @@ class Ui::ResponsiveLayoutComponent < ViewComponent::Base
   attr_reader :layout, :container, :padding, :mobile_navigation, :breakpoint, :additional_classes, :options
 
   def wrapper_classes
-    base_classes = ["min-h-screen", "bg-neutral-50"]
+    base_classes = [ "min-h-screen", "bg-neutral-50" ]
     base_classes << container_classes if container
     base_classes << additional_classes if additional_classes
     base_classes.join(" ")
@@ -51,34 +51,34 @@ class Ui::ResponsiveLayoutComponent < ViewComponent::Base
   end
 
   def layout_classes
-    base_classes = ["flex", "flex-col", "min-h-screen"]
-    
+    base_classes = [ "flex", "flex-col", "min-h-screen" ]
+
     case layout
     when "sidebar_left"
-      base_classes = ["flex", "min-h-screen"]
+      base_classes = [ "flex", "min-h-screen" ]
       base_classes << "flex-col #{breakpoint}:flex-row"
     when "sidebar_right"
-      base_classes = ["flex", "min-h-screen"]
+      base_classes = [ "flex", "min-h-screen" ]
       base_classes << "flex-col #{breakpoint}:flex-row-reverse"
     when "dashboard"
       base_classes << "#{breakpoint}:grid #{breakpoint}:grid-cols-12 #{breakpoint}:gap-6"
     when "mobile_stack"
-      base_classes = ["flex", "flex-col", "space-y-4"]
+      base_classes = [ "flex", "flex-col", "space-y-4" ]
     end
 
     base_classes.join(" ")
   end
 
   def header_classes
-    base_classes = ["bg-white", "shadow-sm", "border-b", "border-neutral-200"]
+    base_classes = [ "bg-white", "shadow-sm", "border-b", "border-neutral-200" ]
     base_classes << "sticky top-0 z-40" unless layout == "mobile_stack"
     base_classes << (padding ? "p-4 #{breakpoint}:p-6" : "")
     base_classes.join(" ")
   end
 
   def sidebar_classes
-    base_classes = ["bg-white", "border-neutral-200"]
-    
+    base_classes = [ "bg-white", "border-neutral-200" ]
+
     case layout
     when "sidebar_left"
       base_classes << "border-r w-full #{breakpoint}:w-64 #{breakpoint}:flex-shrink-0"
@@ -95,8 +95,8 @@ class Ui::ResponsiveLayoutComponent < ViewComponent::Base
   end
 
   def main_classes
-    base_classes = ["flex-1", "bg-white"]
-    
+    base_classes = [ "flex-1", "bg-white" ]
+
     case layout
     when "sidebar_left", "sidebar_right"
       base_classes << "#{breakpoint}:overflow-y-auto"
@@ -109,7 +109,7 @@ class Ui::ResponsiveLayoutComponent < ViewComponent::Base
   end
 
   def footer_classes
-    base_classes = ["bg-white", "border-t", "border-neutral-200", "mt-auto"]
+    base_classes = [ "bg-white", "border-t", "border-neutral-200", "mt-auto" ]
     base_classes << (padding ? "p-4 #{breakpoint}:p-6" : "")
     base_classes.join(" ")
   end

@@ -1,5 +1,5 @@
 class NotificationMailer < ApplicationMailer
-  default from: 'noreply@brokersync.com'
+  default from: "noreply@brokersync.com"
 
   def new_application_notification(user, application)
     @user = user

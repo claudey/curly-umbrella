@@ -5,7 +5,7 @@ RSpec.describe BusinessMetricsService, type: :service do
   let(:user) { create(:user, organization: organization) }
   let(:client) { create(:client, organization: organization) }
   let(:insurance_company) { create(:insurance_company, organization: organization) }
-  
+
   before { ActsAsTenant.current_tenant = organization }
   after { ActsAsTenant.current_tenant = nil }
 
@@ -14,7 +14,7 @@ RSpec.describe BusinessMetricsService, type: :service do
       # Create test data
       create_list(:insurance_application, 3, :submitted, organization: organization, user: user, client: client, created_at: 1.day.ago)
       create_list(:insurance_application, 2, :approved, organization: organization, user: user, client: client, created_at: 1.day.ago)
-      
+
       # Create quotes
       application = create(:insurance_application, :approved, organization: organization, user: user, client: client)
       create_list(:quote, 2, :accepted, insurance_application: application, organization: organization, insurance_company: insurance_company, user: user, total_premium: 1000, created_at: 1.day.ago)
@@ -22,11 +22,11 @@ RSpec.describe BusinessMetricsService, type: :service do
 
     it 'collects all business metrics for the organization' do
       metrics = BusinessMetricsService.collect_all_metrics(organization)
-      
+
       expect(metrics).to be_a(Hash)
       expect(metrics.keys).to include(
         :total_applications,
-        :pending_applications, 
+        :pending_applications,
         :approved_applications,
         :total_quotes,
         :accepted_quotes,
@@ -169,7 +169,7 @@ RSpec.describe BusinessMetricsService, type: :service do
     before do
       # Create applications
       create_list(:insurance_application, 10, organization: organization, user: user, client: client)
-      
+
       # Create accepted quotes for 3 applications
       3.times do
         application = create(:insurance_application, organization: organization, user: user, client: client)
@@ -306,7 +306,7 @@ RSpec.describe BusinessMetricsService, type: :service do
     it 'handles nil values gracefully' do
       # Create application without submitted_at
       create(:insurance_application, organization: organization, user: user, client: client, submitted_at: nil)
-      
+
       expect { BusinessMetricsService.calculate_application_processing_time(organization) }.not_to raise_error
     end
   end
@@ -323,7 +323,7 @@ RSpec.describe BusinessMetricsService, type: :service do
       result_all = BusinessMetricsService.calculate_total_applications(organization)
       result_30d = BusinessMetricsService.calculate_total_applications(organization, 30.days.ago)
       result_7d = BusinessMetricsService.calculate_total_applications(organization, 7.days.ago)
-      
+
       expect(result_all).to eq(3)
       expect(result_30d).to eq(2)
       expect(result_7d).to eq(1)
@@ -334,11 +334,11 @@ RSpec.describe BusinessMetricsService, type: :service do
     it 'executes efficiently with large datasets' do
       # Create larger dataset
       create_list(:insurance_application, 100, organization: organization, user: user, client: client)
-      
+
       start_time = Time.current
       BusinessMetricsService.collect_all_metrics(organization)
       execution_time = Time.current - start_time
-      
+
       # Should complete within reasonable time (adjust threshold as needed)
       expect(execution_time).to be < 2.seconds
     end

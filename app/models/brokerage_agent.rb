@@ -6,7 +6,7 @@ class BrokerageAgent < ApplicationRecord
   belongs_to :organization
 
   validates :role, presence: true, inclusion: { in: %w[agent senior_agent team_lead manager] }
-  validates :active, inclusion: { in: [true, false] }
+  validates :active, inclusion: { in: [ true, false ] }
   validates :join_date, presence: true
   validates :user_id, uniqueness: { scope: :organization_id }
 

@@ -8,7 +8,7 @@ Rails.application.routes.draw do
       post :new_version
       get :generate_pdf
     end
-    
+
     collection do
       get :archived
       get :expiring
@@ -40,13 +40,13 @@ Rails.application.routes.draw do
     get "roles/destroy"
     get "roles/assign_permissions"
     get "roles/revoke_permissions"
-    
+
     resources :organizations do
       member do
         patch :activate
         patch :deactivate
       end
-      
+
       collection do
         get :analytics
       end
@@ -54,26 +54,26 @@ Rails.application.routes.draw do
 
     # Security Dashboard routes
     scope :security_dashboard, as: :security_dashboard do
-      get '/', to: 'security_dashboard#index', as: :index
-      get '/alerts', to: 'security_dashboard#alerts', as: :alerts
-      get '/ip_blocks', to: 'security_dashboard#ip_blocks', as: :ip_blocks
-      get '/rate_limits', to: 'security_dashboard#rate_limits', as: :rate_limits
-      get '/audit_logs', to: 'security_dashboard#audit_logs', as: :audit_logs
-      get '/metrics_api', to: 'security_dashboard#metrics_api', as: :metrics_api
-      
-      patch '/block_ip', to: 'security_dashboard#block_ip', as: :block_ip
-      patch '/unblock_ip', to: 'security_dashboard#unblock_ip', as: :unblock_ip
-      patch '/whitelist_ip', to: 'security_dashboard#whitelist_ip', as: :whitelist_ip
-      patch '/resolve_alert/:id', to: 'security_dashboard#resolve_alert', as: :resolve_alert
-      patch '/dismiss_alert/:id', to: 'security_dashboard#dismiss_alert', as: :dismiss_alert
+      get "/", to: "security_dashboard#index", as: :index
+      get "/alerts", to: "security_dashboard#alerts", as: :alerts
+      get "/ip_blocks", to: "security_dashboard#ip_blocks", as: :ip_blocks
+      get "/rate_limits", to: "security_dashboard#rate_limits", as: :rate_limits
+      get "/audit_logs", to: "security_dashboard#audit_logs", as: :audit_logs
+      get "/metrics_api", to: "security_dashboard#metrics_api", as: :metrics_api
+
+      patch "/block_ip", to: "security_dashboard#block_ip", as: :block_ip
+      patch "/unblock_ip", to: "security_dashboard#unblock_ip", as: :unblock_ip
+      patch "/whitelist_ip", to: "security_dashboard#whitelist_ip", as: :whitelist_ip
+      patch "/resolve_alert/:id", to: "security_dashboard#resolve_alert", as: :resolve_alert
+      patch "/dismiss_alert/:id", to: "security_dashboard#dismiss_alert", as: :dismiss_alert
     end
-    
+
     # Feature Flag Management routes
     resources :feature_flags do
       member do
         patch :toggle
       end
-      
+
       collection do
         patch :bulk_toggle
         get :export
@@ -103,21 +103,21 @@ Rails.application.routes.draw do
       patch :withdraw
       get :print
     end
-    
+
     collection do
       get :pending
       get :expiring_soon
       get :compare
     end
   end
-  resources :notifications, only: [:index, :show, :update] do
+  resources :notifications, only: [ :index, :show, :update ] do
     collection do
       get :unread_count
       patch :mark_all_as_read
     end
   end
-  
-  resource :notification_preferences, only: [:show, :update]
+
+  resource :notification_preferences, only: [ :show, :update ]
   resources :motor_applications do
     member do
       patch :submit_application
@@ -128,18 +128,18 @@ Rails.application.routes.draw do
     end
   end
   devise_for :users, controllers: {
-    sessions: 'users/sessions',
-    registrations: 'users/registrations',
-    passwords: 'users/passwords'
+    sessions: "users/sessions",
+    registrations: "users/registrations",
+    passwords: "users/passwords"
   }
-  
+
   # Session management routes
-  get '/sessions/manage', to: 'users/sessions#manage_sessions', as: :manage_sessions
-  delete '/sessions/terminate_others', to: 'users/sessions#terminate_other_sessions', as: :terminate_other_sessions
-  delete '/sessions/:session_id', to: 'users/sessions#terminate_session', as: :terminate_session
-  
+  get "/sessions/manage", to: "users/sessions#manage_sessions", as: :manage_sessions
+  delete "/sessions/terminate_others", to: "users/sessions#terminate_other_sessions", as: :terminate_other_sessions
+  delete "/sessions/:session_id", to: "users/sessions#terminate_session", as: :terminate_session
+
   # Multi-factor authentication routes
-  resource :mfa, only: [:show] do
+  resource :mfa, only: [ :show ] do
     member do
       get :setup
       post :enable
@@ -148,28 +148,28 @@ Rails.application.routes.draw do
       post :regenerate_backup_codes
     end
   end
-  
-  resources :mfa_verifications, only: [:new, :create] do
+
+  resources :mfa_verifications, only: [ :new, :create ] do
     collection do
       get :backup_codes
     end
   end
-  
+
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
-  
+
   # Favicon route to prevent 404 errors
-  get '/favicon.ico', to: proc { [204, {}, []] }
+  get "/favicon.ico", to: proc { [ 204, {}, [] ] }
 
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   # Audit logging routes
-  resources :audits, only: [:index, :show] do
+  resources :audits, only: [ :index, :show ] do
     collection do
       get :dashboard
       get :export
@@ -181,10 +181,10 @@ Rails.application.routes.draw do
   scope :security, controller: :security do
     get :dashboard, as: :security_dashboard
     get :alerts, as: :security_alerts
-    get 'alerts/:id', action: :alert_details, as: :security_alert_details
-    patch 'alerts/:id/resolve', action: :resolve_alert, as: :resolve_security_alert
-    patch 'alerts/:id/dismiss', action: :dismiss_alert, as: :dismiss_security_alert
-    patch 'alerts/:id/investigate', action: :investigate_alert, as: :investigate_security_alert
+    get "alerts/:id", action: :alert_details, as: :security_alert_details
+    patch "alerts/:id/resolve", action: :resolve_alert, as: :resolve_security_alert
+    patch "alerts/:id/dismiss", action: :dismiss_alert, as: :dismiss_security_alert
+    patch "alerts/:id/investigate", action: :investigate_alert, as: :investigate_security_alert
     get :blocked_ips, as: :security_blocked_ips
     post :block_ip, as: :security_block_ip
     delete :unblock_ip, as: :security_unblock_ip
@@ -193,32 +193,32 @@ Rails.application.routes.draw do
     patch :settings, action: :update_security_settings
     get :export_report, action: :export_security_report, as: :export_security_report
   end
-  
+
   # API routes
   namespace :api do
     namespace :v1 do
-      resources :applications, except: [:destroy] do
+      resources :applications, except: [ :destroy ] do
         member do
           post :submit
           get :documents
           get :quotes
         end
       end
-      
-      resources :quotes, except: [:destroy] do
+
+      resources :quotes, except: [ :destroy ] do
         member do
           post :accept
           post :generate_pdf
         end
       end
-      
+
       resources :webhooks do
         member do
           post :test
           get :deliveries
         end
       end
-      
+
       resources :analytics, only: [] do
         collection do
           get :usage
@@ -229,12 +229,12 @@ Rails.application.routes.draw do
           get :trends
         end
       end
-      
+
       resources :feature_flags do
         member do
           post :toggle
         end
-        
+
         collection do
           get :check
           get :health
@@ -245,32 +245,32 @@ Rails.application.routes.draw do
       end
     end
   end
-  
+
   # Executive Dashboard routes
   scope :executive, as: :executive_dashboard do
-    get '/', to: 'executive_dashboard#index', as: :index
-    get '/analytics', to: 'executive_dashboard#analytics', as: :analytics
-    get '/trends', to: 'executive_dashboard#trends', as: :trends
-    get '/forecasting', to: 'executive_dashboard#forecasting', as: :forecasting
-    get '/performance', to: 'executive_dashboard#performance', as: :performance
-    get '/reports/:id', to: 'executive_dashboard#reports', as: :report
-    get '/live_metrics', to: 'executive_dashboard#live_metrics', as: :live_metrics
-    get '/export', to: 'executive_dashboard#export_dashboard', as: :export
-    
-    post '/reports', to: 'executive_dashboard#create_report', as: :create_report
-    post '/reports/:id/generate', to: 'executive_dashboard#generate_report', as: :generate_report
+    get "/", to: "executive_dashboard#index", as: :index
+    get "/analytics", to: "executive_dashboard#analytics", as: :analytics
+    get "/trends", to: "executive_dashboard#trends", as: :trends
+    get "/forecasting", to: "executive_dashboard#forecasting", as: :forecasting
+    get "/performance", to: "executive_dashboard#performance", as: :performance
+    get "/reports/:id", to: "executive_dashboard#reports", as: :report
+    get "/live_metrics", to: "executive_dashboard#live_metrics", as: :live_metrics
+    get "/export", to: "executive_dashboard#export_dashboard", as: :export
+
+    post "/reports", to: "executive_dashboard#create_report", as: :create_report
+    post "/reports/:id/generate", to: "executive_dashboard#generate_report", as: :generate_report
   end
-  
+
   # API Documentation routes
   scope :developers, as: :developers do
-    get '/', to: 'api_docs#index', as: :api_docs
-    get '/playground', to: 'api_docs#playground', as: :api_playground
-    post '/try', to: 'api_docs#try_endpoint', as: :try_api_endpoint
-    post '/code-example', to: 'api_docs#generate_code_example', as: :generate_code_example
-    get '/postman', to: 'api_docs#download_postman_collection', as: :download_postman_collection
-    get '/openapi', to: 'api_docs#download_openapi_spec', as: :download_openapi_spec
+    get "/", to: "api_docs#index", as: :api_docs
+    get "/playground", to: "api_docs#playground", as: :api_playground
+    post "/try", to: "api_docs#try_endpoint", as: :try_api_endpoint
+    post "/code-example", to: "api_docs#generate_code_example", as: :generate_code_example
+    get "/postman", to: "api_docs#download_postman_collection", as: :download_postman_collection
+    get "/openapi", to: "api_docs#download_openapi_spec", as: :download_openapi_spec
   end
-  
+
   # Root route
   root "home#index"
 end

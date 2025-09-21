@@ -54,7 +54,7 @@ class Ui::BadgeComponent < ViewComponent::Base
     additional_classes_array << "cursor-pointer hover:opacity-80" if href
     additional_classes_array << additional_classes if additional_classes
 
-    [base_classes, *additional_classes_array].compact.join(" ")
+    [ base_classes, *additional_classes_array ].compact.join(" ")
   end
 
   def icon_size

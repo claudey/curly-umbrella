@@ -20,9 +20,9 @@ module ApplicationCable
     def session_user_id
       # Extract user ID from session or cookies
       # This depends on how Devise stores the user session
-      session['warden.user.user.key']&.dig(0, 0) ||
-      cookies.encrypted['user_id'] ||
-      request.session['user_id']
+      session["warden.user.user.key"]&.dig(0, 0) ||
+      cookies.encrypted["user_id"] ||
+      request.session["user_id"]
     end
   end
 end

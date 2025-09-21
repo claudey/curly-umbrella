@@ -68,18 +68,18 @@ class Ui::InputComponent < ViewComponent::Base
     additional_classes_array << "pr-10" if icon_right?
     additional_classes_array << additional_classes if additional_classes
 
-    [base_classes, *additional_classes_array].compact.join(" ")
+    [ base_classes, *additional_classes_array ].compact.join(" ")
   end
 
   def wrapper_classes
-    classes = ["relative"]
+    classes = [ "relative" ]
     classes << "opacity-50" if disabled
     classes.join(" ")
   end
 
   def label_classes
     base_classes = "block text-sm font-medium mb-1"
-    
+
     case state
     when "error"
       "#{base_classes} text-error-700"
@@ -94,7 +94,7 @@ class Ui::InputComponent < ViewComponent::Base
 
   def hint_classes
     base_classes = "mt-1 text-xs"
-    
+
     case state
     when "error"
       "#{base_classes} text-error-600"
@@ -108,7 +108,7 @@ class Ui::InputComponent < ViewComponent::Base
   def icon_classes
     base_classes = "absolute top-1/2 transform -translate-y-1/2 pointer-events-none"
     position_classes = icon_left? ? "left-3" : "right-3"
-    
+
     color_classes = case state
     when "error" then "text-error-500"
     when "success" then "text-success-500"

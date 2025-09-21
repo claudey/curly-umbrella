@@ -1,21 +1,21 @@
 module AuthorizationController
   extend ActiveSupport::Concern
-  
+
   included do
     include Authorizable
-    
+
     before_action :set_current_user
     before_action :ensure_authenticated
-    
+
     rescue_from AuthorizationError, with: :handle_authorization_error
     rescue_from ActiveRecord::RecordNotFound, with: :handle_not_found
   end
 
   class_methods do
     def authorize_resource(action_map = {})
-      before_action :authorize_resource_access, except: [:index, :show]
-      before_action :authorize_specific_resource, only: [:show, :edit, :update, :destroy]
-      
+      before_action :authorize_resource_access, except: [ :index, :show ]
+      before_action :authorize_specific_resource, only: [ :show, :edit, :update, :destroy ]
+
       # Store action mapping for this controller
       class_variable_set(:@@resource_action_map, action_map)
     end
@@ -52,9 +52,9 @@ module AuthorizationController
 
   def current_user_from_api
     # API key or JWT authentication
-    return nil unless request.headers['Authorization'].present?
-    
-    token = request.headers['Authorization'].split(' ').last
+    return nil unless request.headers["Authorization"].present?
+
+    token = request.headers["Authorization"].split(" ").last
     authenticate_via_api_key(token) || authenticate_via_jwt(token)
   end
 
@@ -88,21 +88,21 @@ module AuthorizationController
 
   def handle_unauthenticated_request
     if request.format.json? || api_request?
-      render json: { error: 'Authentication required' }, status: :unauthorized
+      render json: { error: "Authentication required" }, status: :unauthorized
     else
-      redirect_to new_user_session_path, alert: 'Please sign in to continue'
+      redirect_to new_user_session_path, alert: "Please sign in to continue"
     end
   end
 
   def api_request?
-    request.path.start_with?('/api/') || request.headers['Authorization'].present?
+    request.path.start_with?("/api/") || request.headers["Authorization"].present?
   end
 
   # Resource authorization methods
   def authorize_resource_access
     resource_class = controller_name.classify.constantize
     action = action_for_authorization
-    
+
     authorize!(action, resource_class, authorization_context)
   rescue NameError
     # Controller doesn't have a corresponding model, skip authorization
@@ -112,7 +112,7 @@ module AuthorizationController
   def authorize_specific_resource
     resource = find_resource_for_authorization
     return unless resource
-    
+
     action = action_for_authorization
     authorize!(action, resource, authorization_context)
   end
@@ -120,9 +120,9 @@ module AuthorizationController
   def find_resource_for_authorization
     resource_class = controller_name.classify.constantize
     resource_id = params[:id] || params["#{controller_name.singularize}_id"]
-    
+
     return nil unless resource_id
-    
+
     if resource_class.respond_to?(:with_discarded)
       resource_class.with_discarded.find(resource_id)
     else
@@ -168,11 +168,11 @@ module AuthorizationController
   end
 
   def require_admin
-    require_any_role('super_admin', 'admin')
+    require_any_role("super_admin", "admin")
   end
 
   def require_super_admin
-    require_any_role('super_admin')
+    require_any_role("super_admin")
   end
 
   def require_organization_admin
@@ -194,7 +194,7 @@ module AuthorizationController
 
     organization = Organization.find(org_id)
     authorize_organization_access!(organization)
-    
+
     @current_organization = organization
   end
 
@@ -204,18 +204,18 @@ module AuthorizationController
 
   def set_tenant_for_organization
     return unless current_organization
-    
+
     ActsAsTenant.current_tenant = current_organization
   end
 
   # Error handling
   def handle_authorization_error(exception)
     log_authorization_failure(exception)
-    
+
     if request.format.json? || api_request?
-      render json: { 
-        error: 'Access Denied', 
-        message: exception.message 
+      render json: {
+        error: "Access Denied",
+        message: exception.message
       }, status: :forbidden
     else
       redirect_back(
@@ -227,19 +227,19 @@ module AuthorizationController
 
   def handle_not_found(exception)
     if request.format.json? || api_request?
-      render json: { 
-        error: 'Not Found', 
-        message: 'The requested resource was not found' 
+      render json: {
+        error: "Not Found",
+        message: "The requested resource was not found"
       }, status: :not_found
     else
-      redirect_to root_path, alert: 'The requested page was not found'
+      redirect_to root_path, alert: "The requested page was not found"
     end
   end
 
   def log_authorization_failure(exception)
     AuditLog.log_authorization(
       current_user,
-      'authorization_failed',
+      "authorization_failed",
       {
         controller: controller_name,
         action: action_name,
@@ -247,7 +247,7 @@ module AuthorizationController
         ip_address: request.remote_ip,
         user_agent: request.user_agent,
         requested_url: request.url,
-        severity: 'warning'
+        severity: "warning"
       }
     )
   end
@@ -272,10 +272,10 @@ module AuthorizationController
   # Bulk operations authorization
   def authorize_bulk_action(action, resource_class, selected_ids)
     return if selected_ids.empty?
-    
+
     # Check general permission
     authorize!(action, resource_class)
-    
+
     # Check each specific resource
     resources = resource_class.where(id: selected_ids)
     resources.find_each do |resource|
@@ -286,16 +286,16 @@ module AuthorizationController
   # API-specific authorization
   def authorize_api_access
     return unless api_request?
-    
+
     api_key = current_api_key
     return unless api_key
-    
+
     # Check API key scopes
     required_scope = determine_api_scope
     unless api_key.has_scope?(required_scope)
       raise AuthorizationError, "API key missing required scope: #{required_scope}"
     end
-    
+
     # Check rate limits
     if api_key.rate_limit && api_key.usage_this_hour >= api_key.rate_limit
       raise AuthorizationError, "API rate limit exceeded"
@@ -304,19 +304,19 @@ module AuthorizationController
 
   def current_api_key
     return @current_api_key if defined?(@current_api_key)
-    
-    token = request.headers['Authorization']&.split(' ')&.last
+
+    token = request.headers["Authorization"]&.split(" ")&.last
     @current_api_key = ApiKey.active.find_by(key: token) if token
   end
 
   def determine_api_scope
     resource = controller_name.singularize
     action = case action_name
-            when 'index', 'show' then 'read'
-            when 'create', 'update', 'destroy' then 'write'
-            else 'access'
-            end
-    
+    when "index", "show" then "read"
+    when "create", "update", "destroy" then "write"
+    else "access"
+    end
+
     "#{resource}:#{action}"
   end
 

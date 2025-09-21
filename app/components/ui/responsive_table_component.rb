@@ -31,7 +31,7 @@ class Ui::ResponsiveTableComponent < ViewComponent::Base
   attr_reader :variant, :striped, :hover, :compact, :mobile_cards, :sticky_header, :sortable, :additional_classes, :options
 
   def wrapper_classes
-    classes = ["overflow-hidden"]
+    classes = [ "overflow-hidden" ]
     classes << "shadow ring-1 ring-black ring-opacity-5" if variant == "elevated"
     classes << "border border-neutral-200 rounded-lg" if variant == "bordered"
     classes << additional_classes if additional_classes
@@ -39,25 +39,25 @@ class Ui::ResponsiveTableComponent < ViewComponent::Base
   end
 
   def table_container_classes
-    classes = ["overflow-x-auto"]
+    classes = [ "overflow-x-auto" ]
     classes << "max-h-96" if sticky_header
     classes.join(" ")
   end
 
   def table_classes
-    classes = ["min-w-full", "divide-y", "divide-neutral-200"]
+    classes = [ "min-w-full", "divide-y", "divide-neutral-200" ]
     classes << "bg-white" if variant != "transparent"
     classes.join(" ")
   end
 
   def thead_classes
-    classes = ["bg-neutral-50"]
+    classes = [ "bg-neutral-50" ]
     classes << "sticky top-0 z-10" if sticky_header
     classes.join(" ")
   end
 
   def tbody_classes
-    classes = ["bg-white", "divide-y", "divide-neutral-200"]
+    classes = [ "bg-white", "divide-y", "divide-neutral-200" ]
     classes.join(" ")
   end
 
@@ -90,14 +90,14 @@ class Ui::ResponsiveTableComponent < ViewComponent::Base
 
     def header_classes
       classes = [
-        "px-6", "py-3", "text-left", "text-xs", "font-medium", 
+        "px-6", "py-3", "text-left", "text-xs", "font-medium",
         "text-neutral-500", "uppercase", "tracking-wider"
       ]
-      
+
       classes[2] = "text-#{align}" if align != "left"
       classes << "cursor-pointer hover:bg-neutral-100" if sortable
       classes << "w-#{width}" if width
-      
+
       case mobile_priority
       when "high"
         classes << "block"
@@ -111,9 +111,9 @@ class Ui::ResponsiveTableComponent < ViewComponent::Base
     end
 
     def cell_classes
-      classes = ["px-6", "py-4", "whitespace-nowrap", "text-sm"]
+      classes = [ "px-6", "py-4", "whitespace-nowrap", "text-sm" ]
       classes[2] = "text-#{align}" if align != "left"
-      
+
       case mobile_priority
       when "high"
         classes << "block"
@@ -148,7 +148,7 @@ class Ui::ResponsiveTableComponent < ViewComponent::Base
 
     def row_classes
       classes = []
-      
+
       case variant
       when "success"
         classes << "bg-success-50"
@@ -191,7 +191,7 @@ class Ui::ResponsiveTableComponent < ViewComponent::Base
       end
 
       def mobile_cell_classes
-        classes = ["flex", "justify-between"]
+        classes = [ "flex", "justify-between" ]
         classes << "font-medium text-neutral-900" if primary
         classes << "text-neutral-700" unless primary
         classes.join(" ")

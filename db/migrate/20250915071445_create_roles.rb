@@ -11,9 +11,9 @@ class CreateRoles < ActiveRecord::Migration[8.0]
 
       t.timestamps
     end
-    
-    add_index :roles, [:name, :organization_id], unique: true
-    add_index :roles, [:organization_id, :active]
+
+    add_index :roles, [ :name, :organization_id ], unique: true
+    add_index :roles, [ :organization_id, :active ]
     add_index :roles, :level
     add_index :roles, :system_role
   end

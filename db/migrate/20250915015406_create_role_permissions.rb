@@ -9,8 +9,8 @@ class CreateRolePermissions < ActiveRecord::Migration[8.0]
 
       t.timestamps
     end
-    
-    add_index :role_permissions, [:role_id, :permission_id], unique: true, name: 'idx_role_permission_unique'
-    add_index :role_permissions, [:permission_id], name: 'idx_role_permissions_permission_id'
+
+    add_index :role_permissions, [ :role_id, :permission_id ], unique: true, name: 'idx_role_permission_unique'
+    add_index :role_permissions, [ :permission_id ], name: 'idx_role_permissions_permission_id'
   end
 end

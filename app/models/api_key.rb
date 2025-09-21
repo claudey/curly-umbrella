@@ -10,13 +10,13 @@ class ApiKey < ApplicationRecord
   before_create :set_defaults
 
   scope :active, -> { where(active: true) }
-  scope :expired, -> { where('expires_at < ?', Time.current) }
-  scope :not_expired, -> { where('expires_at IS NULL OR expires_at > ?', Time.current) }
+  scope :expired, -> { where("expires_at < ?", Time.current) }
+  scope :not_expired, -> { where("expires_at IS NULL OR expires_at > ?", Time.current) }
 
   enum :access_level, {
-    read_only: 'read_only',
-    read_write: 'read_write',
-    admin: 'admin'
+    read_only: "read_only",
+    read_write: "read_write",
+    admin: "admin"
   }
 
   # Scopes that define what the API key can access
@@ -63,7 +63,7 @@ class ApiKey < ApplicationRecord
 
   def can_access?(resource, action)
     return false unless active?
-    
+
     required_scope = determine_required_scope(resource, action)
     has_scope?(required_scope)
   end
@@ -72,34 +72,34 @@ class ApiKey < ApplicationRecord
     update!(
       active: false,
       revoked_at: Time.current,
-      revoked_reason: 'Manually revoked'
+      revoked_reason: "Manually revoked"
     )
-    
+
     # Log the revocation
     AuditLog.log_security_event(
       user,
-      'api_key_revoked',
+      "api_key_revoked",
       {
         api_key_id: id,
         api_key_name: name,
-        revoked_by: Current.user&.email || 'System',
-        severity: 'warning'
+        revoked_by: Current.user&.email || "System",
+        severity: "warning"
       }
     )
   end
 
   def renew!(new_expiry = 1.year.from_now)
     update!(expires_at: new_expiry)
-    
+
     AuditLog.log_security_event(
       user,
-      'api_key_renewed',
+      "api_key_renewed",
       {
         api_key_id: id,
         api_key_name: name,
         new_expiry: new_expiry.iso8601,
-        renewed_by: Current.user&.email || 'System',
-        severity: 'info'
+        renewed_by: Current.user&.email || "System",
+        severity: "info"
       }
     )
   end
@@ -107,34 +107,34 @@ class ApiKey < ApplicationRecord
   def regenerate_key!
     old_key = key
     new_key = self.class.generate_key
-    
+
     update!(
       key: new_key,
       last_rotated_at: Time.current
     )
-    
+
     AuditLog.log_security_event(
       user,
-      'api_key_rotated',
+      "api_key_rotated",
       {
         api_key_id: id,
         api_key_name: name,
-        rotated_by: Current.user&.email || 'System',
-        severity: 'info'
+        rotated_by: Current.user&.email || "System",
+        severity: "info"
       }
     )
-    
+
     new_key
   end
 
   def rate_limit_status
     return nil unless rate_limit
-    
+
     current_usage = usage_this_hour
     {
       limit: rate_limit,
       used: current_usage,
-      remaining: [rate_limit - current_usage, 0].max,
+      remaining: [ rate_limit - current_usage, 0 ].max,
       reset_at: Time.current.beginning_of_hour + 1.hour
     }
   end
@@ -152,7 +152,7 @@ class ApiKey < ApplicationRecord
       status_code: request_details[:status_code],
       response_time: request_details[:response_time]
     )
-    
+
     # Update last used timestamp
     update_column(:last_used_at, Time.current)
   end
@@ -160,7 +160,7 @@ class ApiKey < ApplicationRecord
   def usage_stats(period = 30.days)
     start_date = period.ago
     logs = api_requests.where(created_at: start_date..Time.current)
-    
+
     {
       total_requests: logs.count,
       successful_requests: logs.where(status_code: 200..299).count,
@@ -197,11 +197,11 @@ class ApiKey < ApplicationRecord
 
   def default_scopes_for_access_level
     case access_level
-    when 'read_only'
+    when "read_only"
       %w[api:access applications:read quotes:read]
-    when 'read_write'
+    when "read_write"
       %w[api:access applications:read applications:write quotes:read quotes:write]
-    when 'admin'
+    when "admin"
       AVAILABLE_SCOPES
     else
       %w[api:access]
@@ -210,11 +210,11 @@ class ApiKey < ApplicationRecord
 
   def default_rate_limit_for_access_level
     case access_level
-    when 'read_only'
+    when "read_only"
       500 # requests per hour
-    when 'read_write'
+    when "read_write"
       1000
-    when 'admin'
+    when "admin"
       5000
     else
       100
@@ -223,18 +223,18 @@ class ApiKey < ApplicationRecord
 
   def determine_required_scope(resource, action)
     resource_name = resource.to_s.downcase
-    
+
     case action.to_s
-    when 'read', 'show', 'index'
+    when "read", "show", "index"
       "#{resource_name}:read"
-    when 'create', 'update', 'destroy'
+    when "create", "update", "destroy"
       "#{resource_name}:write"
-    when 'export'
-      'exports:create'
-    when 'admin'
-      'admin:access'
+    when "export"
+      "exports:create"
+    when "admin"
+      "admin:access"
     else
-      'api:access'
+      "api:access"
     end
   end
 
@@ -251,7 +251,7 @@ class ApiKey < ApplicationRecord
     # Count security-related audit logs for this API key
     AuditLog.where(
       details: { api_key_id: id },
-      category: 'security'
+      category: "security"
     ).where(created_at: 30.days.ago..Time.current).count
   end
 
@@ -259,11 +259,11 @@ class ApiKey < ApplicationRecord
   def api_requests
     # This would be a separate model to track API requests
     # ApiRequestLog.where(api_key: self)
-    
+
     # For now, we'll use audit logs as a proxy
     AuditLog.where(
       user: user,
-      action: 'api_request',
+      action: "api_request",
       created_at: 30.days.ago..Time.current
     )
   end

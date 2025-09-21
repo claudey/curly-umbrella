@@ -26,17 +26,17 @@ class Ui::ResponsiveFormComponent < ViewComponent::Base
   attr_reader :layout, :mobile_stack, :sticky_actions, :compact_mobile, :additional_classes, :options
 
   def form_classes
-    base_classes = ["space-y-6"]
-    
+    base_classes = [ "space-y-6" ]
+
     case layout
     when "two_column"
-      base_classes = ["grid", "grid-cols-1", "gap-6"]
+      base_classes = [ "grid", "grid-cols-1", "gap-6" ]
       base_classes << "lg:grid-cols-2" unless mobile_stack
     when "three_column"
-      base_classes = ["grid", "grid-cols-1", "gap-6"]
+      base_classes = [ "grid", "grid-cols-1", "gap-6" ]
       base_classes << "md:grid-cols-2 lg:grid-cols-3" unless mobile_stack
     when "sidebar"
-      base_classes = ["grid", "grid-cols-1", "gap-6", "lg:grid-cols-3"]
+      base_classes = [ "grid", "grid-cols-1", "gap-6", "lg:grid-cols-3" ]
     end
 
     base_classes << "space-y-4" if compact_mobile
@@ -45,7 +45,7 @@ class Ui::ResponsiveFormComponent < ViewComponent::Base
   end
 
   def actions_classes
-    base_classes = ["flex", "justify-end", "space-x-3", "pt-6", "border-t", "border-neutral-200"]
+    base_classes = [ "flex", "justify-end", "space-x-3", "pt-6", "border-t", "border-neutral-200" ]
     base_classes << "sticky bottom-0 bg-white z-10 pb-4" if sticky_actions
     base_classes << "flex-col space-y-3 space-x-0 sm:flex-row sm:space-y-0 sm:space-x-3" if mobile_stack
     base_classes.join(" ")
@@ -75,7 +75,7 @@ class Ui::ResponsiveFormComponent < ViewComponent::Base
     attr_reader :title, :description, :collapsible, :span, :additional_classes, :options
 
     def section_classes
-      classes = ["space-y-4"]
+      classes = [ "space-y-4" ]
       classes << "lg:col-span-#{span}" if span
       classes << additional_classes if additional_classes
       classes.join(" ")
@@ -159,7 +159,7 @@ class Ui::ResponsiveFormComponent < ViewComponent::Base
         required: required,
         **field_options
       })
-      
+
       content_tag :div do
         concat label_tag if label_tag
         concat textarea_tag
@@ -173,7 +173,7 @@ class Ui::ResponsiveFormComponent < ViewComponent::Base
         required: required,
         **field_options.except(:options)
       })
-      
+
       content_tag :div do
         concat label_tag if label_tag
         concat select_tag
@@ -196,7 +196,7 @@ class Ui::ResponsiveFormComponent < ViewComponent::Base
         if label.present?
           concat content_tag(:legend, label, class: "text-sm font-medium text-neutral-900 mb-2")
         end
-        
+
         content_tag :div, class: "space-y-2" do
           (field_options[:options] || []).each do |option|
             concat content_tag(:div, class: "flex items-center") do
@@ -218,7 +218,7 @@ class Ui::ResponsiveFormComponent < ViewComponent::Base
         required: required,
         **field_options
       })
-      
+
       content_tag :div do
         concat label_tag if label_tag
         concat file_tag
@@ -226,7 +226,7 @@ class Ui::ResponsiveFormComponent < ViewComponent::Base
     end
 
     def label_classes
-      classes = ["block text-sm font-medium text-neutral-700 mb-1"]
+      classes = [ "block text-sm font-medium text-neutral-700 mb-1" ]
       classes << "after:content-['*'] after:ml-1 after:text-error-500" if required
       classes.join(" ")
     end

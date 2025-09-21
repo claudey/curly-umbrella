@@ -1,6 +1,5 @@
 FactoryBot.define do
   factory :insurance_company do
-    
     name { Faker::Company.name + ' Insurance' }
     sequence(:email) { |n| "contact#{n}@#{Faker::Internet.domain_name}" }
     phone { "+233244123456" }
@@ -10,9 +9,9 @@ FactoryBot.define do
     rating { 4.5 }
     commission_rate { 15.0 }
     payment_terms { "net_30" }
-    
+
     website { "https://#{Faker::Internet.domain_name}" }
-    
+
     trait :with_quotes do
       after(:create) do |company|
         org = create(:organization)

@@ -6,7 +6,7 @@ RSpec.describe Quote, type: :model do
   let(:client) { create(:client, organization: organization) }
   let(:insurance_application) { create(:insurance_application, organization: organization, user: user, client: client) }
   let(:insurance_company) { create(:insurance_company, organization: organization) }
-  
+
   before { ActsAsTenant.current_tenant = organization }
   after { ActsAsTenant.current_tenant = nil }
 
@@ -111,17 +111,17 @@ RSpec.describe Quote, type: :model do
 
     it 'sets timestamps on status changes' do
       quote = create(:quote, organization: organization, insurance_application: insurance_application, insurance_company: insurance_company, user: user)
-      
+
       quote.update!(status: 'submitted')
       expect(quote.submitted_at).to be_present
-      
+
       quote.update!(status: 'approved')
       expect(quote.approved_at).to be_present
-      
+
       rejected_quote = create(:quote, organization: organization, insurance_application: insurance_application, insurance_company: insurance_company, user: user)
       rejected_quote.update!(status: 'rejected', rejection_reason: 'Test reason')
       expect(rejected_quote.rejected_at).to be_present
-      
+
       accepted_quote = create(:quote, organization: organization, insurance_application: insurance_application, insurance_company: insurance_company, user: user)
       accepted_quote.update!(status: 'accepted')
       expect(accepted_quote.accepted_at).to be_present
@@ -183,7 +183,7 @@ RSpec.describe Quote, type: :model do
       it 'returns false for other statuses' do
         quote.status = 'pending'
         expect(quote.can_be_approved?).to be_falsey
-        
+
         quote.status = 'approved'
         expect(quote.can_be_approved?).to be_falsey
       end
@@ -198,7 +198,7 @@ RSpec.describe Quote, type: :model do
       it 'returns false for other statuses' do
         quote.status = 'pending'
         expect(quote.can_be_accepted?).to be_falsey
-        
+
         quote.status = 'accepted'
         expect(quote.can_be_accepted?).to be_falsey
       end

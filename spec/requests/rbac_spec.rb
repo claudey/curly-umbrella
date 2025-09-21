@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe "Role-Based Access Control", type: :request do
   let(:organization) { create(:organization) }
   let(:other_organization) { create(:organization) }
-  
+
   let(:admin_user) { create(:user, role: :brokerage_admin, organization: organization) }
   let(:agent_user) { create(:user, role: :agent, organization: organization) }
   let(:insurance_company_user) { create(:user, role: :insurance_company) }
@@ -95,7 +95,7 @@ RSpec.describe "Role-Based Access Control", type: :request do
     before { sign_in admin_user }
 
     it "allows access to all agent features" do
-      [clients_path, insurance_applications_path, quotes_path, documents_path].each do |path|
+      [ clients_path, insurance_applications_path, quotes_path, documents_path ].each do |path|
         get path
         expect(response).to have_http_status(:success)
       end
@@ -152,8 +152,8 @@ RSpec.describe "Role-Based Access Control", type: :request do
     end
 
     it "cannot manage other organizations" do
-      patch admin_organization_path(other_organization), params: { 
-        organization: { name: "Hacked Name" } 
+      patch admin_organization_path(other_organization), params: {
+        organization: { name: "Hacked Name" }
       }
       expect(response).to have_http_status(:forbidden)
     end
@@ -202,7 +202,7 @@ RSpec.describe "Role-Based Access Control", type: :request do
     end
 
     it "denies access to admin features" do
-      [admin_users_path, admin_organizations_path, admin_reports_path].each do |path|
+      [ admin_users_path, admin_organizations_path, admin_reports_path ].each do |path|
         get path
         expect(response).to have_http_status(:forbidden)
       end
@@ -214,7 +214,7 @@ RSpec.describe "Role-Based Access Control", type: :request do
       under_review_app = create(:insurance_application, status: 'under_review')
 
       get insurance_applications_path
-      
+
       # Parse response to check which applications are visible
       expect(response.body).to include(submitted_app.application_number)
       expect(response.body).to include(under_review_app.application_number)
@@ -227,21 +227,21 @@ RSpec.describe "Role-Based Access Control", type: :request do
 
     it "prevents access to other organization's clients" do
       other_client = create(:client, organization: other_organization)
-      
+
       get client_path(other_client)
       expect(response).to have_http_status(:not_found)
     end
 
     it "prevents access to other organization's applications" do
       other_application = create(:insurance_application, organization: other_organization)
-      
+
       get insurance_application_path(other_application)
       expect(response).to have_http_status(:not_found)
     end
 
     it "prevents access to other organization's documents" do
       other_document = create(:document, organization: other_organization)
-      
+
       get document_path(other_document)
       expect(response).to have_http_status(:not_found)
     end
@@ -252,9 +252,9 @@ RSpec.describe "Role-Based Access Control", type: :request do
       create_list(:client, 2, organization: other_organization)
 
       get clients_path
-      
+
       expect(assigns(:clients).count).to eq(3)
-      expect(assigns(:clients).map(&:organization).uniq).to eq([organization])
+      expect(assigns(:clients).map(&:organization).uniq).to eq([ organization ])
     end
 
     it "scopes API endpoints to organization" do
@@ -262,7 +262,7 @@ RSpec.describe "Role-Based Access Control", type: :request do
       create_list(:client, 3, organization: other_organization)
 
       get api_v1_clients_path, headers: { 'Accept' => 'application/json' }
-      
+
       json_response = JSON.parse(response.body)
       expect(json_response['clients'].count).to eq(2)
     end
@@ -288,7 +288,7 @@ RSpec.describe "Role-Based Access Control", type: :request do
 
       scoped_clients = agent_user.accessible_clients
       expect(scoped_clients.count).to eq(3)
-      expect(scoped_clients.map(&:organization).uniq).to eq([organization])
+      expect(scoped_clients.map(&:organization).uniq).to eq([ organization ])
     end
   end
 
@@ -296,19 +296,19 @@ RSpec.describe "Role-Based Access Control", type: :request do
     it "respects feature flags for role-based features" do
       # Assuming you have feature flags
       allow(organization).to receive(:feature_enabled?).with('advanced_analytics').and_return(false)
-      
+
       sign_in admin_user
       get admin_analytics_path
-      
+
       expect(response).to have_http_status(:forbidden)
     end
 
     it "allows access when feature is enabled" do
       allow(organization).to receive(:feature_enabled?).with('advanced_analytics').and_return(true)
-      
+
       sign_in admin_user
       get admin_analytics_path
-      
+
       expect(response).to have_http_status(:success)
     end
   end
@@ -317,19 +317,19 @@ RSpec.describe "Role-Based Access Control", type: :request do
     it "handles temporary permission elevation" do
       # If your system supports temporary permissions
       permission = create(:temporary_permission, user: agent_user, permission: 'view_reports', expires_at: 1.hour.from_now)
-      
+
       sign_in agent_user
       get admin_reports_path
-      
+
       expect(response).to have_http_status(:success)
     end
 
     it "expires temporary permissions" do
       permission = create(:temporary_permission, user: agent_user, permission: 'view_reports', expires_at: 1.hour.ago)
-      
+
       sign_in agent_user
       get admin_reports_path
-      
+
       expect(response).to have_http_status(:forbidden)
     end
   end
@@ -337,11 +337,11 @@ RSpec.describe "Role-Based Access Control", type: :request do
   describe "Audit Trail for Permissions" do
     it "logs permission checks" do
       sign_in agent_user
-      
+
       expect {
         get admin_users_path
       }.to change(AuditLog, :count).by(1)
-      
+
       audit_log = AuditLog.last
       expect(audit_log.action).to eq('permission_denied')
       expect(audit_log.details).to include('admin_users')
@@ -349,11 +349,11 @@ RSpec.describe "Role-Based Access Control", type: :request do
 
     it "logs successful access" do
       sign_in agent_user
-      
+
       expect {
         get clients_path
       }.to change(AuditLog, :count).by(1)
-      
+
       audit_log = AuditLog.last
       expect(audit_log.action).to eq('resource_accessed')
     end
@@ -362,7 +362,7 @@ RSpec.describe "Role-Based Access Control", type: :request do
   describe "Security Edge Cases" do
     it "prevents parameter tampering for organization_id" do
       sign_in agent_user
-      
+
       client_params = {
         first_name: "Test",
         last_name: "Client",
@@ -371,23 +371,23 @@ RSpec.describe "Role-Based Access Control", type: :request do
       }
 
       post clients_path, params: { client: client_params }
-      
+
       new_client = Client.last
       expect(new_client.organization).to eq(organization) # Should use current user's org
     end
 
     it "handles mass assignment attacks" do
       sign_in agent_user
-      
+
       user_params = {
         first_name: "Test",
-        last_name: "User", 
+        last_name: "User",
         role: "brokerage_admin", # Attempt to escalate privileges
         organization_id: other_organization.id
       }
 
       patch user_path(agent_user), params: { user: user_params }
-      
+
       agent_user.reload
       expect(agent_user.role).to eq('agent') # Role should not change
       expect(agent_user.organization).to eq(organization) # Org should not change
@@ -395,16 +395,16 @@ RSpec.describe "Role-Based Access Control", type: :request do
 
     it "prevents session fixation attacks" do
       old_session_id = nil
-      
+
       # Capture session before login
       get new_user_session_path
       old_session_id = session[:session_id] if session[:session_id]
-      
+
       # Login
-      post user_session_path, params: { 
-        user: { email: agent_user.email, password: "password123456" } 
+      post user_session_path, params: {
+        user: { email: agent_user.email, password: "password123456" }
       }
-      
+
       # Session should be regenerated
       new_session_id = session[:session_id]
       expect(new_session_id).not_to eq(old_session_id) if old_session_id
@@ -413,24 +413,24 @@ RSpec.describe "Role-Based Access Control", type: :request do
     it "handles concurrent role changes" do
       # Simulate concurrent modification
       original_role = agent_user.role
-      
+
       # Thread 1: Try to change role
       thread1 = Thread.new do
         sign_in admin_user
-        patch admin_user_path(agent_user), params: { 
-          user: { role: 'brokerage_admin' } 
+        patch admin_user_path(agent_user), params: {
+          user: { role: 'brokerage_admin' }
         }
       end
-      
+
       # Thread 2: User tries to access admin features
       thread2 = Thread.new do
         sign_in agent_user
         get admin_users_path
       end
-      
+
       thread1.join
       thread2.join
-      
+
       # Should handle gracefully without security issues
       expect(response).to have_http_status(:forbidden)
     end

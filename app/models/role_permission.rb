@@ -1,7 +1,7 @@
 class RolePermission < ApplicationRecord
   belongs_to :role
   belongs_to :permission
-  belongs_to :granted_by, class_name: 'User', optional: true
+  belongs_to :granted_by, class_name: "User", optional: true
 
   validates :role_id, uniqueness: { scope: :permission_id }
   validates :granted_at, presence: true
@@ -18,13 +18,13 @@ class RolePermission < ApplicationRecord
   def can_be_revoked?
     # System permissions on system roles generally can't be revoked
     return false if role.system_role? && permission.system_permission?
-    
+
     # Check if this permission is required by role hierarchy
     return false if required_by_role_hierarchy?
-    
+
     # Check if other permissions depend on this one
     return false if has_dependent_permissions?
-    
+
     true
   end
 
@@ -42,10 +42,10 @@ class RolePermission < ApplicationRecord
     transaction do
       # Remove dependent role permissions first
       remove_dependent_permissions!
-      
+
       # Log the revocation
       permission.log_permission_revoked(role, revoked_by || Current.user)
-      
+
       # Destroy this permission assignment
       destroy!
     end
@@ -58,7 +58,7 @@ class RolePermission < ApplicationRecord
       resource: permission.resource,
       action: permission.action,
       granted_at: granted_at,
-      granted_by: granted_by&.email || 'System',
+      granted_by: granted_by&.email || "System",
       system_permission: permission.system_permission?,
       can_revoke: can_be_revoked?
     }
@@ -89,7 +89,7 @@ class RolePermission < ApplicationRecord
                  .distinct
     else
       # Organization-specific role
-      role.organization ? [role.organization] : []
+      role.organization ? [ role.organization ] : []
     end
   end
 
@@ -109,7 +109,7 @@ class RolePermission < ApplicationRecord
   end
 
   def critical_permission?
-    permission.system_critical_permission? || 
+    permission.system_critical_permission? ||
     permission.management_permission? ||
     users_affected.count > 10 # More than 10 users affected
   end
@@ -127,56 +127,56 @@ class RolePermission < ApplicationRecord
 
   def self.bulk_assign(role, permission_names, granted_by = nil)
     results = { success: [], failed: [] }
-    
+
     permission_names.each do |permission_name|
       permission = Permission.find_by(name: permission_name)
-      
+
       if permission
         role_permission = find_or_initialize_by(role: role, permission: permission)
-        
+
         if role_permission.persisted?
-          results[:failed] << { permission_name: permission_name, error: 'Already assigned' }
+          results[:failed] << { permission_name: permission_name, error: "Already assigned" }
         else
           role_permission.granted_by = granted_by
-          
+
           if role_permission.save
             results[:success] << permission_name
           else
-            results[:failed] << { 
-              permission_name: permission_name, 
-              error: role_permission.errors.full_messages.join(', ') 
+            results[:failed] << {
+              permission_name: permission_name,
+              error: role_permission.errors.full_messages.join(", ")
             }
           end
         end
       else
-        results[:failed] << { permission_name: permission_name, error: 'Permission not found' }
+        results[:failed] << { permission_name: permission_name, error: "Permission not found" }
       end
     end
-    
+
     results
   end
 
   def self.bulk_revoke(role, permission_names, revoked_by = nil)
     results = { success: [], failed: [] }
-    
+
     permission_names.each do |permission_name|
       role_permission = joins(:permission)
                        .find_by(role: role, permissions: { name: permission_name })
-      
+
       if role_permission
         if role_permission.revoke!(revoked_by)
           results[:success] << permission_name
         else
-          results[:failed] << { 
-            permission_name: permission_name, 
-            error: 'Cannot be revoked' 
+          results[:failed] << {
+            permission_name: permission_name,
+            error: "Cannot be revoked"
           }
         end
       else
-        results[:failed] << { permission_name: permission_name, error: 'Not assigned' }
+        results[:failed] << { permission_name: permission_name, error: "Not assigned" }
       end
     end
-    
+
     results
   end
 
@@ -219,11 +219,11 @@ class RolePermission < ApplicationRecord
   def calculate_frequency_score
     # Calculate how frequently this permission is used
     return 0 unless last_permission_usage
-    
+
     days_since_last_use = (Time.current - last_permission_usage) / 1.day
     case days_since_last_use
     when 0..1 then 10      # Used today/yesterday = high frequency
-    when 2..7 then 7       # Used this week = medium-high frequency  
+    when 2..7 then 7       # Used this week = medium-high frequency
     when 8..30 then 4      # Used this month = medium frequency
     when 31..90 then 2     # Used this quarter = low frequency
     else 1                 # Used longer ago = very low frequency

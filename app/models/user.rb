@@ -1,5 +1,5 @@
 class User < ApplicationRecord
-  audited except: [:encrypted_password, :mfa_secret, :backup_codes]
+  audited except: [ :encrypted_password, :mfa_secret, :backup_codes ]
 
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
@@ -146,18 +146,18 @@ class User < ApplicationRecord
   end
 
   def formatted_phone_number
-    return phone_number unless phone_number&.start_with?('+1')
-    
+    return phone_number unless phone_number&.start_with?("+1")
+
     # Format US/CA numbers as (XXX) XXX-XXXX
     digits = phone_number[2..-1]
     return phone_number unless digits.length == 10
-    
+
     "(#{digits[0..2]}) #{digits[3..5]}-#{digits[6..9]}"
   end
 
   def send_sms(body:, from: nil)
     return false unless can_receive_sms?
-    
+
     SmsService.new.send_sms(
       to: phone_number,
       body: body,
@@ -172,9 +172,9 @@ class User < ApplicationRecord
 
   def formatted_whatsapp_number
     return whatsapp_number unless whatsapp_number&.match?(/^\d+$/)
-    
+
     # Format as international number
-    if whatsapp_number.length == 11 && whatsapp_number.start_with?('1')
+    if whatsapp_number.length == 11 && whatsapp_number.start_with?("1")
       # US/CA number
       country_code = whatsapp_number[0]
       area_code = whatsapp_number[1..3]
@@ -186,9 +186,9 @@ class User < ApplicationRecord
     end
   end
 
-  def send_whatsapp(message:, message_type: 'text')
+  def send_whatsapp(message:, message_type: "text")
     return false unless can_receive_whatsapp?
-    
+
     WhatsappService.new.send_message(
       to: whatsapp_number,
       message: message,

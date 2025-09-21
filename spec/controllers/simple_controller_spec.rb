@@ -2,11 +2,11 @@ require 'rails_helper'
 
 RSpec.describe "Simple Controller Tests", type: :controller do
   # Test controllers without complex security layers
-  
+
   controller(ApplicationController) do
-    skip_before_action :authenticate_user!, only: [:test_action]
-    skip_before_action :set_current_tenant, only: [:test_action]
-    
+    skip_before_action :authenticate_user!, only: [ :test_action ]
+    skip_before_action :set_current_tenant, only: [ :test_action ]
+
     def test_action
       render json: { message: "Hello World", status: "ok" }
     end

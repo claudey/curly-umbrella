@@ -1,7 +1,7 @@
 class UserRole < ApplicationRecord
   belongs_to :user
   belongs_to :role
-  belongs_to :granted_by, class_name: 'User', optional: true
+  belongs_to :granted_by, class_name: "User", optional: true
 
   validates :user_id, uniqueness: { scope: :role_id }
   validates :granted_at, presence: true
@@ -13,8 +13,8 @@ class UserRole < ApplicationRecord
 
   scope :active, -> { where(active: true) }
   scope :inactive, -> { where(active: false) }
-  scope :expired, -> { where('expires_at < ?', Time.current) }
-  scope :not_expired, -> { where('expires_at IS NULL OR expires_at > ?', Time.current) }
+  scope :expired, -> { where("expires_at < ?", Time.current) }
+  scope :not_expired, -> { where("expires_at IS NULL OR expires_at > ?", Time.current) }
   scope :for_organization, ->(org) { joins(:role).where(roles: { organization: org }) }
   scope :system_roles, -> { joins(:role).where(roles: { organization_id: nil }) }
 
@@ -49,7 +49,7 @@ class UserRole < ApplicationRecord
   def revoke!(revoked_by = nil, reason = nil)
     update!(
       active: false,
-      notes: [notes, "Revoked: #{reason}"].compact.join('; ')
+      notes: [ notes, "Revoked: #{reason}" ].compact.join("; ")
     )
 
     role.log_role_removal(user, revoked_by || Current.user)
@@ -58,12 +58,12 @@ class UserRole < ApplicationRecord
   def extend_expiry!(new_expiry, extended_by = nil)
     update!(
       expires_at: new_expiry,
-      notes: [notes, "Extended to #{new_expiry.strftime('%Y-%m-%d')}"].compact.join('; ')
+      notes: [ notes, "Extended to #{new_expiry.strftime('%Y-%m-%d')}" ].compact.join("; ")
     )
 
     AuditLog.log_user_management(
       extended_by || Current.user,
-      'role_extended',
+      "role_extended",
       {
         target_user_id: user.id,
         target_user_email: user.email,
@@ -80,12 +80,12 @@ class UserRole < ApplicationRecord
 
     update!(
       active: true,
-      notes: [notes, 'Reactivated'].compact.join('; ')
+      notes: [ notes, "Reactivated" ].compact.join("; ")
     )
 
     AuditLog.log_user_management(
       reactivated_by || Current.user,
-      'role_reactivated',
+      "role_reactivated",
       {
         target_user_id: user.id,
         target_user_email: user.email,
@@ -104,9 +104,9 @@ class UserRole < ApplicationRecord
     {
       user: user.email,
       role: role.display_name,
-      organization: role.organization&.name || 'System',
+      organization: role.organization&.name || "System",
       granted_at: granted_at,
-      granted_by: granted_by&.email || 'System',
+      granted_by: granted_by&.email || "System",
       expires_at: expires_at,
       expires_in_days: expires_in_days,
       active: active?,
@@ -127,7 +127,7 @@ class UserRole < ApplicationRecord
   def conflicts_with_existing_roles?
     user.user_roles.active.includes(:role).any? do |ur|
       next if ur.id == id # Don't check against self
-      
+
       # Check for level conflicts (can't have higher level role than current max)
       ur.role.level > role.level && ur.role.organization_id == role.organization_id
     end
@@ -139,7 +139,7 @@ class UserRole < ApplicationRecord
 
     user.user_roles.active.includes(:role).select do |ur|
       next if ur.id == id
-      
+
       # Same organization and higher level
       ur.role.organization_id == role.organization_id && ur.role.level > role.level
     end
@@ -156,7 +156,7 @@ class UserRole < ApplicationRecord
 
     # Check role level conflicts
     if conflicts_with_existing_roles?
-      conflicting = conflicting_roles.map { |ur| ur.role.display_name }.join(', ')
+      conflicting = conflicting_roles.map { |ur| ur.role.display_name }.join(", ")
       errors << "Conflicts with existing higher-level roles: #{conflicting}"
     end
 
@@ -189,8 +189,8 @@ class UserRole < ApplicationRecord
 
   def log_role_update
     if saved_change_to_active?
-      action = active? ? 'role_activated' : 'role_deactivated'
-      
+      action = active? ? "role_activated" : "role_deactivated"
+
       AuditLog.log_user_management(
         Current.user,
         action,

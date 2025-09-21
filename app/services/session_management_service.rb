@@ -7,8 +7,8 @@ class SessionManagementService
   MAX_CONCURRENT_SESSIONS = 3
   SESSION_TIMEOUT = 8.hours
   INACTIVE_SESSION_TIMEOUT = 30.minutes
-  SESSION_KEY_PREFIX = 'user_session:'
-  ACTIVE_SESSIONS_KEY = 'active_sessions:'
+  SESSION_KEY_PREFIX = "user_session:"
+  ACTIVE_SESSIONS_KEY = "active_sessions:"
 
   def self.create_session(user, session_id, request_info = {})
     instance.create_session(user, session_id, request_info)
@@ -42,7 +42,7 @@ class SessionManagementService
     instance.is_session_valid?(user, session_id)
   end
 
-  def self.force_logout_user(user, reason = 'Security policy enforcement')
+  def self.force_logout_user(user, reason = "Security policy enforcement")
     instance.force_logout_user(user, reason)
   end
 
@@ -75,7 +75,7 @@ class SessionManagementService
     store_user_sessions(user, active_sessions)
 
     # Log session creation
-    log_session_event(user, 'session_created', session_data)
+    log_session_event(user, "session_created", session_data)
 
     # Check for suspicious login patterns
     check_suspicious_login_pattern(user, session_data)
@@ -96,7 +96,7 @@ class SessionManagementService
     Rails.cache.delete(session_key)
 
     # Log session destruction
-    log_session_event(user, 'session_destroyed', session_data) if session_data
+    log_session_event(user, "session_destroyed", session_data) if session_data
 
     true
   end
@@ -115,7 +115,7 @@ class SessionManagementService
       Rails.cache.delete(session_key)
 
       # Log session destruction
-      log_session_event(user, 'session_force_destroyed', session_data)
+      log_session_event(user, "session_force_destroyed", session_data)
       destroyed_count += 1
     end
 
@@ -165,11 +165,11 @@ class SessionManagementService
 
   def check_concurrent_sessions(user)
     active_sessions = get_active_sessions(user)
-    
+
     if active_sessions.size > MAX_CONCURRENT_SESSIONS
       # Create security alert
       SecurityAlertJob.perform_later(
-        'concurrent_sessions',
+        "concurrent_sessions",
         "User has #{active_sessions.size} concurrent sessions",
         {
           user_id: user.id,
@@ -178,7 +178,7 @@ class SessionManagementService
           max_allowed: MAX_CONCURRENT_SESSIONS,
           sessions: active_sessions.map { |s| s.except(:user_agent) }
         },
-        'medium'
+        "medium"
       )
 
       return false
@@ -192,7 +192,7 @@ class SessionManagementService
 
     session_key = "#{SESSION_KEY_PREFIX}#{user.id}:#{session_id}"
     session_data = Rails.cache.read(session_key)
-    
+
     return false unless session_data
 
     # Update last activity
@@ -224,7 +224,7 @@ class SessionManagementService
 
     session_key = "#{SESSION_KEY_PREFIX}#{user.id}:#{session_id}"
     session_data = Rails.cache.read(session_key)
-    
+
     return false unless session_data
 
     current_time = Time.current.to_i
@@ -240,15 +240,15 @@ class SessionManagementService
     true
   end
 
-  def force_logout_user(user, reason = 'Security policy enforcement')
+  def force_logout_user(user, reason = "Security policy enforcement")
     return false unless user&.id
 
     sessions_destroyed = destroy_all_sessions(user)
-    
+
     # Log the forced logout
     AuditLog.log_security_event(
       user,
-      'forced_logout',
+      "forced_logout",
       {
         user_id: user.id,
         user_email: user.email,
@@ -260,7 +260,7 @@ class SessionManagementService
 
     # Create security alert
     SecurityAlertJob.perform_later(
-      'forced_logout',
+      "forced_logout",
       "User forcibly logged out: #{reason}",
       {
         user_id: user.id,
@@ -268,7 +268,7 @@ class SessionManagementService
         reason: reason,
         sessions_destroyed: sessions_destroyed
       },
-      'high'
+      "high"
     )
 
     Rails.logger.warn "Force logout for user #{user.id}: #{reason}"
@@ -330,7 +330,7 @@ class SessionManagementService
     recent_ips = recent_sessions.map { |s| s[:ip_address] }.compact.uniq
     if recent_ips.size > 3
       SecurityAlertJob.perform_later(
-        'suspicious_login_pattern',
+        "suspicious_login_pattern",
         "User logged in from multiple IPs recently",
         {
           user_id: user.id,
@@ -338,18 +338,18 @@ class SessionManagementService
           recent_ips: recent_ips,
           session_count: recent_sessions.size
         },
-        'medium'
+        "medium"
       )
     end
   end
 
   def check_session_anomalies(user, session_data, request_info)
     # Check for IP address changes during session
-    if session_data[:ip_address] && request_info[:ip_address] && 
+    if session_data[:ip_address] && request_info[:ip_address] &&
        session_data[:ip_address] != request_info[:ip_address]
-      
+
       SecurityAlertJob.perform_later(
-        'session_ip_change',
+        "session_ip_change",
         "Session IP address changed during active session",
         {
           user_id: user.id,
@@ -359,7 +359,7 @@ class SessionManagementService
           new_ip: request_info[:ip_address],
           timestamp: Time.current
         },
-        'high'
+        "high"
       )
     end
   end

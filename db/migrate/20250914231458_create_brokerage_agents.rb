@@ -10,7 +10,7 @@ class CreateBrokerageAgents < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :brokerage_agents, [:user_id, :organization_id], unique: true
+    add_index :brokerage_agents, [ :user_id, :organization_id ], unique: true
     add_index :brokerage_agents, :active
   end
 end

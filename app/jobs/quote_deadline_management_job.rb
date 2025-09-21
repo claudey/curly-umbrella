@@ -3,11 +3,11 @@ class QuoteDeadlineManagementJob < ApplicationJob
 
   def perform
     Rails.logger.info "Starting quote deadline management job"
-    
+
     expire_overdue_quotes
     send_expiration_warnings
     send_deadline_reminders
-    
+
     Rails.logger.info "Completed quote deadline management job"
   end
 
@@ -16,10 +16,10 @@ class QuoteDeadlineManagementJob < ApplicationJob
   def expire_overdue_quotes
     expired_count = Quote.check_expired_quotes!
     Rails.logger.info "Expired #{expired_count} overdue quotes"
-    
+
     # Notify insurance companies about expired quotes
-    Quote.where(status: 'expired')
-         .where('updated_at >= ?', 1.hour.ago)
+    Quote.where(status: "expired")
+         .where("updated_at >= ?", 1.hour.ago)
          .includes(:insurance_company, :insurance_application)
          .find_each do |quote|
       send_expiration_notification(quote)

@@ -5,10 +5,10 @@ class SecurityBlockNotificationJob < ApplicationJob
 
   def perform(ip_address, reason, permanent, duration)
     # Send notification to security team about IP blocks
-    
+
     # Find admin users to notify
     admin_users = User.joins(:user_roles)
-                     .where(user_roles: { role: ['super_admin', 'admin'] })
+                     .where(user_roles: { role: [ "super_admin", "admin" ] })
                      .where(active: true)
 
     admin_users.each do |user|
@@ -20,7 +20,7 @@ class SecurityBlockNotificationJob < ApplicationJob
 
     # Create a security alert for the block
     SecurityAlertJob.perform_later(
-      'ip_blocked',
+      "ip_blocked",
       "IP address blocked: #{ip_address}",
       {
         ip_address: ip_address,
@@ -29,7 +29,7 @@ class SecurityBlockNotificationJob < ApplicationJob
         duration: duration,
         blocked_at: Time.current
       },
-      permanent ? 'high' : 'medium'
+      permanent ? "high" : "medium"
     )
 
   rescue StandardError => e

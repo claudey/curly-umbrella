@@ -2,7 +2,7 @@ class WeeklyDocumentDigestJob < ApplicationJob
   queue_as :default
 
   def perform
-    Organization.find_each do |organization>
+    Organization.find_each do |organization|
       send_weekly_digest_for_organization(organization)
     end
   end
@@ -11,13 +11,13 @@ class WeeklyDocumentDigestJob < ApplicationJob
 
   def send_weekly_digest_for_organization(organization)
     users = organization.users.where(email_notifications_enabled: true)
-    
+
     users.find_each do |user|
       # Skip if user has opted out of digest emails
       next unless user.notification_preferences&.weekly_digest_enabled?
 
       digest_data = prepare_digest_data(organization, user)
-      
+
       # Only send if there's meaningful activity
       if digest_data[:has_activity]
         DocumentMailer.with(
@@ -69,13 +69,13 @@ class WeeklyDocumentDigestJob < ApplicationJob
 
     # Filter based on user's access level
     case user.role
-    when 'admin', 'brokerage_admin'
+    when "admin", "brokerage_admin"
       documents # Admins can see all documents
     else
       # Regular users can see public documents and their own private documents
       documents.where(
-        '(access_level = ? AND is_public = ?) OR (access_level = ?) OR (user_id = ?)',
-        'public', true, 'organization', user.id
+        "(access_level = ? AND is_public = ?) OR (access_level = ?) OR (user_id = ?)",
+        "public", true, "organization", user.id
       )
     end
   end

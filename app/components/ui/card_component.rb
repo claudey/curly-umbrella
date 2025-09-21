@@ -1,6 +1,6 @@
 class Ui::CardComponent < ViewComponent::Base
   include Ui::DesignSystem
-  
+
   renders_one :header
   renders_one :body
   renders_one :footer
@@ -60,14 +60,14 @@ class Ui::CardComponent < ViewComponent::Base
 
   def card_classes
     base_classes = Ui::DesignSystem.card_classes(variant: variant.to_sym)
-    
+
     additional_classes_array = []
     additional_classes_array << padding_classes if padding
     additional_classes_array << hover_classes if hover_effect || clickable
     additional_classes_array << "cursor-pointer" if clickable || href
     additional_classes_array << additional_classes if additional_classes
 
-    [base_classes, *additional_classes_array].compact.join(" ")
+    [ base_classes, *additional_classes_array ].compact.join(" ")
   end
 
   def padding_classes

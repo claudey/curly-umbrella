@@ -7,25 +7,25 @@ class DocumentMailer < ApplicationMailer
 
     # Set email subject based on event type
     subject = case @event_type
-              when :document_uploaded
+    when :document_uploaded
                 "New Document: #{@document.name}"
-              when :document_updated
+    when :document_updated
                 "Document Updated: #{@document.name}"
-              when :document_archived
+    when :document_archived
                 "Document Archived: #{@document.name}"
-              when :document_restored
+    when :document_restored
                 "Document Restored: #{@document.name}"
-              when :document_expiring
+    when :document_expiring
                 "⚠️ Document Expiring Soon: #{@document.name}"
-              when :document_expired
+    when :document_expired
                 "🚨 Document Expired: #{@document.name}"
-              when :document_shared
+    when :document_shared
                 "Document Shared With You: #{@document.name}"
-              when :document_version_created
+    when :document_version_created
                 "New Version Available: #{@document.name}"
-              else
+    else
                 "Document Notification: #{@document.name}"
-              end
+    end
 
     @subject = subject
     @action_url = document_url(@document)

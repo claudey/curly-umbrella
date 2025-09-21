@@ -33,11 +33,11 @@ class SecurityMonitoringService
     }
 
     if success
-      AuditLog.log_authentication(user, 'login_success', login_data)
+      AuditLog.log_authentication(user, "login_success", login_data)
       check_location_anomaly(user, ip_address)
       check_unusual_login_time(user)
     else
-      AuditLog.log_authentication(user, 'login_failure', login_data)
+      AuditLog.log_authentication(user, "login_failure", login_data)
       check_failed_login_pattern(user, ip_address)
     end
 
@@ -57,25 +57,25 @@ class SecurityMonitoringService
 
     # Check for rapid successive actions
     check_rapid_actions(user, action)
-    
+
     # Check for privilege escalation attempts
     check_privilege_escalation(user, action, resource)
-    
+
     # Check for unusual data access patterns
     check_data_access_patterns(user, action, resource)
   end
 
   def check_anomalies
     Rails.logger.info "Starting security anomaly check..."
-    
+
     anomalies = []
     anomalies.concat(check_failed_login_clusters)
     anomalies.concat(check_suspicious_ip_patterns)
     anomalies.concat(check_unusual_activity_spikes)
     anomalies.concat(check_off_hours_activity)
-    
+
     anomalies.each { |anomaly| handle_security_anomaly(anomaly) }
-    
+
     Rails.logger.info "Security anomaly check completed. Found #{anomalies.count} anomalies."
     anomalies
   end
@@ -84,7 +84,7 @@ class SecurityMonitoringService
 
   def check_failed_login_pattern(user, ip_address)
     recent_failures = AuditLog.where(
-      action: 'login_failure',
+      action: "login_failure",
       created_at: TIME_WINDOW.ago..Time.current
     )
 
@@ -135,7 +135,7 @@ class SecurityMonitoringService
     # Get previous login location
     previous_login = AuditLog.where(
       user: user,
-      action: 'login_success'
+      action: "login_success"
     ).where.not("details->>'ip_address' = ?", ip_address)
      .order(created_at: :desc)
      .first
@@ -143,14 +143,14 @@ class SecurityMonitoringService
     return unless previous_login
 
     # Simple location check (in production, use GeoIP service)
-    previous_ip = previous_login.details['ip_address']
+    previous_ip = previous_login.details["ip_address"]
     if previous_ip && significant_location_change?(previous_ip, ip_address)
       create_security_alert(
         :unusual_login_location,
         "Login from unusual location detected for user #{user.email}",
-        { 
-          user: user, 
-          current_ip: ip_address, 
+        {
+          user: user,
+          current_ip: ip_address,
           previous_ip: previous_ip,
           time_since_last_login: Time.current - previous_login.created_at
         },
@@ -164,12 +164,12 @@ class SecurityMonitoringService
     # For now, we'll check recent successful logins
     recent_logins = AuditLog.where(
       user: user,
-      action: 'login_success',
+      action: "login_success",
       created_at: 1.hour.ago..Time.current
     )
 
     unique_ips = recent_logins.pluck("details->>'ip_address'").uniq.compact
-    
+
     if unique_ips.length > 3 # More than 3 different IPs in 1 hour
       create_security_alert(
         :concurrent_sessions,
@@ -188,10 +188,10 @@ class SecurityMonitoringService
       create_security_alert(
         :unauthorized_access_attempt,
         "Attempt to access resource outside organization by #{user.email}",
-        { 
-          user: user, 
-          action: action, 
-          resource: resource.class.name, 
+        {
+          user: user,
+          action: action,
+          resource: resource.class.name,
           resource_id: resource.id,
           user_org: user.organization_id,
           resource_org: resource.organization_id
@@ -220,7 +220,7 @@ class SecurityMonitoringService
     # Check for bulk data access
     recent_access = AuditLog.where(
       user: user,
-      category: 'data_access',
+      category: "data_access",
       created_at: 1.hour.ago..Time.current
     )
 
@@ -236,10 +236,10 @@ class SecurityMonitoringService
 
   def check_failed_login_clusters
     anomalies = []
-    
+
     # Check for IP addresses with multiple failed attempts across different users
     failed_logins = AuditLog.where(
-      action: 'login_failure',
+      action: "login_failure",
       created_at: 1.hour.ago..Time.current
     )
 
@@ -260,16 +260,16 @@ class SecurityMonitoringService
 
   def check_suspicious_ip_patterns
     anomalies = []
-    
+
     # Check for IPs accessing multiple user accounts
     recent_activity = AuditLog.where(created_at: 1.hour.ago..Time.current)
                              .where.not(user: nil)
-    
+
     ip_user_map = {}
     recent_activity.find_each do |log|
-      ip = log.details['ip_address']
+      ip = log.details["ip_address"]
       next unless ip
-      
+
       ip_user_map[ip] ||= Set.new
       ip_user_map[ip] << log.user_id
     end
@@ -290,17 +290,17 @@ class SecurityMonitoringService
 
   def check_unusual_activity_spikes
     anomalies = []
-    
+
     current_hour_activity = AuditLog.where(created_at: 1.hour.ago..Time.current).count
     previous_hour_activity = AuditLog.where(created_at: 2.hours.ago..1.hour.ago).count
-    
+
     # Check for 300% increase in activity
     if previous_hour_activity > 0 && current_hour_activity > (previous_hour_activity * 3)
       anomalies << {
         type: :activity_spike,
         message: "Unusual spike in system activity detected",
-        data: { 
-          current_hour: current_hour_activity, 
+        data: {
+          current_hour: current_hour_activity,
           previous_hour: previous_hour_activity,
           increase_factor: (current_hour_activity.to_f / previous_hour_activity).round(2)
         },
@@ -313,18 +313,18 @@ class SecurityMonitoringService
 
   def check_off_hours_activity
     anomalies = []
-    
+
     # Define business hours (9 AM to 6 PM in system timezone)
     current_time = Time.current
     business_start = current_time.beginning_of_day + 9.hours
     business_end = current_time.beginning_of_day + 18.hours
-    
+
     # Check if current time is outside business hours
     if current_time < business_start || current_time > business_end
       recent_activity = AuditLog.where(created_at: 30.minutes.ago..Time.current)
-                               .where.not(action: ['login_success', 'login_failure'])
+                               .where.not(action: [ "login_success", "login_failure" ])
                                .count
-      
+
       if recent_activity > 10 # More than 10 non-login activities outside business hours
         anomalies << {
           type: :off_hours_activity,
@@ -342,13 +342,13 @@ class SecurityMonitoringService
     # In production, use a GeoIP service like MaxMind
     # For now, simple check if IPs are significantly different
     return false if ip1 == ip2
-    
+
     # Basic heuristic: if first 2 octets are different, consider it significant
-    ip1_parts = ip1.split('.')
-    ip2_parts = ip2.split('.')
-    
+    ip1_parts = ip1.split(".")
+    ip2_parts = ip2.split(".")
+
     return true if ip1_parts[0] != ip2_parts[0] || ip1_parts[1] != ip2_parts[1]
-    
+
     false
   rescue StandardError
     false
@@ -362,7 +362,7 @@ class SecurityMonitoringService
       data: data,
       organization: data[:user]&.organization,
       triggered_at: Time.current,
-      status: 'active'
+      status: "active"
     )
 
     handle_security_alert(alert)
@@ -411,7 +411,7 @@ class SecurityMonitoringService
   def notify_security_team_immediately(alert)
     # In production, this would send to security team via Slack, PagerDuty, etc.
     Rails.logger.error "CRITICAL SECURITY ALERT: #{alert.message}"
-    
+
     # Send email to all super admins
     User.super_admin.find_each do |admin|
       SecurityMailer.critical_alert(admin, alert).deliver_now
@@ -420,7 +420,7 @@ class SecurityMonitoringService
 
   def notify_security_team(alert)
     Rails.logger.warn "SECURITY ALERT: #{alert.message}"
-    
+
     # Queue notification email
     SecurityMailer.security_alert(alert).deliver_later
   end
@@ -437,7 +437,7 @@ class SecurityMonitoringService
     case alert.alert_type.to_sym
     when :brute_force_attack, :suspicious_ip_activity
       # Auto-block IP after critical threshold
-      if alert.severity == 'critical'
+      if alert.severity == "critical"
         ip_address = alert.data[:ip_address]
         IpBlockingService.block_ip(ip_address, "Automatic block due to #{alert.alert_type}")
       end
@@ -462,7 +462,7 @@ class SecurityMonitoringService
     # Get user's typical login hours from historical data
     typical_hours = get_user_typical_login_hours(user)
     current_hour = Time.current.hour
-    
+
     unless typical_hours.include?(current_hour)
       create_security_alert(
         :unusual_login_time,
@@ -477,30 +477,30 @@ class SecurityMonitoringService
     # Analyze last 30 days of successful logins
     logins = AuditLog.where(
       user: user,
-      action: 'login_success',
+      action: "login_success",
       created_at: 30.days.ago..Time.current
     )
 
     login_hours = logins.pluck(:created_at).map(&:hour)
-    
+
     # Return hours that represent 80% of user's login activity
     hour_counts = login_hours.group_by(&:itself).transform_values(&:count)
     total_logins = login_hours.count
-    
+
     return (0..23).to_a if total_logins < 5 # Not enough data
-    
+
     sorted_hours = hour_counts.sort_by { |_, count| -count }
-    
+
     typical_hours = []
     accumulated_count = 0
     threshold = (total_logins * 0.8).ceil
-    
+
     sorted_hours.each do |hour, count|
       typical_hours << hour
       accumulated_count += count
       break if accumulated_count >= threshold
     end
-    
+
     typical_hours
   end
 end

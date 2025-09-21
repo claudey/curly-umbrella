@@ -3,30 +3,30 @@ namespace :admin do
   task create_super_admin: :environment do
     # Temporarily disable tenant isolation for this task
     ActsAsTenant.without_tenant do
-    email = ENV['ADMIN_EMAIL'] || 'admin@brokersync.com'
-    password = ENV['ADMIN_PASSWORD'] || 'SuperAdmin123!'
-    first_name = ENV['ADMIN_FIRST_NAME'] || 'Super'
-    last_name = ENV['ADMIN_LAST_NAME'] || 'Admin'
-    
+    email = ENV["ADMIN_EMAIL"] || "admin@brokersync.com"
+    password = ENV["ADMIN_PASSWORD"] || "SuperAdmin123!"
+    first_name = ENV["ADMIN_FIRST_NAME"] || "Super"
+    last_name = ENV["ADMIN_LAST_NAME"] || "Admin"
+
     # Create a dummy organization for the super admin
-    admin_org = Organization.find_or_create_by(name: 'BrokerSync Admin') do |org|
-      org.subdomain = 'admin'
-      org.license_number = 'ADMIN-001'
-      org.description = 'System administration organization'
+    admin_org = Organization.find_or_create_by(name: "BrokerSync Admin") do |org|
+      org.subdomain = "admin"
+      org.license_number = "ADMIN-001"
+      org.description = "System administration organization"
       org.active = true
     end
-    
+
     # Create or find the super admin user
     admin_user = User.find_or_initialize_by(email: email) do |user|
       user.first_name = first_name
       user.last_name = last_name
-      user.phone = '000-000-0000'
-      user.role = 'super_admin'
+      user.phone = "000-000-0000"
+      user.role = "super_admin"
       user.organization = admin_org
       user.password = password
       user.password_confirmation = password
     end
-    
+
     if admin_user.persisted?
       puts "Super admin already exists: #{admin_user.email}"
     elsif admin_user.save
@@ -44,12 +44,12 @@ namespace :admin do
     end
     end # ActsAsTenant.without_tenant
   end
-  
+
   desc "List all super admin users"
   task list_super_admins: :environment do
     ActsAsTenant.without_tenant do
-      super_admins = User.where(role: 'super_admin')
-      
+      super_admins = User.where(role: "super_admin")
+
       if super_admins.any?
         puts "Super Admin Users:"
         puts "-" * 50

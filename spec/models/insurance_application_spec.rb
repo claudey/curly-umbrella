@@ -4,7 +4,7 @@ RSpec.describe InsuranceApplication, type: :model do
   let(:organization) { create(:organization) }
   let(:user) { create(:user, organization: organization) }
   let(:client) { create(:client, organization: organization) }
-  
+
   before { ActsAsTenant.current_tenant = organization }
   after { ActsAsTenant.current_tenant = nil }
 
@@ -82,16 +82,16 @@ RSpec.describe InsuranceApplication, type: :model do
 
     it 'sets timestamps on status changes' do
       app = create(:insurance_application, organization: organization, user: user, client: client)
-      
+
       app.update!(status: 'submitted')
       expect(app.submitted_at).to be_present
-      
+
       app.update!(status: 'under_review')
       expect(app.review_started_at).to be_present
-      
+
       app.update!(status: 'approved')
       expect(app.approved_at).to be_present
-      
+
       rejected_app = create(:insurance_application, organization: organization, user: user, client: client)
       rejected_app.update!(status: 'rejected', rejection_reason: 'Test reason')
       expect(rejected_app.rejected_at).to be_present
@@ -125,7 +125,7 @@ RSpec.describe InsuranceApplication, type: :model do
       it 'returns true for submitted or under_review applications' do
         application.status = 'submitted'
         expect(application.can_be_approved?).to be_truthy
-        
+
         application.status = 'under_review'
         expect(application.can_be_approved?).to be_truthy
       end
@@ -133,7 +133,7 @@ RSpec.describe InsuranceApplication, type: :model do
       it 'returns false for other statuses' do
         application.status = 'draft'
         expect(application.can_be_approved?).to be_falsey
-        
+
         application.status = 'approved'
         expect(application.can_be_approved?).to be_falsey
       end
@@ -143,7 +143,7 @@ RSpec.describe InsuranceApplication, type: :model do
       it 'returns true for submitted or under_review applications' do
         application.status = 'submitted'
         expect(application.can_be_rejected?).to be_truthy
-        
+
         application.status = 'under_review'
         expect(application.can_be_rejected?).to be_truthy
       end
@@ -235,7 +235,7 @@ RSpec.describe InsuranceApplication, type: :model do
       it 'returns only accepted quotes' do
         accepted_quote = create(:quote, :accepted, insurance_application: application, organization: organization)
         create(:quote, :rejected, insurance_application: application, organization: organization)
-        
+
         expect(application.accepted_quotes).to include(accepted_quote)
         expect(application.accepted_quotes.count).to eq(1)
       end

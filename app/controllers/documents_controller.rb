@@ -1,9 +1,9 @@
 class DocumentsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_document, only: [:show, :edit, :update, :destroy, :download, :archive, :restore, :versions, :new_version]
-  before_action :authorize_view, only: [:show, :download, :versions]
-  before_action :authorize_edit, only: [:edit, :update, :new_version]
-  before_action :authorize_delete, only: [:destroy, :archive, :restore]
+  before_action :set_document, only: [ :show, :edit, :update, :destroy, :download, :archive, :restore, :versions, :new_version ]
+  before_action :authorize_view, only: [ :show, :download, :versions ]
+  before_action :authorize_edit, only: [ :edit, :update, :new_version ]
+  before_action :authorize_delete, only: [ :destroy, :archive, :restore ]
 
   def index
     search_service = DocumentSearchService.new(current_tenant_documents, params, current_user)
@@ -11,13 +11,13 @@ class DocumentsController < ApplicationController
                                .includes(:user, :archived_by, file_attachment: :blob)
                                .page(params[:page])
                                .per(20)
-    
+
     @facets = search_service.facets
     @search_suggestions = search_service.search_suggestions if params[:search].present?
-    
+
     @categories = Document::CATEGORIES
     @document_types = Document::DOCUMENT_TYPES
-    
+
     respond_to do |format|
       format.html
       format.json do
@@ -41,11 +41,11 @@ class DocumentsController < ApplicationController
                                .includes(:user, :archived_by, file_attachment: :blob)
                                .page(params[:page])
                                .per(20)
-    
+
     @facets = search_service.facets
     @categories = Document::CATEGORIES
     @document_types = Document::DOCUMENT_TYPES
-    
+
     render :index
   end
 
@@ -55,18 +55,18 @@ class DocumentsController < ApplicationController
                                .includes(:user, :archived_by, file_attachment: :blob)
                                .page(params[:page])
                                .per(20)
-    
+
     @facets = search_service.facets
     @categories = Document::CATEGORIES
     @document_types = Document::DOCUMENT_TYPES
-    
+
     render :index
   end
 
   def search_suggestions
     search_service = DocumentSearchService.new(current_tenant_documents, params, current_user)
     suggestions = search_service.search_suggestions
-    
+
     render json: { suggestions: suggestions }
   end
 
@@ -83,11 +83,11 @@ class DocumentsController < ApplicationController
     @document = Document.new(document_params)
     @document.organization = current_user.organization
     @document.user = current_user
-    
+
     set_documentable_from_params
 
     if @document.save
-      redirect_to @document, notice: 'Document was successfully created.'
+      redirect_to @document, notice: "Document was successfully created."
     else
       render :new, status: :unprocessable_entity
     end
@@ -101,13 +101,13 @@ class DocumentsController < ApplicationController
       # Handle file update separately to create new version if file is changed
       if document_params[:file].present?
         new_document = @document.create_new_version!(
-          document_params[:file], 
+          document_params[:file],
           current_user,
           document_params.except(:file).to_h
         )
-        redirect_to new_document, notice: 'Document was updated with a new version.'
+        redirect_to new_document, notice: "Document was updated with a new version."
       else
-        redirect_to @document, notice: 'Document was successfully updated.'
+        redirect_to @document, notice: "Document was successfully updated."
       end
     else
       render :edit, status: :unprocessable_entity
@@ -116,9 +116,9 @@ class DocumentsController < ApplicationController
 
   def destroy
     if @document.destroy
-      redirect_to documents_path, notice: 'Document was successfully deleted.'
+      redirect_to documents_path, notice: "Document was successfully deleted."
     else
-      redirect_to @document, alert: 'Unable to delete document.'
+      redirect_to @document, alert: "Unable to delete document."
     end
   end
 
@@ -126,25 +126,25 @@ class DocumentsController < ApplicationController
     if @document.file_attached?
       redirect_to @document.download_url, allow_other_host: true
     else
-      redirect_to @document, alert: 'No file attached to this document.'
+      redirect_to @document, alert: "No file attached to this document."
     end
   end
 
   def archive
     reason = params[:reason]
-    
+
     if @document.archive!(current_user, reason)
-      redirect_to @document, notice: 'Document was successfully archived.'
+      redirect_to @document, notice: "Document was successfully archived."
     else
-      redirect_to @document, alert: 'Unable to archive document.'
+      redirect_to @document, alert: "Unable to archive document."
     end
   end
 
   def restore
     if @document.restore!(current_user)
-      redirect_to @document, notice: 'Document was successfully restored.'
+      redirect_to @document, notice: "Document was successfully restored."
     else
-      redirect_to @document, alert: 'Unable to restore document.'
+      redirect_to @document, alert: "Unable to restore document."
     end
   end
 
@@ -154,7 +154,7 @@ class DocumentsController < ApplicationController
 
   def new_version
     if params[:file].blank?
-      redirect_to @document, alert: 'Please select a file for the new version.'
+      redirect_to @document, alert: "Please select a file for the new version."
       return
     end
 
@@ -169,36 +169,36 @@ class DocumentsController < ApplicationController
 
     if new_document.persisted?
       DocumentNotificationService.notify_new_version_created(new_document)
-      redirect_to new_document, notice: 'New version created successfully.'
+      redirect_to new_document, notice: "New version created successfully."
     else
-      redirect_to @document, alert: 'Unable to create new version.'
+      redirect_to @document, alert: "Unable to create new version."
     end
   end
 
   def generate_pdf
     case params[:template]
-    when 'document_info'
+    when "document_info"
       result = PdfGenerationService.new(
         render_to_string(
-          template: 'documents/pdf_templates/document_info',
-          layout: 'pdf',
+          template: "documents/pdf_templates/document_info",
+          layout: "pdf",
           locals: { document: @document }
         ),
         "document_info_#{@document.id}.pdf"
       ).stream_download
-    when 'document_list'
-      documents = [@document]
+    when "document_list"
+      documents = [ @document ]
       result = PdfGenerationService.generate_document_list_pdf(documents, "Document: #{@document.name}")
     else
-      redirect_to @document, alert: 'Invalid PDF template specified.'
+      redirect_to @document, alert: "Invalid PDF template specified."
       return
     end
 
     send_file result[:file_path],
               filename: result[:filename],
               type: result[:content_type],
-              disposition: 'attachment'
-              
+              disposition: "attachment"
+
     # Clean up after sending
     Thread.new { sleep(5); result[:cleanup].call }
 
@@ -218,19 +218,19 @@ class DocumentsController < ApplicationController
 
   def authorize_view
     unless @document.can_be_viewed_by?(current_user)
-      redirect_to documents_path, alert: 'You are not authorized to view this document.'
+      redirect_to documents_path, alert: "You are not authorized to view this document."
     end
   end
 
   def authorize_edit
     unless @document.can_be_edited_by?(current_user)
-      redirect_to @document, alert: 'You are not authorized to edit this document.'
+      redirect_to @document, alert: "You are not authorized to edit this document."
     end
   end
 
   def authorize_delete
     unless @document.can_be_deleted_by?(current_user)
-      redirect_to @document, alert: 'You are not authorized to perform this action on this document.'
+      redirect_to @document, alert: "You are not authorized to perform this action on this document."
     end
   end
 
@@ -245,36 +245,36 @@ class DocumentsController < ApplicationController
     documents = documents.by_category(params[:category]) if params[:category].present?
     documents = documents.by_type(params[:document_type]) if params[:document_type].present?
     documents = documents.by_tags(params[:tags]) if params[:tags].present?
-    
+
     if params[:search].present?
       search_term = "%#{params[:search]}%"
       documents = documents.where(
-        "name ILIKE ? OR description ILIKE ?", 
-        search_term, 
+        "name ILIKE ? OR description ILIKE ?",
+        search_term,
         search_term
       )
     end
 
     case params[:status]
-    when 'archived'
+    when "archived"
       documents = documents.archived
-    when 'expiring'
+    when "expiring"
       documents = documents.expiring_soon
-    when 'expired'
+    when "expired"
       documents = documents.expired
     else
-      documents = documents.not_archived unless params[:action] == 'archived'
+      documents = documents.not_archived unless params[:action] == "archived"
     end
 
     # Sort
     case params[:sort]
-    when 'name'
+    when "name"
       documents = documents.order(:name)
-    when 'type'
+    when "type"
       documents = documents.order(:document_type)
-    when 'size'
+    when "size"
       documents = documents.order(:file_size)
-    when 'created_at'
+    when "created_at"
       documents = documents.order(created_at: :desc)
     else
       documents = documents.recent
@@ -285,7 +285,7 @@ class DocumentsController < ApplicationController
 
   def document_params
     params.require(:document).permit(
-      :name, :description, :document_type, :category, :access_level, 
+      :name, :description, :document_type, :category, :access_level,
       :is_public, :expires_at, :file, :documentable_type, :documentable_id,
       tags: [], metadata: {}
     )
@@ -301,9 +301,9 @@ class DocumentsController < ApplicationController
       access_level: document.access_level,
       file_size: document.human_file_size,
       content_type: document.content_type,
-      created_at: document.created_at.strftime('%B %d, %Y'),
-      updated_at: document.updated_at.strftime('%B %d, %Y'),
-      expires_at: document.expires_at&.strftime('%B %d, %Y'),
+      created_at: document.created_at.strftime("%B %d, %Y"),
+      updated_at: document.updated_at.strftime("%B %d, %Y"),
+      expires_at: document.expires_at&.strftime("%B %d, %Y"),
       is_archived: document.is_archived?,
       is_current: document.is_current?,
       tags: document.tags,

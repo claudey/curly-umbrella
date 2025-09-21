@@ -19,7 +19,7 @@ class DocumentExpirationCheckJob < ApplicationJob
       next if recently_notified_about_expiration?(document)
 
       DocumentNotificationService.notify_document_expiring(document)
-      
+
       # Mark that we've notified about this document
       Rails.cache.write(
         "document_expiration_notified_#{document.id}",
@@ -39,10 +39,10 @@ class DocumentExpirationCheckJob < ApplicationJob
 
     expired_documents.find_each do |document|
       # Skip if we've already notified about this document expiring
-      next if recently_notified_about_expiration?(document, 'expired')
+      next if recently_notified_about_expiration?(document, "expired")
 
       DocumentNotificationService.notify_document_expired(document)
-      
+
       # Mark that we've notified about this expired document
       Rails.cache.write(
         "document_expired_notified_#{document.id}",
@@ -54,7 +54,7 @@ class DocumentExpirationCheckJob < ApplicationJob
     Rails.logger.info "Checked #{expired_documents.count} expired documents"
   end
 
-  def recently_notified_about_expiration?(document, type = 'expiring')
+  def recently_notified_about_expiration?(document, type = "expiring")
     Rails.cache.exist?("document_#{type}_notified_#{document.id}")
   end
 end

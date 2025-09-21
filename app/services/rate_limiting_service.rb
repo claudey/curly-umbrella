@@ -36,7 +36,7 @@ class RateLimitingService
   def check_rate_limit(identifier, limit_type, options = {})
     # Temporarily disabled for debugging - always allow
     return false if Rails.env.development?
-    
+
     return false if whitelisted?(identifier) || local_identifier?(identifier)
 
     limit_config = get_limit_config(limit_type, options)
@@ -55,11 +55,11 @@ class RateLimitingService
     return false unless limit_config
 
     cache_key = build_cache_key(identifier, limit_type)
-    
+
     # Get current count or initialize to 0
     current_count = Rails.cache.fetch(cache_key, expires_in: limit_config[:window].seconds) { 0 }
     new_count = current_count + 1
-    
+
     # Update the counter with the same expiration
     Rails.cache.write(cache_key, new_count, expires_in: limit_config[:window].seconds)
 
@@ -93,7 +93,7 @@ class RateLimitingService
     cache_key = build_cache_key(identifier, limit_type)
     current_count = Rails.cache.fetch(cache_key, expires_in: limit_config[:window].seconds) { 0 }
 
-    [limit_config[:limit] - current_count, 0].max
+    [ limit_config[:limit] - current_count, 0 ].max
   end
 
   def get_rate_limit_info(identifier, limit_type)
@@ -109,7 +109,7 @@ class RateLimitingService
       limit: limit_config[:limit],
       window: limit_config[:window],
       current_count: current_count,
-      remaining: [limit_config[:limit] - current_count, 0].max,
+      remaining: [ limit_config[:limit] - current_count, 0 ].max,
       window_start: Time.current - limit_config[:window].seconds,
       window_end: Time.current,
       blocked: current_count >= limit_config[:limit]
@@ -120,14 +120,14 @@ class RateLimitingService
   def self.check_request_rate_limit(ip_address, path, authenticated: false)
     limit_type = determine_limit_type_from_path(path)
     options = { authenticated: authenticated }
-    
+
     instance.check_rate_limit(ip_address, limit_type, options)
   end
 
   def self.increment_request_counter(ip_address, path, authenticated: false)
     limit_type = determine_limit_type_from_path(path)
     options = { authenticated: authenticated }
-    
+
     instance.increment_counter(ip_address, limit_type, options)
   end
 
@@ -152,19 +152,19 @@ class RateLimitingService
   # Get current rate limit violations for monitoring
   def self.get_violations_summary(time_window = 1.hour)
     violations = []
-    
+
     # This would typically be stored in a more persistent way
     # For now, we'll simulate based on current cache state
     cache_keys = Rails.cache.instance_variable_get(:@data)&.keys || []
-    rate_limit_keys = cache_keys.select { |key| key.to_s.start_with?('rate_limit:') }
-    
+    rate_limit_keys = cache_keys.select { |key| key.to_s.start_with?("rate_limit:") }
+
     rate_limit_keys.each do |key|
-      parts = key.to_s.split(':')
+      parts = key.to_s.split(":")
       next unless parts.length >= 3
-      
+
       identifier = parts[2]
       limit_type = parts[3]
-      
+
       info = instance.get_rate_limit_info(identifier, limit_type.to_sym)
       if info && info[:blocked]
         violations << {
@@ -176,7 +176,7 @@ class RateLimitingService
         }
       end
     end
-    
+
     violations
   end
 
@@ -207,7 +207,7 @@ class RateLimitingService
 
     # Create security alert
     SecurityAlertJob.perform_later(
-      'rate_limit_exceeded',
+      "rate_limit_exceeded",
       "Rate limit exceeded for #{limit_type}",
       {
         identifier: identifier,
@@ -216,7 +216,7 @@ class RateLimitingService
         limit: limit_config[:limit],
         window: limit_config[:window]
       },
-      'medium'
+      "medium"
     )
 
     # Auto-block for excessive violations
@@ -243,14 +243,14 @@ class RateLimitingService
 
       # Create critical security alert
       SecurityAlertJob.perform_later(
-        'brute_force_attack',
+        "brute_force_attack",
         "Multiple rate limit violations detected",
         {
           identifier: identifier,
           violation_count: violations,
           auto_blocked: true
         },
-        'critical'
+        "critical"
       )
     end
   end
@@ -267,8 +267,8 @@ class RateLimitingService
 
   def local_identifier?(identifier)
     # Don't rate limit local/development identifiers
-    return true if Rails.env.development? && (identifier == '127.0.0.1' || identifier == '::1')
-    
+    return true if Rails.env.development? && (identifier == "127.0.0.1" || identifier == "::1")
+
     # Check for local IP ranges if it's an IP
     if identifier =~ /\A(?:[0-9]{1,3}\.){3}[0-9]{1,3}\z/
       IpBlockingService.new.send(:local_ip?, identifier)

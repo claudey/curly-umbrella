@@ -3,16 +3,16 @@
 # Configure Active Record Encryption
 Rails.application.configure do
   # Primary encryption configuration
-  config.active_record.encryption.primary_key = Rails.application.credentials.encryption_primary_key || 
-                                                ENV['ENCRYPTION_PRIMARY_KEY'] ||
+  config.active_record.encryption.primary_key = Rails.application.credentials.encryption_primary_key ||
+                                                ENV["ENCRYPTION_PRIMARY_KEY"] ||
                                                 SecureRandom.hex(32)
-  
-  config.active_record.encryption.deterministic_key = Rails.application.credentials.encryption_deterministic_key || 
-                                                      ENV['ENCRYPTION_DETERMINISTIC_KEY'] ||
+
+  config.active_record.encryption.deterministic_key = Rails.application.credentials.encryption_deterministic_key ||
+                                                      ENV["ENCRYPTION_DETERMINISTIC_KEY"] ||
                                                       SecureRandom.hex(32)
-  
-  config.active_record.encryption.key_derivation_salt = Rails.application.credentials.encryption_key_derivation_salt || 
-                                                        ENV['ENCRYPTION_KEY_DERIVATION_SALT'] ||
+
+  config.active_record.encryption.key_derivation_salt = Rails.application.credentials.encryption_key_derivation_salt ||
+                                                        ENV["ENCRYPTION_KEY_DERIVATION_SALT"] ||
                                                         SecureRandom.hex(32)
 
   # Configure encryption behavior
@@ -43,22 +43,22 @@ if defined?(SecureHeaders)
       connect_src: %w['self' ws: wss:],
       frame_ancestors: %w['none']
     }
-    
+
     config.hsts = "max-age=#{1.year.to_i}; includeSubDomains; preload"
-    config.x_frame_options = 'DENY'
-    config.x_content_type_options = 'nosniff'
-    config.x_xss_protection = '1; mode=block'
-    config.x_download_options = 'noopen'
-    config.x_permitted_cross_domain_policies = 'none'
-    config.referrer_policy = 'strict-origin-when-cross-origin'
+    config.x_frame_options = "DENY"
+    config.x_content_type_options = "nosniff"
+    config.x_xss_protection = "1; mode=block"
+    config.x_download_options = "noopen"
+    config.x_permitted_cross_domain_policies = "none"
+    config.referrer_policy = "strict-origin-when-cross-origin"
   end
 else
   Rails.logger.warn "SecureHeaders gem not found. Consider adding it for enhanced security headers."
 end
 
 # Session Security
-Rails.application.config.session_store :cookie_store, 
-  key: '_brokersync_session',
+Rails.application.config.session_store :cookie_store,
+  key: "_brokersync_session",
   secure: Rails.env.production?,
   httponly: true,
   same_site: :lax,
@@ -81,34 +81,34 @@ end
 if defined?(Rack::Attack)
   class Rack::Attack
     # Throttle requests by IP (10 rpm)
-    throttle('req/ip', limit: 600, period: 60.seconds) do |req|
-      req.ip unless req.path.start_with?('/assets')
+    throttle("req/ip", limit: 600, period: 60.seconds) do |req|
+      req.ip unless req.path.start_with?("/assets")
     end
 
     # Throttle login attempts by email
-    throttle('logins/email', limit: 5, period: 20.minutes) do |req|
-      if req.path == '/users/sign_in' && req.post?
-        req.params['user']['email'].to_s.downcase.gsub(/\s+/, "")
+    throttle("logins/email", limit: 5, period: 20.minutes) do |req|
+      if req.path == "/users/sign_in" && req.post?
+        req.params["user"]["email"].to_s.downcase.gsub(/\s+/, "")
       end
     end
 
     # Throttle login attempts by IP
-    throttle('logins/ip', limit: 10, period: 20.minutes) do |req|
-      if req.path == '/users/sign_in' && req.post?
+    throttle("logins/ip", limit: 10, period: 20.minutes) do |req|
+      if req.path == "/users/sign_in" && req.post?
         req.ip
       end
     end
 
     # Block suspicious requests
-    blocklist('block suspicious requests') do |req|
+    blocklist("block suspicious requests") do |req|
       # Block if user agent is missing or suspicious
-      req.user_agent.blank? || 
-      req.user_agent.include?('bot') ||
-      req.user_agent.include?('crawler')
+      req.user_agent.blank? ||
+      req.user_agent.include?("bot") ||
+      req.user_agent.include?("crawler")
     end
 
     # Safelist admin IPs (customize as needed)
-    safelist('allow admin IPs') do |req|
+    safelist("allow admin IPs") do |req|
       # Add your admin IPs here
       # ['127.0.0.1', '::1'].include?(req.ip)
       false
@@ -146,10 +146,10 @@ module DataProtection
 
   def self.classify_field(field_name)
     field_str = field_name.to_s.downcase
-    
+
     return :sensitive if SENSITIVE_FIELDS.any? { |sf| field_str.include?(sf) }
     return :pii if PII_FIELDS.any? { |pf| field_str.include?(pf) }
-    return :standard
+    :standard
   end
 
   def self.retention_period_for(model_class)

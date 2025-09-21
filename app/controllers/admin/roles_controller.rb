@@ -1,20 +1,20 @@
 class Admin::RolesController < ApplicationController
   include AuthorizationController
-  
+
   before_action :require_admin
-  before_action :set_role, only: [:show, :edit, :update, :destroy, :assign_permissions, :revoke_permissions]
-  before_action :authorize_role_management, only: [:edit, :update, :destroy, :assign_permissions, :revoke_permissions]
-  
+  before_action :set_role, only: [ :show, :edit, :update, :destroy, :assign_permissions, :revoke_permissions ]
+  before_action :authorize_role_management, only: [ :edit, :update, :destroy, :assign_permissions, :revoke_permissions ]
+
   def index
     @system_roles = Role.system_roles.includes(:permissions, :users).by_level
     @organization_roles = if current_user.super_admin?
                            Role.includes(:organization, :permissions, :users)
                                .where.not(organization_id: nil)
                                .order(:organization_id, :level)
-                         else
+    else
                            current_organization&.roles&.includes(:permissions, :users)&.by_level || Role.none
-                         end
-    
+    end
+
     @role_statistics = {
       total_system_roles: @system_roles.count,
       total_organization_roles: @organization_roles.count,
@@ -42,17 +42,17 @@ class Admin::RolesController < ApplicationController
   def create
     @role = if role_params[:organization_id].present?
               Organization.find(role_params[:organization_id]).roles.build(role_params)
-            else
+    else
               Role.new(role_params.merge(organization_id: nil)) # System role
-            end
+    end
 
     if @role.save
       # Assign selected permissions
       assign_selected_permissions
-      
+
       AuditLog.log_user_management(
         current_user,
-        'role_created',
+        "role_created",
         {
           role_id: @role.id,
           role_name: @role.name,
@@ -60,8 +60,8 @@ class Admin::RolesController < ApplicationController
           permissions_assigned: params[:permission_ids]&.size || 0
         }
       )
-      
-      redirect_to admin_role_path(@role), notice: 'Role created successfully.'
+
+      redirect_to admin_role_path(@role), notice: "Role created successfully."
     else
       @available_permissions = Permission.active.order(:resource, :action)
       @permission_categories = group_permissions_by_category(@available_permissions)
@@ -77,15 +77,15 @@ class Admin::RolesController < ApplicationController
 
   def update
     old_attributes = @role.attributes.dup
-    
+
     if @role.update(role_params)
       # Handle permission updates
       handle_permission_updates
-      
+
       # Log the update
       log_role_update(old_attributes)
-      
-      redirect_to admin_role_path(@role), notice: 'Role updated successfully.'
+
+      redirect_to admin_role_path(@role), notice: "Role updated successfully."
     else
       @available_permissions = Permission.active.order(:resource, :action)
       @permission_categories = group_permissions_by_category(@available_permissions)
@@ -96,25 +96,25 @@ class Admin::RolesController < ApplicationController
 
   def destroy
     unless @role.can_be_deleted?
-      redirect_to admin_role_path(@role), alert: 'This role cannot be deleted as it has active users or dependencies.'
+      redirect_to admin_role_path(@role), alert: "This role cannot be deleted as it has active users or dependencies."
       return
     end
 
     role_name = @role.name
-    organization_name = @role.organization&.name || 'System'
-    
+    organization_name = @role.organization&.name || "System"
+
     @role.destroy!
-    
+
     AuditLog.log_user_management(
       current_user,
-      'role_deleted',
+      "role_deleted",
       {
         role_name: role_name,
         organization_name: organization_name,
-        severity: 'high'
+        severity: "high"
       }
     )
-    
+
     redirect_to admin_roles_path, notice: "Role '#{role_name}' deleted successfully."
   end
 
@@ -122,7 +122,7 @@ class Admin::RolesController < ApplicationController
     if request.post?
       permission_ids = params[:permission_ids] || []
       results = RolePermission.bulk_assign(@role, permission_names_from_ids(permission_ids), current_user)
-      
+
       if results[:failed].empty?
         redirect_to admin_role_path(@role), notice: "#{results[:success].size} permissions assigned successfully."
       else
@@ -141,7 +141,7 @@ class Admin::RolesController < ApplicationController
     if request.post?
       permission_ids = params[:permission_ids] || []
       results = RolePermission.bulk_revoke(@role, permission_names_from_ids(permission_ids), current_user)
-      
+
       if results[:failed].empty?
         redirect_to admin_role_path(@role), notice: "#{results[:success].size} permissions revoked successfully."
       else
@@ -173,23 +173,23 @@ class Admin::RolesController < ApplicationController
 
   def assign_selected_permissions
     return unless params[:permission_ids].present?
-    
+
     permission_names = permission_names_from_ids(params[:permission_ids])
     RolePermission.bulk_assign(@role, permission_names, current_user)
   end
 
   def handle_permission_updates
     return unless params[:permission_ids]
-    
+
     current_permission_ids = @role.permissions.pluck(:id).map(&:to_s)
     new_permission_ids = params[:permission_ids] || []
-    
+
     # Permissions to add
     to_add = new_permission_ids - current_permission_ids
     if to_add.any?
       RolePermission.bulk_assign(@role, permission_names_from_ids(to_add), current_user)
     end
-    
+
     # Permissions to remove
     to_remove = current_permission_ids - new_permission_ids
     if to_remove.any?
@@ -209,8 +209,8 @@ class Admin::RolesController < ApplicationController
 
   def most_used_role
     Role.joins(:users)
-        .group('roles.id')
-        .order('COUNT(users.id) DESC')
+        .group("roles.id")
+        .order("COUNT(users.id) DESC")
         .limit(1)
         .pick(:name)
   end
@@ -224,18 +224,18 @@ class Admin::RolesController < ApplicationController
                user: ur.user.email,
                role: ur.role.display_name,
                assigned_at: ur.granted_at,
-               organization: ur.role.organization&.name || 'System'
+               organization: ur.role.organization&.name || "System"
              }
            end
   end
 
   def log_role_update(old_attributes)
-    changes = @role.previous_changes.except('updated_at')
+    changes = @role.previous_changes.except("updated_at")
     return if changes.empty?
-    
+
     AuditLog.log_user_management(
       current_user,
-      'role_updated',
+      "role_updated",
       {
         role_id: @role.id,
         role_name: @role.name,

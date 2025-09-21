@@ -29,7 +29,7 @@ class Organization < ApplicationRecord
   end
 
   def active_applications_count
-    insurance_applications.where.not(status: ['rejected', 'expired']).count
+    insurance_applications.where.not(status: [ "rejected", "expired" ]).count
   end
 
   def monthly_applications_count
@@ -38,16 +38,16 @@ class Organization < ApplicationRecord
 
   # Feature flag support
   def feature_enabled?(feature_name)
-    settings.dig('features', feature_name.to_s) != false
+    settings.dig("features", feature_name.to_s) != false
   end
 
   def enable_feature!(feature_name)
-    self.settings = settings.merge('features' => (settings['features'] || {}).merge(feature_name.to_s => true))
+    self.settings = settings.merge("features" => (settings["features"] || {}).merge(feature_name.to_s => true))
     save!
   end
 
   def disable_feature!(feature_name)
-    self.settings = settings.merge('features' => (settings['features'] || {}).merge(feature_name.to_s => false))
+    self.settings = settings.merge("features" => (settings["features"] || {}).merge(feature_name.to_s => false))
     save!
   end
 
@@ -56,15 +56,15 @@ class Organization < ApplicationRecord
   def set_defaults
     self.contact_info ||= {}
     self.settings ||= {
-      'features' => {
-        'motor_insurance' => true,
-        'fire_insurance' => true,
-        'liability_insurance' => true,
-        'general_accident_insurance' => true,
-        'bonds_insurance' => true,
-        'real_time_notifications' => true,
-        'advanced_reporting' => true,
-        'api_access' => false
+      "features" => {
+        "motor_insurance" => true,
+        "fire_insurance" => true,
+        "liability_insurance" => true,
+        "general_accident_insurance" => true,
+        "bonds_insurance" => true,
+        "real_time_notifications" => true,
+        "advanced_reporting" => true,
+        "api_access" => false
       }
     }
   end

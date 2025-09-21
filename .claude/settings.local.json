@@ -39,7 +39,8 @@
       "Bash(RAILS_ENV=development bin/dev)",
       "Bash(cat:*)",
       "Bash(RAILS_ENV=development bundle exec rails server -p 3000)",
-      "Bash(git diff:*)"
+      "Bash(git diff:*)",
+      "Bash(rubocop:*)"
     ],
     "deny": [],
     "ask": []

@@ -13,7 +13,7 @@ module Encryptable
       else
         encrypts field_name, **encryption_options(options)
       end
-      
+
       # Store encrypted field metadata
       encrypted_fields_metadata[field_name] = {
         deterministic: deterministic,
@@ -44,12 +44,12 @@ module Encryptable
         key: encryption_key_selector,
         previous: previous_encryption_keys
       }
-      
+
       default_options.merge(custom_options)
     end
 
     def encryption_key_selector
-      -> (context) {
+      ->(context) {
         # Use different keys based on field sensitivity
         case context[:field_name]
         when /ssn|tax_id|social_security/
@@ -73,14 +73,14 @@ module Encryptable
   # Instance methods for encryption utilities
   def encrypt_value(value, key_name = :general_encryption_key)
     return nil if value.nil?
-    
+
     encryptor = ActiveRecord::Encryption::Encryptor.new
     encryptor.encrypt(value.to_s, key: encryption_key(key_name))
   end
 
   def decrypt_value(encrypted_value, key_name = :general_encryption_key)
     return nil if encrypted_value.nil?
-    
+
     encryptor = ActiveRecord::Encryption::Encryptor.new
     encryptor.decrypt(encrypted_value, key: encryption_key(key_name))
   end
@@ -95,29 +95,29 @@ module Encryptable
 
   def secure_export_data
     exported_data = attributes.dup
-    
+
     # Mask or remove encrypted fields for export
     get_encrypted_fields.each do |field|
       if exported_data.key?(field.to_s)
         exported_data[field.to_s] = mask_sensitive_data(exported_data[field.to_s])
       end
     end
-    
+
     exported_data
   end
 
   # Data masking for compliance exports
-  def mask_sensitive_data(value, mask_char = '*')
+  def mask_sensitive_data(value, mask_char = "*")
     return nil if value.nil?
-    
+
     value_str = value.to_s
     return value_str if value_str.length <= 4
-    
+
     # Keep first 2 and last 2 characters, mask the rest
     first_part = value_str[0..1]
     last_part = value_str[-2..-1]
     middle_length = value_str.length - 4
-    
+
     "#{first_part}#{'*' * middle_length}#{last_part}"
   end
 
@@ -131,7 +131,7 @@ module Encryptable
         model: self.class.name,
         record_id: id,
         encryption_key_used: determine_key_for_field(field_name),
-        severity: 'info'
+        severity: "info"
       }
     )
   end
@@ -143,16 +143,16 @@ module Encryptable
       if current_value.present?
         # Re-encrypt with new key
         send("#{field}=", current_value)
-        log_encryption_event('key_rotation', field)
+        log_encryption_event("key_rotation", field)
       end
     end
-    
+
     save!
   end
 
   def verify_encryption_integrity
     errors = []
-    
+
     get_encrypted_fields.each do |field|
       begin
         # Try to read the encrypted field
@@ -162,7 +162,7 @@ module Encryptable
         errors << "Field #{field}: #{e.message}"
       end
     end
-    
+
     errors
   end
 
@@ -170,7 +170,7 @@ module Encryptable
   module ClassMethods
     def search_encrypted_field(field_name, search_term)
       metadata = encrypted_fields_metadata[field_name.to_sym]
-      
+
       if metadata && metadata[:deterministic]
         where(field_name => search_term)
       else
@@ -189,16 +189,16 @@ module Encryptable
     # This would integrate with your key management system
     case key_name
     when :pii_encryption_key
-      Rails.application.credentials.dig(:encryption, :pii_key) || 
-      ENV['PII_ENCRYPTION_KEY'] ||
+      Rails.application.credentials.dig(:encryption, :pii_key) ||
+      ENV["PII_ENCRYPTION_KEY"] ||
       Rails.application.config.active_record.encryption.primary_key
     when :auth_encryption_key
-      Rails.application.credentials.dig(:encryption, :auth_key) || 
-      ENV['AUTH_ENCRYPTION_KEY'] ||
+      Rails.application.credentials.dig(:encryption, :auth_key) ||
+      ENV["AUTH_ENCRYPTION_KEY"] ||
       Rails.application.config.active_record.encryption.primary_key
     when :financial_encryption_key
-      Rails.application.credentials.dig(:encryption, :financial_key) || 
-      ENV['FINANCIAL_ENCRYPTION_KEY'] ||
+      Rails.application.credentials.dig(:encryption, :financial_key) ||
+      ENV["FINANCIAL_ENCRYPTION_KEY"] ||
       Rails.application.config.active_record.encryption.primary_key
     else
       Rails.application.config.active_record.encryption.primary_key

@@ -12,9 +12,9 @@ module Authorizable
     end
 
     def authorize_specific_resource(resource_method, action, options = {})
-      before_action -> { 
+      before_action -> {
         resource = send(resource_method)
-        authorize_resource_action(resource, action, options) 
+        authorize_resource_action(resource, action, options)
       }
     end
   end
@@ -22,7 +22,7 @@ module Authorizable
   # Core authorization method
   def can?(action, resource = nil, context = {})
     return false unless current_user
-    
+
     # Handle different resource types
     case resource
     when Class
@@ -50,7 +50,7 @@ module Authorizable
   def authorize_action(action, options = {})
     resource = options[:resource]
     context = options.except(:resource)
-    
+
     authorize!(action, resource, context)
   end
 
@@ -127,15 +127,15 @@ module Authorizable
   # Bulk authorization for collections
   def filter_authorized(collection, action, context = {})
     return collection.none unless current_user
-    
+
     collection.select { |item| can?(action, item, context) }
   end
 
   def authorize_collection!(collection, action, context = {})
     unauthorized = collection.reject { |item| can?(action, item, context) }
-    
+
     if unauthorized.any?
-      raise AuthorizationError, 
+      raise AuthorizationError,
         "Access denied to #{unauthorized.size} items in collection"
     end
   end
@@ -155,19 +155,19 @@ module Authorizable
 
   # Administrative checks
   def admin?
-    has_any_role?('super_admin', 'admin')
+    has_any_role?("super_admin", "admin")
   end
 
   def super_admin?
-    has_role?('super_admin')
+    has_role?("super_admin")
   end
 
   def organization_admin?
-    has_role?('admin') && current_user&.organization_id.present?
+    has_role?("admin") && current_user&.organization_id.present?
   end
 
   def system_admin?
-    has_role?('super_admin') || (has_role?('admin') && current_user&.organization_id.nil?)
+    has_role?("super_admin") || (has_role?("admin") && current_user&.organization_id.nil?)
   end
 
   # Feature flag authorization
@@ -175,11 +175,11 @@ module Authorizable
     # Check if user has permission to access feature
     feature_permission = "features.#{feature_name}"
     return false unless has_permission?(feature_permission)
-    
+
     # Check organization-level feature flags
     org = context[:organization] || current_user&.organization
     return true unless org # System users get all features
-    
+
     org.feature_enabled?(feature_name)
   end
 
@@ -192,14 +192,14 @@ module Authorizable
   # Audit logging for authorization
   def log_authorization_attempt(action, resource, result, context = {})
     return unless should_log_authorization?(action, resource)
-    
+
     AuditLog.log_authorization(
       current_user,
       action,
       {
         resource_type: resource.class.name,
         resource_id: resource.try(:id),
-        result: result ? 'allowed' : 'denied',
+        result: result ? "allowed" : "denied",
         context: context.slice(:organization_id, :ip_address, :user_agent)
       }
     )
@@ -210,14 +210,14 @@ module Authorizable
   def can_access_resource_type?(action, resource_class, context)
     resource_name = resource_class.name.underscore.pluralize
     permission_name = "#{resource_name}.#{action}"
-    
+
     # Check direct permission
     return true if has_permission?(permission_name)
-    
+
     # Check management permission
     management_permission = "#{resource_name}.manage"
     return true if has_permission?(management_permission)
-    
+
     # Check role-based access
     check_role_based_access(action, resource_class, context)
   end
@@ -225,7 +225,7 @@ module Authorizable
   def can_access_specific_resource?(action, resource, context)
     # First check general resource access
     return false unless can_access_resource_type?(action, resource.class, context)
-    
+
     # Then check resource-specific constraints
     check_resource_ownership(resource, context) &&
     check_organization_constraints(resource, context) &&
@@ -245,13 +245,13 @@ module Authorizable
   def check_role_based_access(action, resource_class, context)
     # Define role-based access rules
     case action.to_s
-    when 'read', 'index'
+    when "read", "index"
       has_role_level?(10) # Viewer level and above
-    when 'create'
+    when "create"
       has_role_level?(40) # Agent level and above
-    when 'update'
+    when "update"
       has_role_level?(50) # Broker level and above
-    when 'destroy'
+    when "destroy"
       has_role_level?(70) # Manager level and above
     else
       has_role_level?(90) # Admin level for unknown actions
@@ -261,15 +261,15 @@ module Authorizable
   def check_resource_ownership(resource, context)
     # Check if user owns or has access to the resource
     return true unless resource.respond_to?(:user_id)
-    
+
     # Owner always has access
     return true if resource.user_id == current_user.id
-    
+
     # Organization members can access organization resources
     if resource.respond_to?(:organization_id)
       return current_user.organization_id == resource.organization_id
     end
-    
+
     false
   end
 
@@ -277,7 +277,7 @@ module Authorizable
     # Skip if no organization constraints
     return true unless resource.respond_to?(:organization_id)
     return true unless resource.organization_id
-    
+
     # Check if user can access this organization's resources
     can_access_organization?(Organization.find(resource.organization_id))
   end
@@ -285,7 +285,7 @@ module Authorizable
   def check_custom_resource_rules(action, resource, context)
     # Implement custom authorization rules per resource type
     method_name = "authorize_#{resource.class.name.underscore}_#{action}"
-    
+
     if respond_to?(method_name, true)
       send(method_name, resource, context)
     else
@@ -295,23 +295,23 @@ module Authorizable
 
   def raise_authorization_error(action, resource, context)
     resource_info = case resource
-                   when Class then resource.name
-                   when ActiveRecord::Base then "#{resource.class.name}##{resource.id}"
-                   else resource.to_s
-                   end
-    
+    when Class then resource.name
+    when ActiveRecord::Base then "#{resource.class.name}##{resource.id}"
+    else resource.to_s
+    end
+
     message = "Access denied: cannot #{action} #{resource_info}"
-    
+
     # Log the authorization failure
     log_authorization_attempt(action, resource, false, context)
-    
+
     raise AuthorizationError, message
   end
 
   def should_log_authorization?(action, resource)
     # Log high-risk actions or failures
     high_risk_actions = %w[destroy delete manage admin export]
-    high_risk_actions.include?(action.to_s) || 
+    high_risk_actions.include?(action.to_s) ||
     resource.is_a?(Class) && %w[User Role Permission].include?(resource.name)
   end
 
@@ -319,7 +319,7 @@ module Authorizable
   def authorize_user_destroy(user, context)
     # Users can't delete themselves
     return false if user.id == current_user.id
-    
+
     # Can only delete users with lower role levels
     current_user.highest_role_level > user.highest_role_level
   end
@@ -327,12 +327,12 @@ module Authorizable
   def authorize_role_manage(role, context)
     # System roles can only be managed by super admins
     return false if role.system_role? && !super_admin?
-    
+
     # Organization roles can only be managed within same organization
     if role.organization_role?
       return can_access_organization?(role.organization)
     end
-    
+
     true
   end
 
@@ -341,10 +341,10 @@ module Authorizable
     # 1. Owner
     # 2. Organization members with broker+ level
     # 3. Assigned insurance company users
-    
+
     return true if application.user_id == current_user.id
     return true if application.organization_id == current_user.organization_id && has_role_level?(50)
-    
+
     # Check if user's organization is assigned to this application
     application.insurance_companies.include?(current_user.organization)
   end

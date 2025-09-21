@@ -1,8 +1,8 @@
 class InsuranceCompany < ApplicationRecord
   include Discard::Model
-  
-  belongs_to :approved_by, class_name: 'User', optional: true
-  
+
+  belongs_to :approved_by, class_name: "User", optional: true
+
   has_many :quotes, dependent: :destroy
 
   validates :name, presence: true, length: { minimum: 2, maximum: 100 }
@@ -26,14 +26,14 @@ class InsuranceCompany < ApplicationRecord
   end
 
   def approval_status
-    return 'Approved' if approved?
-    'Pending Approval'
+    return "Approved" if approved?
+    "Pending Approval"
   end
 
   def supported_insurance_types
     return [] if insurance_types.blank?
-    
-    insurance_types.split(',').map(&:strip)
+
+    insurance_types.split(",").map(&:strip)
   end
 
   def supports_insurance_type?(type)
@@ -61,8 +61,8 @@ class InsuranceCompany < ApplicationRecord
   end
 
   def rating_display
-    return 'Not Rated' if rating.zero?
-    
+    return "Not Rated" if rating.zero?
+
     "#{rating}/5.0"
   end
 

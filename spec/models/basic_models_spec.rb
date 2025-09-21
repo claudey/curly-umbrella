@@ -59,8 +59,8 @@ RSpec.describe "Basic Model Functionality", type: :model do
     it "creates application successfully" do
       org = create(:organization)
       client = create(:client, organization: org)
-      application = create(:insurance_application, 
-        client: client, 
+      application = create(:insurance_application,
+        client: client,
         organization: org,
         insurance_type: 'motor'
       )
@@ -85,12 +85,12 @@ RSpec.describe "Basic Model Functionality", type: :model do
     it "creates document successfully without file" do
       org = create(:organization)
       user = create(:user, organization: org)
-      
+
       # Skip file validation for basic testing
       allow_any_instance_of(Document).to receive(:file_attached?).and_return(true)
       allow_any_instance_of(Document).to receive(:set_file_metadata).and_return(true)
       allow_any_instance_of(Document).to receive(:set_checksum).and_return(true)
-      
+
       document = create(:document, organization: org, user: user)
       expect(document).to be_persisted
       expect(document.organization).to eq(org)

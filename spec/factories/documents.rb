@@ -3,7 +3,7 @@ FactoryBot.define do
     association :organization
     association :user
     association :documentable, factory: :client
-    
+
     name { "Test Document" }
     description { "Test document description" }
     document_type { "policy_document" }
@@ -13,7 +13,7 @@ FactoryBot.define do
     version { 1 }
     is_current { true }
     metadata { {} }
-    
+
     # Skip file attachment for basic testing
   end
 end

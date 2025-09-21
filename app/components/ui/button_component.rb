@@ -78,7 +78,7 @@ class Ui::ButtonComponent < ViewComponent::Base
     additional_classes_array << "relative" if loading
     additional_classes_array << additional_classes if additional_classes
 
-    [base_classes, *additional_classes_array].compact.join(" ")
+    [ base_classes, *additional_classes_array ].compact.join(" ")
   end
 
   def disabled_state
@@ -127,7 +127,7 @@ class Ui::ButtonComponent < ViewComponent::Base
     return unless loading
 
     content_tag :span, class: "absolute inset-0 flex items-center justify-center" do
-      content_tag :svg, 
+      content_tag :svg,
         class: "animate-spin h-#{icon_size} w-#{icon_size} text-current",
         fill: "none",
         viewBox: "0 0 24 24" do

@@ -6,7 +6,7 @@ class Client < ApplicationRecord
 
   validates :first_name, presence: true, length: { minimum: 2, maximum: 50 }
   validates :last_name, presence: true, length: { minimum: 2, maximum: 50 }
-  validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }, 
+  validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP },
             uniqueness: { scope: :organization_id, case_sensitive: false }
   validates :phone, format: { with: /\A[\+]?[0-9\s\-\(\)]+\z/, message: "Invalid phone format" }, allow_blank: true
   validates :date_of_birth, presence: true
@@ -28,15 +28,15 @@ class Client < ApplicationRecord
 
   def age
     return nil unless date_of_birth
-    
+
     ((Date.current - date_of_birth) / 365.25).to_i
   end
 
   def primary_contact
     case preferred_contact_method
-    when 'email'
+    when "email"
       email
-    when 'phone', 'sms', 'whatsapp'
+    when "phone", "sms", "whatsapp"
       phone
     else
       email

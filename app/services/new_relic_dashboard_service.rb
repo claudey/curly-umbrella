@@ -18,13 +18,13 @@ class NewRelicDashboardService
         ]
       }
     end
-    
+
     # Export dashboard configuration as JSON for New Relic API
     def export_dashboard_json
-      require 'json'
+      require "json"
       JSON.pretty_generate(generate_dashboard_config)
     end
-    
+
     # Generate NRQL queries for business metrics
     def business_metric_queries
       {
@@ -32,40 +32,40 @@ class NewRelicDashboardService
         applications_submitted_today: "SELECT count(*) FROM ApplicationSubmitted WHERE timestamp > #{today_timestamp} TIMESERIES AUTO",
         application_approval_rate: "SELECT percentage(count(*), WHERE event = 'ApplicationApproved') FROM ApplicationSubmitted, ApplicationApproved SINCE 24 HOURS AGO",
         average_processing_time: "SELECT average(processing_time_hours) FROM ApplicationApproved SINCE 7 DAYS AGO TIMESERIES AUTO",
-        
+
         # Quote Generation Metrics
         quotes_generated_today: "SELECT count(*) FROM QuoteGenerated WHERE timestamp > #{today_timestamp} TIMESERIES AUTO",
         average_quote_amount: "SELECT average(quote_amount) FROM QuoteGenerated SINCE 24 HOURS AGO",
         quote_conversion_rate: "SELECT percentage(count(*), WHERE status = 'accepted') FROM QuoteGenerated SINCE 7 DAYS AGO",
-        
+
         # Document Processing Metrics
         documents_processed_today: "SELECT count(*) FROM DocumentProcessed WHERE timestamp > #{today_timestamp} TIMESERIES AUTO",
         document_processing_time: "SELECT average(processing_time_seconds) FROM DocumentProcessed SINCE 24 HOURS AGO",
         document_compliance_rate: "SELECT percentage(count(*), WHERE processing_status = 'compliant') FROM DocumentProcessed SINCE 7 DAYS AGO",
-        
+
         # User Engagement Metrics
         active_users_today: "SELECT uniqueCount(user_id) FROM UserSessionActivity WHERE timestamp > #{today_timestamp}",
         average_session_duration: "SELECT average(session_duration_minutes) FROM UserSessionActivity SINCE 24 HOURS AGO",
         user_engagement_distribution: "SELECT count(*) FROM UserSessionActivity FACET engagement_level SINCE 7 DAYS AGO",
-        
+
         # System Performance Metrics
         api_response_times: "SELECT average(duration_ms) FROM APIPerformance FACET endpoint SINCE 1 HOUR AGO TIMESERIES AUTO",
         slow_queries: "SELECT count(*) FROM SlowDatabaseQuery SINCE 1 HOUR AGO TIMESERIES AUTO",
         background_job_performance: "SELECT count(*) FROM BackgroundJobPerformance FACET performance_category SINCE 6 HOURS AGO",
-        
+
         # Error Monitoring
         error_rate_by_type: "SELECT count(*) FROM ApplicationError FACET error_class SINCE 24 HOURS AGO",
         business_impact_errors: "SELECT count(*) FROM ApplicationError FACET business_impact SINCE 24 HOURS AGO",
         error_trends: "SELECT count(*) FROM ApplicationError SINCE 7 DAYS AGO TIMESERIES AUTO"
       }
     end
-    
+
     private
-    
+
     def today_timestamp
       Time.current.beginning_of_day.to_i
     end
-    
+
     def business_overview_page
       {
         name: "Business Overview",
@@ -155,7 +155,7 @@ class NewRelicDashboardService
         ]
       }
     end
-    
+
     def application_processing_page
       {
         name: "Application Processing",
@@ -207,7 +207,7 @@ class NewRelicDashboardService
         ]
       }
     end
-    
+
     def document_management_page
       {
         name: "Document Management",
@@ -286,7 +286,7 @@ class NewRelicDashboardService
         ]
       }
     end
-    
+
     def user_engagement_page
       {
         name: "User Engagement",
@@ -349,7 +349,7 @@ class NewRelicDashboardService
         ]
       }
     end
-    
+
     def system_performance_page
       {
         name: "System Performance",
@@ -417,7 +417,7 @@ class NewRelicDashboardService
         ]
       }
     end
-    
+
     def error_monitoring_page
       {
         name: "Error Monitoring",
@@ -487,9 +487,9 @@ class NewRelicDashboardService
         ]
       }
     end
-    
+
     def account_id
-      ENV['NEW_RELIC_ACCOUNT_ID'] || 'YOUR_ACCOUNT_ID'
+      ENV["NEW_RELIC_ACCOUNT_ID"] || "YOUR_ACCOUNT_ID"
     end
   end
 end

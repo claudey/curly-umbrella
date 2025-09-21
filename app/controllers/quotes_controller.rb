@@ -1,6 +1,6 @@
 class QuotesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_quote, only: [:show, :edit, :update, :destroy, :submit, :approve, :reject, :accept, :withdraw, :print]
+  before_action :set_quote, only: [ :show, :edit, :update, :destroy, :submit, :approve, :reject, :accept, :withdraw, :print ]
 
   def index
     @quotes = current_user.organization.quotes
@@ -10,12 +10,12 @@ class QuotesController < ApplicationController
     # Apply filters
     @quotes = @quotes.where(status: params[:status]) if params[:status].present?
     @quotes = @quotes.where(insurance_company_id: params[:insurance_company_id]) if params[:insurance_company_id].present?
-    
+
     @insurance_companies = current_user.organization.quotes
                                       .joins(:insurance_company)
                                       .distinct
-                                      .pluck(:insurance_company_id, 'insurance_companies.name')
-                                      .map { |id, name| [name, id] }
+                                      .pluck(:insurance_company_id, "insurance_companies.name")
+                                      .map { |id, name| [ name, id ] }
   end
 
   def show
@@ -34,7 +34,7 @@ class QuotesController < ApplicationController
     @quote.quoted_by = current_user
 
     if @quote.save
-      redirect_to @quote, notice: 'Quote was successfully created.'
+      redirect_to @quote, notice: "Quote was successfully created."
     else
       @motor_application = @quote.motor_application
       @insurance_companies = InsuranceCompany.approved.active
@@ -48,7 +48,7 @@ class QuotesController < ApplicationController
 
   def update
     if @quote.update(quote_params)
-      redirect_to @quote, notice: 'Quote was successfully updated.'
+      redirect_to @quote, notice: "Quote was successfully updated."
     else
       @insurance_companies = InsuranceCompany.approved.active
       render :edit, status: :unprocessable_entity
@@ -57,48 +57,48 @@ class QuotesController < ApplicationController
 
   def destroy
     @quote.discard
-    redirect_to quotes_url, notice: 'Quote was successfully deleted.'
+    redirect_to quotes_url, notice: "Quote was successfully deleted."
   end
 
   # Status actions
   def submit
     if @quote.submit!
-      redirect_to @quote, notice: 'Quote submitted successfully.'
+      redirect_to @quote, notice: "Quote submitted successfully."
     else
-      redirect_to @quote, alert: 'Unable to submit quote.'
+      redirect_to @quote, alert: "Unable to submit quote."
     end
   end
 
   def approve
     if @quote.approve!
-      redirect_to @quote, notice: 'Quote approved successfully.'
+      redirect_to @quote, notice: "Quote approved successfully."
     else
-      redirect_to @quote, alert: 'Unable to approve quote.'
+      redirect_to @quote, alert: "Unable to approve quote."
     end
   end
 
   def reject
     reason = params[:reason]
     if @quote.reject!(reason)
-      redirect_to @quote, notice: 'Quote rejected.'
+      redirect_to @quote, notice: "Quote rejected."
     else
-      redirect_to @quote, alert: 'Unable to reject quote.'
+      redirect_to @quote, alert: "Unable to reject quote."
     end
   end
 
   def accept
     if @quote.accept!
-      redirect_to @quote, notice: 'Quote accepted successfully!'
+      redirect_to @quote, notice: "Quote accepted successfully!"
     else
-      redirect_to @quote, alert: 'Unable to accept quote.'
+      redirect_to @quote, alert: "Unable to accept quote."
     end
   end
 
   def withdraw
     if @quote.withdraw!
-      redirect_to @quote, notice: 'Quote withdrawn.'
+      redirect_to @quote, notice: "Quote withdrawn."
     else
-      redirect_to @quote, alert: 'Unable to withdraw quote.'
+      redirect_to @quote, alert: "Unable to withdraw quote."
     end
   end
 
@@ -120,15 +120,15 @@ class QuotesController < ApplicationController
   def compare
     @motor_application = current_user.organization.motor_applications.find(params[:motor_application_id])
     @quotes = @motor_application.quotes_for_comparison
-    
+
     if @quotes.empty?
-      redirect_to motor_application_path(@motor_application), 
-                  alert: 'No approved quotes available for comparison.'
+      redirect_to motor_application_path(@motor_application),
+                  alert: "No approved quotes available for comparison."
     end
   end
 
   def print
-    render layout: 'print'
+    render layout: "print"
   end
 
   private

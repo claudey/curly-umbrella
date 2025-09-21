@@ -39,7 +39,7 @@ class Ui::Form::InputComponent < ViewComponent::Base
               :size, :bordered, :ghost, :icon, :icon_position, :options
 
   def input_classes
-    classes = ["input", "w-full"]
+    classes = [ "input", "w-full" ]
     classes << "input-#{size}" unless size == "md"
     classes << "input-bordered" if bordered
     classes << "input-ghost" if ghost
@@ -50,13 +50,13 @@ class Ui::Form::InputComponent < ViewComponent::Base
   end
 
   def wrapper_classes
-    classes = ["form-control", "w-full"]
+    classes = [ "form-control", "w-full" ]
     classes << "max-w-xs" if size == "xs"
     classes.join(" ")
   end
 
   def label_classes
-    classes = ["label"]
+    classes = [ "label" ]
     classes << "label-text" if show_label?
     classes.join(" ")
   end

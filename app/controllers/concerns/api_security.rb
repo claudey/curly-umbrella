@@ -13,9 +13,9 @@ module ApiSecurity
 
   def authenticate_api_request
     return if api_authenticated?
-    
+
     log_authentication_failure
-    render_api_error('Unauthorized', 401)
+    render_api_error("Unauthorized", 401)
   end
 
   def api_authenticated?
@@ -32,9 +32,9 @@ module ApiSecurity
   end
 
   def authentication_method
-    if request.headers['Authorization']&.start_with?('Bearer ')
+    if request.headers["Authorization"]&.start_with?("Bearer ")
       :bearer_token
-    elsif request.headers['X-API-Key'].present?
+    elsif request.headers["X-API-Key"].present?
       :api_key
     elsif user_signed_in?
       :session
@@ -44,22 +44,22 @@ module ApiSecurity
   end
 
   def authenticate_with_bearer_token
-    token = request.headers['Authorization']&.split(' ')&.last
+    token = request.headers["Authorization"]&.split(" ")&.last
     return false unless token
 
     begin
-      decoded_token = JWT.decode(token, jwt_secret, true, algorithm: 'HS256')
+      decoded_token = JWT.decode(token, jwt_secret, true, algorithm: "HS256")
       payload = decoded_token.first
-      
+
       # Check token expiration
-      return false if payload['exp'] < Time.current.to_i
-      
+      return false if payload["exp"] < Time.current.to_i
+
       # Find user
-      @current_api_user = User.find_by(id: payload['user_id'])
-      
+      @current_api_user = User.find_by(id: payload["user_id"])
+
       # Validate token permissions
       validate_token_permissions(payload)
-      
+
       @current_api_user.present?
     rescue JWT::DecodeError, JWT::ExpiredSignature => e
       Rails.logger.warn "JWT authentication failed: #{e.message}"
@@ -68,7 +68,7 @@ module ApiSecurity
   end
 
   def authenticate_with_api_key
-    api_key = request.headers['X-API-Key']
+    api_key = request.headers["X-API-Key"]
     return false unless api_key
 
     # Find API key record (you'll need to create an ApiKey model)
@@ -98,10 +98,10 @@ module ApiSecurity
   def validate_token_permissions(payload)
     # Check if token has required scopes/permissions
     required_scopes = determine_required_scopes
-    token_scopes = payload['scopes'] || []
-    
+    token_scopes = payload["scopes"] || []
+
     unless (required_scopes - token_scopes).empty?
-      raise JWT::DecodeError, 'Insufficient token permissions'
+      raise JWT::DecodeError, "Insufficient token permissions"
     end
   end
 
@@ -109,15 +109,15 @@ module ApiSecurity
     # Map controller/action to required scopes
     case "#{controller_name}##{action_name}"
     when /quotes#/
-      ['quotes:read', 'quotes:write']
+      [ "quotes:read", "quotes:write" ]
     when /applications#/
-      ['applications:read']
+      [ "applications:read" ]
     when /reports#/
-      ['reports:read']
+      [ "reports:read" ]
     when /admin/
-      ['admin:access']
+      [ "admin:access" ]
     else
-      ['api:access']
+      [ "api:access" ]
     end
   end
 
@@ -126,26 +126,26 @@ module ApiSecurity
 
     user_identifier = api_user_identifier
     rate_limit = determine_rate_limit
-    
+
     current_usage = get_current_usage(user_identifier)
-    
+
     if current_usage >= rate_limit
       log_rate_limit_exceeded(user_identifier, current_usage, rate_limit)
-      render_api_error('Rate limit exceeded', 429, {
-        'X-RateLimit-Limit' => rate_limit,
-        'X-RateLimit-Remaining' => 0,
-        'X-RateLimit-Reset' => next_reset_time
+      render_api_error("Rate limit exceeded", 429, {
+        "X-RateLimit-Limit" => rate_limit,
+        "X-RateLimit-Remaining" => 0,
+        "X-RateLimit-Reset" => next_reset_time
       })
       return false
     end
 
     # Increment usage
     increment_usage(user_identifier)
-    
+
     # Add rate limit headers
-    response.headers['X-RateLimit-Limit'] = rate_limit.to_s
-    response.headers['X-RateLimit-Remaining'] = (rate_limit - current_usage - 1).to_s
-    response.headers['X-RateLimit-Reset'] = next_reset_time.to_s
+    response.headers["X-RateLimit-Limit"] = rate_limit.to_s
+    response.headers["X-RateLimit-Remaining"] = (rate_limit - current_usage - 1).to_s
+    response.headers["X-RateLimit-Reset"] = next_reset_time.to_s
 
     true
   end
@@ -186,7 +186,7 @@ module ApiSecurity
   end
 
   def current_hour
-    Time.current.strftime('%Y%m%d%H')
+    Time.current.strftime("%Y%m%d%H")
   end
 
   def next_reset_time
@@ -196,10 +196,10 @@ module ApiSecurity
   def validate_api_version
     return unless version_validation_enabled?
 
-    requested_version = request.headers['Accept-Version'] || 
-                       request.headers['X-API-Version'] ||
+    requested_version = request.headers["Accept-Version"] ||
+                       request.headers["X-API-Version"] ||
                        params[:version] ||
-                       'v1'
+                       "v1"
 
     unless supported_api_version?(requested_version)
       render_api_error("Unsupported API version: #{requested_version}", 400)
@@ -221,7 +221,7 @@ module ApiSecurity
 
     identifier = "api_key:#{api_key_record.id}"
     current_usage = get_current_usage(identifier)
-    
+
     current_usage < api_key_record.rate_limit
   end
 
@@ -231,7 +231,7 @@ module ApiSecurity
     AuditLog.log_data_access(
       current_api_user,
       nil, # No specific resource for API access
-      'api_request',
+      "api_request",
       {
         ip_address: request.remote_ip,
         user_agent: request.user_agent,
@@ -249,10 +249,10 @@ module ApiSecurity
     AuditLog.create!(
       user: current_api_user,
       organization: current_api_user&.organization,
-      action: 'api_response',
-      category: 'data_access',
+      action: "api_response",
+      category: "data_access",
       severity: determine_response_severity,
-      resource_type: 'API',
+      resource_type: "API",
       details: {
         endpoint: "#{request.method} #{request.path}",
         status_code: response.status,
@@ -286,10 +286,10 @@ module ApiSecurity
 
   def determine_response_severity
     case response.status
-    when 200..299 then 'info'
-    when 400..499 then 'warning'
-    when 500..599 then 'error'
-    else 'info'
+    when 200..299 then "info"
+    when 400..499 then "warning"
+    when 500..599 then "error"
+    else "info"
     end
   end
 
@@ -300,13 +300,13 @@ module ApiSecurity
   def log_authentication_failure
     AuditLog.log_authentication(
       nil,
-      'api_authentication_failure',
+      "api_authentication_failure",
       {
         ip_address: request.remote_ip,
         user_agent: request.user_agent,
         endpoint: "#{request.method} #{request.path}",
         authentication_method: authentication_method,
-        severity: 'warning'
+        severity: "warning"
       }
     )
   end
@@ -314,21 +314,21 @@ module ApiSecurity
   def log_rate_limit_exceeded(identifier, current_usage, limit)
     AuditLog.log_security_event(
       current_api_user,
-      'rate_limit_exceeded',
+      "rate_limit_exceeded",
       {
         ip_address: request.remote_ip,
         user_identifier: identifier,
         current_usage: current_usage,
         rate_limit: limit,
         endpoint: "#{request.method} #{request.path}",
-        severity: 'warning'
+        severity: "warning"
       }
     )
   end
 
   def render_api_error(message, status, headers = {})
     headers.each { |key, value| response.headers[key] = value }
-    
+
     render json: {
       error: {
         message: message,
@@ -346,13 +346,13 @@ module ApiSecurity
 
   def request_duration
     return nil unless defined?(@request_start_time)
-    
+
     ((Time.current - @request_start_time) * 1000).round(2) # milliseconds
   end
 
   def jwt_secret
-    Rails.application.credentials.jwt_secret || 
-    ENV['JWT_SECRET'] ||
+    Rails.application.credentials.jwt_secret ||
+    ENV["JWT_SECRET"] ||
     Rails.application.secret_key_base
   end
 
@@ -363,21 +363,21 @@ module ApiSecurity
 
   # CORS handling for API requests
   def set_cors_headers
-    if request.headers['Origin']
+    if request.headers["Origin"]
       allowed_origins = Rails.application.config.allowed_cors_origins || []
-      
-      if allowed_origins.include?(request.headers['Origin'])
-        response.headers['Access-Control-Allow-Origin'] = request.headers['Origin']
-        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, PATCH, DELETE, OPTIONS'
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-API-Key, Accept-Version'
-        response.headers['Access-Control-Max-Age'] = '86400'
+
+      if allowed_origins.include?(request.headers["Origin"])
+        response.headers["Access-Control-Allow-Origin"] = request.headers["Origin"]
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-API-Key, Accept-Version"
+        response.headers["Access-Control-Max-Age"] = "86400"
       end
     end
   end
 
   # Handle preflight OPTIONS requests
   def handle_options_request
-    if request.method == 'OPTIONS'
+    if request.method == "OPTIONS"
       set_cors_headers
       head :ok
     end

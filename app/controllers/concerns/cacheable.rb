@@ -16,11 +16,11 @@ module Cacheable
     # Set cache headers for static-like content
     if should_cache_response?
       expires_in 30.minutes, public: false
-      response.headers['Vary'] = 'Accept'
+      response.headers["Vary"] = "Accept"
     else
-      response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-      response.headers['Pragma'] = 'no-cache'
-      response.headers['Expires'] = '0'
+      response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+      response.headers["Pragma"] = "no-cache"
+      response.headers["Expires"] = "0"
     end
   end
 
@@ -34,7 +34,7 @@ module Cacheable
   def should_cache_response?
     # Cache static pages and dashboard data
     %w[home dashboard].include?(controller_name) ||
-    (action_name == 'index' && %w[documents quotes applications].include?(controller_name))
+    (action_name == "index" && %w[documents quotes applications].include?(controller_name))
   end
 
   # Cached dashboard data

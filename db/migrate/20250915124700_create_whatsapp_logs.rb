@@ -13,10 +13,10 @@ class CreateWhatsappLogs < ActiveRecord::Migration[8.0]
 
       t.timestamps
     end
-    
+
     add_index :whatsapp_logs, :status
     add_index :whatsapp_logs, :external_id
     add_index :whatsapp_logs, :sent_at
-    add_index :whatsapp_logs, [:organization_id, :sent_at]
+    add_index :whatsapp_logs, [ :organization_id, :sent_at ]
   end
 end

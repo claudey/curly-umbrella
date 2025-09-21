@@ -9,7 +9,7 @@ class AddDocumentNotificationPreferences < ActiveRecord::Migration[8.0]
     add_column :notification_preferences, :email_document_shared, :boolean, default: true
     add_column :notification_preferences, :email_document_version_created, :boolean, default: false
     add_column :notification_preferences, :email_weekly_digest, :boolean, default: true
-    
+
     # SMS notification preferences for critical document events
     add_column :notification_preferences, :sms_document_expiring, :boolean, default: false
     add_column :notification_preferences, :sms_document_expired, :boolean, default: false

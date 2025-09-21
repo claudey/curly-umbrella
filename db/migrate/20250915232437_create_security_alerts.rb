@@ -19,8 +19,8 @@ class CreateSecurityAlerts < ActiveRecord::Migration[8.0]
     add_index :security_alerts, :severity
     add_index :security_alerts, :status
     add_index :security_alerts, :triggered_at
-    add_index :security_alerts, [:organization_id, :status]
-    add_index :security_alerts, [:organization_id, :severity]
-    add_index :security_alerts, [:organization_id, :triggered_at]
+    add_index :security_alerts, [ :organization_id, :status ]
+    add_index :security_alerts, [ :organization_id, :severity ]
+    add_index :security_alerts, [ :organization_id, :triggered_at ]
   end
 end

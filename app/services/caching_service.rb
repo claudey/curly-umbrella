@@ -17,7 +17,7 @@ class CachingService
     def fetch(key, expires_in: :medium, &block)
       cache_key = normalize_key(key)
       expiration = CACHE_EXPIRES[expires_in] || expires_in
-      
+
       if use_redis?
         fetch_from_redis(cache_key, expiration, &block)
       else
@@ -95,19 +95,19 @@ class CachingService
       if use_redis?
         redis_info = $redis.info
         {
-          type: 'Redis',
-          memory_used: redis_info['used_memory_human'],
+          type: "Redis",
+          memory_used: redis_info["used_memory_human"],
           keys_count: $redis.dbsize,
-          connected_clients: redis_info['connected_clients'],
-          uptime: redis_info['uptime_in_seconds']
+          connected_clients: redis_info["connected_clients"],
+          uptime: redis_info["uptime_in_seconds"]
         }
       else
         {
-          type: 'Rails.cache',
-          memory_used: 'N/A',
-          keys_count: 'N/A',
-          connected_clients: 'N/A',
-          uptime: 'N/A'
+          type: "Rails.cache",
+          memory_used: "N/A",
+          keys_count: "N/A",
+          connected_clients: "N/A",
+          uptime: "N/A"
         }
       end
     end
@@ -126,7 +126,7 @@ class CachingService
       return unless organization
 
       org_key = "org:#{organization.id}"
-      
+
       # Cache organization basics
       write("#{org_key}:info", {
         id: organization.id,
@@ -208,12 +208,12 @@ class CachingService
 
     def normalize_key(key)
       # Add namespace and ensure string
-      "brokersync:#{key}".gsub(/\s+/, '_')
+      "brokersync:#{key}".gsub(/\s+/, "_")
     end
 
     def fetch_from_redis(key, expiration, &block)
       value = $redis.get(key)
-      
+
       if value
         deserialize_value(value)
       else

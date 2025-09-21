@@ -28,23 +28,23 @@ class DocumentSearchService
     name_matches = scope.where("name ILIKE ?", "%#{search_term}%")
                        .limit(5)
                        .pluck(:name)
-                       .map { |name| { type: 'name', value: name, label: "Document: #{name}" } }
+                       .map { |name| { type: "name", value: name, label: "Document: #{name}" } }
 
     # Tag suggestions
-    tag_matches = scope.where("tags && ARRAY[?]", [search_term])
+    tag_matches = scope.where("tags && ARRAY[?]", [ search_term ])
                       .limit(5)
                       .pluck(:tags)
                       .flatten
                       .uniq
                       .select { |tag| tag.downcase.include?(search_term) }
-                      .map { |tag| { type: 'tag', value: tag, label: "Tag: #{tag}" } }
+                      .map { |tag| { type: "tag", value: tag, label: "Tag: #{tag}" } }
 
     # User suggestions
     user_matches = User.where(organization: current_user.organization)
-                       .where("first_name ILIKE ? OR last_name ILIKE ? OR email ILIKE ?", 
+                       .where("first_name ILIKE ? OR last_name ILIKE ? OR email ILIKE ?",
                               "%#{search_term}%", "%#{search_term}%", "%#{search_term}%")
                        .limit(3)
-                       .map { |user| { type: 'user', value: user.id, label: "Uploaded by: #{user.display_name}" } }
+                       .map { |user| { type: "user", value: user.id, label: "Uploaded by: #{user.display_name}" } }
 
     suggestions.concat(name_matches)
     suggestions.concat(tag_matches)
@@ -54,7 +54,7 @@ class DocumentSearchService
 
   def facets
     base_scope = apply_text_search(scope)
-    
+
     {
       categories: calculate_facet_counts(base_scope, :category, Document::CATEGORIES),
       document_types: calculate_facet_counts(base_scope, :document_type, Document::DOCUMENT_TYPES),
@@ -71,7 +71,7 @@ class DocumentSearchService
     return documents if params[:search].blank?
 
     search_term = params[:search].strip
-    
+
     # Check if it's a quoted phrase search
     if search_term.starts_with?('"') && search_term.ends_with?('"')
       phrase = search_term[1..-2]
@@ -82,10 +82,10 @@ class DocumentSearchService
     else
       # Split into words for multi-word search
       words = search_term.split(/\s+/)
-      
+
       words.each do |word|
         next if word.length < 2
-        
+
         documents = documents.where(
           "name ILIKE ? OR description ILIKE ? OR EXISTS(
             SELECT 1 FROM unnest(tags) AS tag WHERE tag ILIKE ?
@@ -100,17 +100,17 @@ class DocumentSearchService
 
   def apply_filters(documents)
     # Category filter
-    if params[:category].present? && params[:category] != 'all'
+    if params[:category].present? && params[:category] != "all"
       documents = documents.where(category: params[:category])
     end
 
     # Document type filter
-    if params[:document_type].present? && params[:document_type] != 'all'
+    if params[:document_type].present? && params[:document_type] != "all"
       documents = documents.where(document_type: params[:document_type])
     end
 
     # Access level filter
-    if params[:access_level].present? && params[:access_level] != 'all'
+    if params[:access_level].present? && params[:access_level] != "all"
       documents = documents.where(access_level: params[:access_level])
     end
 
@@ -121,56 +121,56 @@ class DocumentSearchService
     end
 
     # User filter
-    if params[:user_id].present? && params[:user_id] != 'all'
+    if params[:user_id].present? && params[:user_id] != "all"
       documents = documents.where(user_id: params[:user_id])
     end
 
     # Status filter
     case params[:status]
-    when 'archived'
+    when "archived"
       documents = documents.archived
-    when 'expiring'
+    when "expiring"
       documents = documents.expiring_soon(30)
-    when 'expired'
+    when "expired"
       documents = documents.expired
-    when 'current'
+    when "current"
       documents = documents.current
     else
-      documents = documents.not_archived unless params[:show_archived] == 'true'
+      documents = documents.not_archived unless params[:show_archived] == "true"
     end
 
     # File type filter
-    if params[:file_type].present? && params[:file_type] != 'all'
+    if params[:file_type].present? && params[:file_type] != "all"
       case params[:file_type]
-      when 'images'
+      when "images"
         documents = documents.joins(file_attachment: :blob)
                             .where("active_storage_blobs.content_type LIKE 'image/%'")
-      when 'pdfs'
+      when "pdfs"
         documents = documents.joins(file_attachment: :blob)
                             .where("active_storage_blobs.content_type = 'application/pdf'")
-      when 'documents'
+      when "documents"
         documents = documents.joins(file_attachment: :blob)
                             .where("active_storage_blobs.content_type IN (?, ?, ?)",
-                                   'application/msword',
-                                   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                                   'text/plain')
-      when 'spreadsheets'
+                                   "application/msword",
+                                   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                                   "text/plain")
+      when "spreadsheets"
         documents = documents.joins(file_attachment: :blob)
                             .where("active_storage_blobs.content_type IN (?, ?)",
-                                   'application/vnd.ms-excel',
-                                   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                                   "application/vnd.ms-excel",
+                                   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
       end
     end
 
     # Size filter
     if params[:size_range].present?
       case params[:size_range]
-      when 'small'
-        documents = documents.where('file_size < ?', 1.megabyte)
-      when 'medium'
-        documents = documents.where('file_size BETWEEN ? AND ?', 1.megabyte, 10.megabytes)
-      when 'large'
-        documents = documents.where('file_size > ?', 10.megabytes)
+      when "small"
+        documents = documents.where("file_size < ?", 1.megabyte)
+      when "medium"
+        documents = documents.where("file_size BETWEEN ? AND ?", 1.megabyte, 10.megabytes)
+      when "large"
+        documents = documents.where("file_size > ?", 10.megabytes)
       end
     end
 
@@ -180,33 +180,33 @@ class DocumentSearchService
   def apply_date_filters(documents)
     # Upload date filter
     if params[:uploaded_after].present?
-      documents = documents.where('created_at >= ?', Date.parse(params[:uploaded_after]))
+      documents = documents.where("created_at >= ?", Date.parse(params[:uploaded_after]))
     end
 
     if params[:uploaded_before].present?
-      documents = documents.where('created_at <= ?', Date.parse(params[:uploaded_before]))
+      documents = documents.where("created_at <= ?", Date.parse(params[:uploaded_before]))
     end
 
     # Expiry date filter
     if params[:expires_after].present?
-      documents = documents.where('expires_at >= ?', Date.parse(params[:expires_after]))
+      documents = documents.where("expires_at >= ?", Date.parse(params[:expires_after]))
     end
 
     if params[:expires_before].present?
-      documents = documents.where('expires_at <= ?', Date.parse(params[:expires_before]))
+      documents = documents.where("expires_at <= ?", Date.parse(params[:expires_before]))
     end
 
     # Quick date ranges
     case params[:date_range]
-    when 'today'
+    when "today"
       documents = documents.where(created_at: Date.current.all_day)
-    when 'week'
+    when "week"
       documents = documents.where(created_at: 1.week.ago..Time.current)
-    when 'month'
+    when "month"
       documents = documents.where(created_at: 1.month.ago..Time.current)
-    when 'quarter'
+    when "quarter"
       documents = documents.where(created_at: 3.months.ago..Time.current)
-    when 'year'
+    when "year"
       documents = documents.where(created_at: 1.year.ago..Time.current)
     end
 
@@ -215,25 +215,25 @@ class DocumentSearchService
 
   def apply_sorting(documents)
     case params[:sort]
-    when 'name_asc'
+    when "name_asc"
       documents.order(:name)
-    when 'name_desc'
+    when "name_desc"
       documents.order(name: :desc)
-    when 'type_asc'
+    when "type_asc"
       documents.order(:document_type)
-    when 'type_desc'
+    when "type_desc"
       documents.order(document_type: :desc)
-    when 'size_asc'
+    when "size_asc"
       documents.order(:file_size)
-    when 'size_desc'
+    when "size_desc"
       documents.order(file_size: :desc)
-    when 'updated_asc'
+    when "updated_asc"
       documents.order(:updated_at)
-    when 'updated_desc'
+    when "updated_desc"
       documents.order(updated_at: :desc)
-    when 'expires_asc'
+    when "expires_asc"
       documents.order(:expires_at)
-    when 'expires_desc'
+    when "expires_desc"
       documents.order(expires_at: :desc)
     else
       documents.order(created_at: :desc)  # Default: newest first
@@ -242,7 +242,7 @@ class DocumentSearchService
 
   def calculate_facet_counts(base_scope, field, possible_values)
     counts = base_scope.group(field).count
-    
+
     possible_values.map do |value|
       {
         value: value,
@@ -254,7 +254,7 @@ class DocumentSearchService
 
   def uploader_facets(base_scope)
     base_scope.joins(:user)
-              .group('users.id', 'users.first_name', 'users.last_name')
+              .group("users.id", "users.first_name", "users.last_name")
               .count
               .map do |(id, first_name, last_name), count|
                 {
@@ -269,7 +269,7 @@ class DocumentSearchService
 
   def file_type_facets(base_scope)
     content_types = base_scope.joins(file_attachment: :blob)
-                              .group('active_storage_blobs.content_type')
+                              .group("active_storage_blobs.content_type")
                               .count
 
     grouped_types = {}
@@ -290,12 +290,12 @@ class DocumentSearchService
   def date_range_facets(base_scope)
     today = Date.current
     ranges = [
-      { label: 'Today', value: 'today', start: today.beginning_of_day, end: today.end_of_day },
-      { label: 'This Week', value: 'week', start: today.beginning_of_week, end: today.end_of_week },
-      { label: 'This Month', value: 'month', start: today.beginning_of_month, end: today.end_of_month },
-      { label: 'Last 30 Days', value: '30_days', start: 30.days.ago, end: Time.current },
-      { label: 'Last 90 Days', value: '90_days', start: 90.days.ago, end: Time.current },
-      { label: 'This Year', value: 'year', start: today.beginning_of_year, end: today.end_of_year }
+      { label: "Today", value: "today", start: today.beginning_of_day, end: today.end_of_day },
+      { label: "This Week", value: "week", start: today.beginning_of_week, end: today.end_of_week },
+      { label: "This Month", value: "month", start: today.beginning_of_month, end: today.end_of_month },
+      { label: "Last 30 Days", value: "30_days", start: 30.days.ago, end: Time.current },
+      { label: "Last 90 Days", value: "90_days", start: 90.days.ago, end: Time.current },
+      { label: "This Year", value: "year", start: today.beginning_of_year, end: today.end_of_year }
     ]
 
     ranges.map do |range|
@@ -307,17 +307,17 @@ class DocumentSearchService
   def categorize_content_type(content_type)
     case content_type
     when /^image\//
-      'images'
-    when 'application/pdf'
-      'pdfs'
+      "images"
+    when "application/pdf"
+      "pdfs"
     when /word|document|text/
-      'documents'
+      "documents"
     when /excel|spreadsheet/
-      'spreadsheets'
+      "spreadsheets"
     when /zip|compressed/
-      'archives'
+      "archives"
     else
-      'other'
+      "other"
     end
   end
 end

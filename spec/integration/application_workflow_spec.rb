@@ -6,12 +6,12 @@ RSpec.describe 'Application Workflow Integration', type: :request do
   let(:agent_user) { create(:user, :agent, organization: organization) }
   let(:client) { create(:client, organization: organization) }
   let(:insurance_company) { create(:insurance_company, organization: organization) }
-  
+
   before do
     ActsAsTenant.current_tenant = organization
     sign_in agent_user
   end
-  
+
   after { ActsAsTenant.current_tenant = nil }
 
   describe 'Complete Motor Insurance Application Workflow' do
@@ -46,7 +46,7 @@ RSpec.describe 'Application Workflow Integration', type: :request do
         # Step 1: Create new application
         post '/insurance_applications', params: application_params
         expect(response).to have_http_status(:redirect)
-        
+
         application = InsuranceApplication.last
         expect(application.status).to eq('draft')
         expect(application.application_type).to eq('motor')
@@ -55,7 +55,7 @@ RSpec.describe 'Application Workflow Integration', type: :request do
         # Step 2: Submit application for review
         patch "/insurance_applications/#{application.id}/submit"
         expect(response).to have_http_status(:redirect)
-        
+
         application.reload
         expect(application.status).to eq('submitted')
         expect(application.submitted_at).to be_present
@@ -64,7 +64,7 @@ RSpec.describe 'Application Workflow Integration', type: :request do
         sign_in admin_user
         patch "/insurance_applications/#{application.id}/start_review"
         expect(response).to have_http_status(:redirect)
-        
+
         application.reload
         expect(application.status).to eq('under_review')
         expect(application.review_started_at).to be_present
@@ -72,7 +72,7 @@ RSpec.describe 'Application Workflow Integration', type: :request do
         # Step 4: Admin approves application
         patch "/insurance_applications/#{application.id}/approve"
         expect(response).to have_http_status(:redirect)
-        
+
         application.reload
         expect(application.status).to eq('approved')
         expect(application.approved_at).to be_present
@@ -96,7 +96,7 @@ RSpec.describe 'Application Workflow Integration', type: :request do
 
         post "/insurance_applications/#{application.id}/quotes", params: quote_params
         expect(response).to have_http_status(:redirect)
-        
+
         quote = application.quotes.last
         expect(quote.status).to eq('pending')
         expect(quote.total_premium).to eq(1370) # base + taxes + fees
@@ -104,7 +104,7 @@ RSpec.describe 'Application Workflow Integration', type: :request do
         # Step 6: Submit quote to insurance company
         patch "/quotes/#{quote.id}/submit"
         expect(response).to have_http_status(:redirect)
-        
+
         quote.reload
         expect(quote.status).to eq('submitted')
         expect(quote.submitted_at).to be_present
@@ -112,7 +112,7 @@ RSpec.describe 'Application Workflow Integration', type: :request do
         # Step 7: Insurance company approves quote
         patch "/quotes/#{quote.id}/approve"
         expect(response).to have_http_status(:redirect)
-        
+
         quote.reload
         expect(quote.status).to eq('approved')
         expect(quote.approved_at).to be_present
@@ -120,7 +120,7 @@ RSpec.describe 'Application Workflow Integration', type: :request do
         # Step 8: Client accepts quote
         patch "/quotes/#{quote.id}/accept"
         expect(response).to have_http_status(:redirect)
-        
+
         quote.reload
         expect(quote.status).to eq('accepted')
         expect(quote.accepted_at).to be_present
@@ -139,18 +139,18 @@ RSpec.describe 'Application Workflow Integration', type: :request do
         # Create and submit application
         post '/insurance_applications', params: application_params
         application = InsuranceApplication.last
-        
+
         patch "/insurance_applications/#{application.id}/submit"
-        
+
         # Admin rejects application
         sign_in admin_user
         rejection_params = {
           rejection_reason: 'Insufficient credit score'
         }
-        
+
         patch "/insurance_applications/#{application.id}/reject", params: rejection_params
         expect(response).to have_http_status(:redirect)
-        
+
         application.reload
         expect(application.status).to eq('rejected')
         expect(application.rejected_at).to be_present
@@ -165,7 +165,7 @@ RSpec.describe 'Application Workflow Integration', type: :request do
 
     context 'quote rejection and re-quote workflow' do
       let!(:application) { create(:insurance_application, :approved, organization: organization, client: client, user: agent_user) }
-      
+
       it 'handles quote rejection and allows new quotes' do
         # Create initial quote
         quote_params = {
@@ -183,11 +183,11 @@ RSpec.describe 'Application Workflow Integration', type: :request do
 
         post "/insurance_applications/#{application.id}/quotes", params: quote_params
         quote = application.quotes.last
-        
+
         # Submit and then reject quote
         patch "/quotes/#{quote.id}/submit"
         patch "/quotes/#{quote.id}/reject", params: { rejection_reason: 'Rate too high' }
-        
+
         quote.reload
         expect(quote.status).to eq('rejected')
         expect(quote.rejection_reason).to eq('Rate too high')
@@ -208,16 +208,16 @@ RSpec.describe 'Application Workflow Integration', type: :request do
 
         post "/insurance_applications/#{application.id}/quotes", params: better_quote_params
         new_quote = application.quotes.reload.last
-        
+
         expect(new_quote.id).not_to eq(quote.id)
         expect(new_quote.base_premium).to eq(1200)
         expect(new_quote.status).to eq('pending')
 
         # Accept the new quote
         patch "/quotes/#{new_quote.id}/submit"
-        patch "/quotes/#{new_quote.id}/approve" 
+        patch "/quotes/#{new_quote.id}/approve"
         patch "/quotes/#{new_quote.id}/accept"
-        
+
         new_quote.reload
         expect(new_quote.status).to eq('accepted')
       end
@@ -226,7 +226,7 @@ RSpec.describe 'Application Workflow Integration', type: :request do
 
   describe 'Document Upload Workflow' do
     let!(:application) { create(:insurance_application, :submitted, organization: organization, client: client, user: agent_user) }
-    
+
     it 'allows document upload during application process' do
       # Upload driver license
       document_params = {
@@ -241,7 +241,7 @@ RSpec.describe 'Application Workflow Integration', type: :request do
 
       post "/insurance_applications/#{application.id}/documents", params: document_params
       expect(response).to have_http_status(:redirect)
-      
+
       document = application.documents.last
       expect(document.name).to eq('Driver License')
       expect(document.document_type).to eq('driver_license')
@@ -260,7 +260,7 @@ RSpec.describe 'Application Workflow Integration', type: :request do
 
       post "/insurance_applications/#{application.id}/documents", params: vehicle_reg_params
       expect(response).to have_http_status(:redirect)
-      
+
       expect(application.documents.count).to eq(2)
       expect(application.documents.pluck(:document_type)).to include('driver_license', 'vehicle_registration')
     end
@@ -270,7 +270,7 @@ RSpec.describe 'Application Workflow Integration', type: :request do
     let!(:application) { create(:insurance_application, :approved, organization: organization, client: client, user: agent_user) }
     let!(:company1) { create(:insurance_company, organization: organization, name: 'Company A') }
     let!(:company2) { create(:insurance_company, organization: organization, name: 'Company B') }
-    
+
     it 'allows multiple quotes for comparison' do
       # Create first quote
       quote1_params = {
@@ -318,10 +318,10 @@ RSpec.describe 'Application Workflow Integration', type: :request do
       patch "/quotes/#{quote2.id}/submit"
       patch "/quotes/#{quote2.id}/approve"
       patch "/quotes/#{quote2.id}/accept"
-      
+
       quote2.reload
       expect(quote2.status).to eq('accepted')
-      
+
       # Verify the other quote remains unaffected
       quote1.reload
       expect(quote1.status).to eq('pending')
@@ -342,7 +342,7 @@ RSpec.describe 'Application Workflow Integration', type: :request do
 
         post '/insurance_applications', params: invalid_params
         expect(response).to have_http_status(:unprocessable_entity)
-        
+
         # Verify no application was created
         expect(InsuranceApplication.count).to eq(0)
       end
@@ -351,11 +351,11 @@ RSpec.describe 'Application Workflow Integration', type: :request do
     context 'unauthorized access attempts' do
       it 'prevents unauthorized status changes' do
         application = create(:insurance_application, :submitted, organization: organization, client: client, user: agent_user)
-        
+
         # Agent tries to approve (only admin should be able to)
         patch "/insurance_applications/#{application.id}/approve"
         expect(response).to have_http_status(:forbidden)
-        
+
         application.reload
         expect(application.status).to eq('submitted') # Status unchanged
       end
@@ -365,10 +365,10 @@ RSpec.describe 'Application Workflow Integration', type: :request do
       it 'prevents acceptance of expired quotes' do
         application = create(:insurance_application, :approved, organization: organization, client: client, user: agent_user)
         quote = create(:quote, :expired, insurance_application: application, organization: organization, insurance_company: insurance_company, user: agent_user)
-        
+
         patch "/quotes/#{quote.id}/accept"
         expect(response).to have_http_status(:unprocessable_entity)
-        
+
         quote.reload
         expect(quote.status).not_to eq('accepted')
       end
@@ -378,11 +378,11 @@ RSpec.describe 'Application Workflow Integration', type: :request do
   describe 'Performance and Data Integrity' do
     it 'maintains data consistency under concurrent access' do
       application = create(:insurance_application, :submitted, organization: organization, client: client, user: agent_user)
-      
+
       # Simulate concurrent approval attempts
       threads = []
       results = []
-      
+
       3.times do |i|
         threads << Thread.new do
           begin
@@ -393,9 +393,9 @@ RSpec.describe 'Application Workflow Integration', type: :request do
           end
         end
       end
-      
+
       threads.each(&:join)
-      
+
       # Only one should succeed
       application.reload
       expect(application.status).to eq('approved')

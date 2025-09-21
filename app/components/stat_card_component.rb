@@ -3,11 +3,11 @@ class StatCardComponent < ApplicationComponent
   option :value, Types::Any
   option :description, Types::String.optional, default: proc { nil }
   option :icon, Types::String.optional, default: proc { nil }
-  option :color, Types::String, default: proc { 'primary' }
-  option :size, Types::String, default: proc { 'normal' }
+  option :color, Types::String, default: proc { "primary" }
+  option :size, Types::String, default: proc { "normal" }
   option :trend, Types::Hash.optional, default: proc { nil }
   option :link_to, Types::String.optional, default: proc { nil }
-  option :classes, Types::String, default: proc { '' }
+  option :classes, Types::String, default: proc { "" }
 
   private
 
@@ -20,12 +20,12 @@ class StatCardComponent < ApplicationComponent
 
   def size_classes
     case @size
-    when 'compact'
-      'stat-compact'
-    when 'large'
-      'p-6'
+    when "compact"
+      "stat-compact"
+    when "large"
+      "p-6"
     else
-      ''
+      ""
     end
   end
 
@@ -36,39 +36,39 @@ class StatCardComponent < ApplicationComponent
   def value_classes
     base = "stat-value text-#{@color}"
     base += case @size
-            when 'compact'
-              ' text-lg'
-            when 'large'
-              ' text-4xl'
-            else
-              ' text-2xl'
-            end
+    when "compact"
+              " text-lg"
+    when "large"
+              " text-4xl"
+    else
+              " text-2xl"
+    end
     base
   end
 
   def trend_color
-    return '' unless @trend
+    return "" unless @trend
 
     case @trend[:direction]
-    when 'up'
-      @trend[:positive] ? 'text-success' : 'text-error'
-    when 'down'
-      @trend[:positive] ? 'text-error' : 'text-success'
+    when "up"
+      @trend[:positive] ? "text-success" : "text-error"
+    when "down"
+      @trend[:positive] ? "text-error" : "text-success"
     else
-      'text-gray-500'
+      "text-gray-500"
     end
   end
 
   def trend_icon
-    return '' unless @trend
+    return "" unless @trend
 
     case @trend[:direction]
-    when 'up'
-      'arrow-trending-up'
-    when 'down'
-      'arrow-trending-down'
+    when "up"
+      "arrow-trending-up"
+    when "down"
+      "arrow-trending-down"
     else
-      'minus'
+      "minus"
     end
   end
 

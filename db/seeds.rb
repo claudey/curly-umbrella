@@ -38,7 +38,7 @@ brokerages = [
   {
     name: "Elite Risk Solutions",
     subdomain: "elite-risk",
-    license_number: "BRK-2024-002", 
+    license_number: "BRK-2024-002",
     billing_email: "billing@eliterisk.com",
     contact_info: {
       address: "456 Corporate Avenue, Kumasi, Ghana",
@@ -151,17 +151,17 @@ created_orgs.each_with_index do |org, org_index|
   puts "  ✅ Created/Found admin: #{admin.email}"
 
   # Create 3-4 agents per organization
-  agent_count = [3, 4, 3][org_index]
+  agent_count = [ 3, 4, 3 ][org_index]
   agent_names = [
-    ["John", "Doe"], ["Jane", "Smith"], ["Michael", "Johnson"], ["Sarah", "Wilson"],
-    ["David", "Brown"], ["Emma", "Davis"], ["James", "Miller"], ["Lisa", "Garcia"],
-    ["Robert", "Martinez"], ["Amanda", "Anderson"]
+    [ "John", "Doe" ], [ "Jane", "Smith" ], [ "Michael", "Johnson" ], [ "Sarah", "Wilson" ],
+    [ "David", "Brown" ], [ "Emma", "Davis" ], [ "James", "Miller" ], [ "Lisa", "Garcia" ],
+    [ "Robert", "Martinez" ], [ "Amanda", "Anderson" ]
   ]
 
   agent_count.times do |i|
     agent_index = (org_index * 4) + i
-    first_name, last_name = agent_names[agent_index] || ["Agent#{agent_index}", "User"]
-    
+    first_name, last_name = agent_names[agent_index] || [ "Agent#{agent_index}", "User" ]
+
     agent_email = "brokers+#{'%02d' % (agent_index + 1)}@boughtspot.com"
     agent = User.find_or_create_by(email: agent_email) do |user|
       user.organization = org
@@ -173,17 +173,17 @@ created_orgs.each_with_index do |org, org_index|
       user.role = "agent"
     end
     all_users << agent
-    
+
     # Create BrokerageAgent record
     brokerage_agent = nil
     if agent.persisted?
       brokerage_agent = BrokerageAgent.find_or_create_by(user: agent, organization: org) do |ba|
-        ba.role = ["agent", "senior_agent", "team_lead"].sample
+        ba.role = [ "agent", "senior_agent", "team_lead" ].sample
         ba.active = true
         ba.join_date = rand(1..24).months.ago
       end
     end
-    
+
     role_info = brokerage_agent ? brokerage_agent.role : "no role"
     puts "  ✅ Created/Found agent: #{agent.email} (#{role_info})"
   end
@@ -210,21 +210,21 @@ end
 puts "👤 Creating clients..."
 
 client_data = [
-  {first_name: "Kofi", last_name: "Asante", email: "kofi.asante@example.com", date_of_birth: 35.years.ago, marital_status: "married", id_type: "national_id"},
-  {first_name: "Akosua", last_name: "Mensah", email: "akosua.mensah@example.com", date_of_birth: 28.years.ago, marital_status: "single", id_type: "passport"},
-  {first_name: "Kwame", last_name: "Osei", email: "kwame.osei@example.com", date_of_birth: 45.years.ago, marital_status: "married", id_type: "drivers_license"},
-  {first_name: "Ama", last_name: "Boateng", email: "ama.boateng@example.com", date_of_birth: 32.years.ago, marital_status: "divorced", id_type: "national_id"},
-  {first_name: "Yaw", last_name: "Darko", email: "yaw.darko@example.com", date_of_birth: 29.years.ago, marital_status: "single", id_type: "national_id"},
-  {first_name: "Efua", last_name: "Ampong", email: "efua.ampong@example.com", date_of_birth: 38.years.ago, marital_status: "married", id_type: "passport"},
-  {first_name: "Samuel", last_name: "Adjei", email: "samuel.adjei@example.com", date_of_birth: 42.years.ago, marital_status: "married", id_type: "drivers_license"},
-  {first_name: "Grace", last_name: "Owusu", email: "grace.owusu@example.com", date_of_birth: 26.years.ago, marital_status: "single", id_type: "national_id"},
-  {first_name: "Daniel", last_name: "Nkrumah", email: "daniel.nkrumah@example.com", date_of_birth: 31.years.ago, marital_status: "married", id_type: "national_id"},
-  {first_name: "Abena", last_name: "Sarpong", email: "abena.sarpong@example.com", date_of_birth: 27.years.ago, marital_status: "single", id_type: "passport"},
-  {first_name: "Prince", last_name: "Adusei", email: "prince.adusei@example.com", date_of_birth: 39.years.ago, marital_status: "married", id_type: "drivers_license"},
-  {first_name: "Mavis", last_name: "Appiah", email: "mavis.appiah@example.com", date_of_birth: 33.years.ago, marital_status: "divorced", id_type: "national_id"},
-  {first_name: "Ibrahim", last_name: "Mohammed", email: "ibrahim.mohammed@example.com", date_of_birth: 41.years.ago, marital_status: "married", id_type: "national_id"},
-  {first_name: "Gifty", last_name: "Asare", email: "gifty.asare@example.com", date_of_birth: 25.years.ago, marital_status: "single", id_type: "passport"},
-  {first_name: "Francis", last_name: "Twum", email: "francis.twum@example.com", date_of_birth: 36.years.ago, marital_status: "married", id_type: "drivers_license"}
+  { first_name: "Kofi", last_name: "Asante", email: "kofi.asante@example.com", date_of_birth: 35.years.ago, marital_status: "married", id_type: "national_id" },
+  { first_name: "Akosua", last_name: "Mensah", email: "akosua.mensah@example.com", date_of_birth: 28.years.ago, marital_status: "single", id_type: "passport" },
+  { first_name: "Kwame", last_name: "Osei", email: "kwame.osei@example.com", date_of_birth: 45.years.ago, marital_status: "married", id_type: "drivers_license" },
+  { first_name: "Ama", last_name: "Boateng", email: "ama.boateng@example.com", date_of_birth: 32.years.ago, marital_status: "divorced", id_type: "national_id" },
+  { first_name: "Yaw", last_name: "Darko", email: "yaw.darko@example.com", date_of_birth: 29.years.ago, marital_status: "single", id_type: "national_id" },
+  { first_name: "Efua", last_name: "Ampong", email: "efua.ampong@example.com", date_of_birth: 38.years.ago, marital_status: "married", id_type: "passport" },
+  { first_name: "Samuel", last_name: "Adjei", email: "samuel.adjei@example.com", date_of_birth: 42.years.ago, marital_status: "married", id_type: "drivers_license" },
+  { first_name: "Grace", last_name: "Owusu", email: "grace.owusu@example.com", date_of_birth: 26.years.ago, marital_status: "single", id_type: "national_id" },
+  { first_name: "Daniel", last_name: "Nkrumah", email: "daniel.nkrumah@example.com", date_of_birth: 31.years.ago, marital_status: "married", id_type: "national_id" },
+  { first_name: "Abena", last_name: "Sarpong", email: "abena.sarpong@example.com", date_of_birth: 27.years.ago, marital_status: "single", id_type: "passport" },
+  { first_name: "Prince", last_name: "Adusei", email: "prince.adusei@example.com", date_of_birth: 39.years.ago, marital_status: "married", id_type: "drivers_license" },
+  { first_name: "Mavis", last_name: "Appiah", email: "mavis.appiah@example.com", date_of_birth: 33.years.ago, marital_status: "divorced", id_type: "national_id" },
+  { first_name: "Ibrahim", last_name: "Mohammed", email: "ibrahim.mohammed@example.com", date_of_birth: 41.years.ago, marital_status: "married", id_type: "national_id" },
+  { first_name: "Gifty", last_name: "Asare", email: "gifty.asare@example.com", date_of_birth: 25.years.ago, marital_status: "single", id_type: "passport" },
+  { first_name: "Francis", last_name: "Twum", email: "francis.twum@example.com", date_of_birth: 36.years.ago, marital_status: "married", id_type: "drivers_license" }
 ]
 
 clients_per_org = (client_data.length / created_orgs.length.to_f).ceil
@@ -232,15 +232,15 @@ all_clients = []
 
 created_orgs.each_with_index do |org, org_index|
   start_index = org_index * clients_per_org
-  end_index = [start_index + clients_per_org - 1, client_data.length - 1].min
-  
+  end_index = [ start_index + clients_per_org - 1, client_data.length - 1 ].min
+
   (start_index..end_index).each do |i|
     next if client_data[i].nil?
-    
+
     client = Client.create!(
       organization: org,
       phone: "+233242422604",
-      preferred_contact_method: ["email", "phone", "sms"].sample,
+      preferred_contact_method: [ "email", "phone", "sms" ].sample,
       **client_data[i]
     )
     all_clients << client
@@ -251,8 +251,8 @@ end
 # 5. Create Insurance Applications
 puts "📋 Creating insurance applications..."
 
-insurance_types = ["motor", "fire", "liability", "general_accident", "bonds"]
-statuses = ["draft", "submitted", "under_review", "approved", "rejected"]
+insurance_types = [ "motor", "fire", "liability", "general_accident", "bonds" ]
+statuses = [ "draft", "submitted", "under_review", "approved", "rejected" ]
 
 applications_data = []
 
@@ -262,38 +262,38 @@ applications_data = []
   client = all_clients.select { |c| c.organization_id == org.id }.sample
   agents = all_users.select { |u| u.organization_id == org.id && u.role == "agent" }
   agent = agents.sample
-  
+
   # Skip if no agent found
   next if agent.nil?
   insurance_type = insurance_types.sample
-  
+
   # Create appropriate application data based on type
   application_data = case insurance_type
   when "motor"
     {
-      "vehicle_make" => ["Toyota", "Honda", "Nissan", "Hyundai", "Kia"].sample,
-      "vehicle_model" => ["Camry", "Corolla", "Civic", "Accord", "Elantra"].sample,
+      "vehicle_make" => [ "Toyota", "Honda", "Nissan", "Hyundai", "Kia" ].sample,
+      "vehicle_model" => [ "Camry", "Corolla", "Civic", "Accord", "Elantra" ].sample,
       "vehicle_year" => rand(2015..2024).to_s,
       "registration_number" => "GR-#{rand(1000..9999)}-#{('A'..'Z').to_a.sample(2).join}",
       "chassis_number" => "#{('A'..'Z').to_a.sample(3).join}#{rand(1000000..9999999)}",
       "engine_number" => "ENG#{rand(100000..999999)}",
       "driver_license_number" => "DL#{rand(100000..999999)}",
-      "vehicle_usage" => ["personal", "business", "commercial"].sample,
-      "vehicle_color" => ["White", "Black", "Silver", "Blue", "Red"].sample
+      "vehicle_usage" => [ "personal", "business", "commercial" ].sample,
+      "vehicle_color" => [ "White", "Black", "Silver", "Blue", "Red" ].sample
     }
   when "fire"
     {
-      "property_type" => ["residential", "commercial", "industrial"].sample,
+      "property_type" => [ "residential", "commercial", "industrial" ].sample,
       "property_value" => rand(100000..5000000).to_s,
-      "property_address" => "#{rand(1..999)} #{['Airport', 'Cantonments', 'East Legon', 'Labone', 'Osu'].sample} Street, Accra",
-      "construction_type" => ["concrete", "wood", "mixed"].sample,
-      "occupancy_type" => ["owner_occupied", "tenant_occupied", "vacant"].sample,
-      "fire_safety_measures" => ["smoke_detectors", "fire_extinguishers", "sprinkler_system"].sample(rand(1..3)).join(", ")
+      "property_address" => "#{rand(1..999)} #{[ 'Airport', 'Cantonments', 'East Legon', 'Labone', 'Osu' ].sample} Street, Accra",
+      "construction_type" => [ "concrete", "wood", "mixed" ].sample,
+      "occupancy_type" => [ "owner_occupied", "tenant_occupied", "vacant" ].sample,
+      "fire_safety_measures" => [ "smoke_detectors", "fire_extinguishers", "sprinkler_system" ].sample(rand(1..3)).join(", ")
     }
   when "liability"
     {
-      "business_type" => ["retail", "office", "manufacturing", "construction"].sample,
-      "liability_type" => ["public", "professional", "product"].sample,
+      "business_type" => [ "retail", "office", "manufacturing", "construction" ].sample,
+      "liability_type" => [ "public", "professional", "product" ].sample,
       "coverage_scope" => "General business operations",
       "annual_turnover" => rand(500000..10000000).to_s,
       "number_of_employees" => rand(5..100).to_s,
@@ -301,16 +301,16 @@ applications_data = []
     }
   when "general_accident"
     {
-      "coverage_type" => ["personal_accident", "group_accident", "travel_accident"].sample,
-      "occupation" => ["office", "education", "transport", "construction"].sample,
+      "coverage_type" => [ "personal_accident", "group_accident", "travel_accident" ].sample,
+      "occupation" => [ "office", "education", "transport", "construction" ].sample,
       "annual_income" => rand(50000..500000).to_s,
       "beneficiary_details" => "Primary beneficiary information on file",
       "medical_history" => "No significant medical history",
-      "lifestyle_factors" => ["non_smoker", "occasional_drinker", "regular_exercise"].sample(rand(1..3)).join(", ")
+      "lifestyle_factors" => [ "non_smoker", "occasional_drinker", "regular_exercise" ].sample(rand(1..3)).join(", ")
     }
   when "bonds"
     {
-      "bond_type" => ["performance", "payment", "bid"].sample,
+      "bond_type" => [ "performance", "payment", "bid" ].sample,
       "principal_amount" => rand(1000000..50000000).to_s,
       "contract_details" => "Government contract requiring bond coverage",
       "project_description" => "Infrastructure development project",
@@ -318,13 +318,13 @@ applications_data = []
       "performance_history" => "Excellent track record with previous projects"
     }
   end
-  
+
   applications_data << {
     organization: org,
     client: client,
     user: agent,
     insurance_type: insurance_type,
-    status: ["draft", "submitted"].sample,
+    status: [ "draft", "submitted" ].sample,
     application_data: application_data,
     sum_insured: rand(100000..5000000).to_f,
     premium_amount: rand(5000..50000).to_f,
@@ -344,17 +344,17 @@ puts "💰 Creating quotes..."
 
 # Create 1-3 quotes for submitted/approved applications
 quote_count = 0
-created_applications.select { |app| ["submitted", "under_review", "approved"].include?(app.status) }.each do |application|
+created_applications.select { |app| [ "submitted", "under_review", "approved" ].include?(app.status) }.each do |application|
   quotes_to_create = rand(1..3)
-  
+
   quotes_to_create.times do |i|
     company = created_insurance_companies.sample
     agent = all_users.select { |u| u.role == "insurance_company" }.sample
-    
+
     # Vary quote amounts around the application premium
     base_premium = application.premium_amount || rand(5000..50000)
     quote_premium = (base_premium * (0.8 + rand * 0.4)).round(2)
-    
+
     quote = Quote.create!(
       insurance_application: application,
       insurance_company: company,
@@ -363,8 +363,8 @@ created_applications.select { |app| ["submitted", "under_review", "approved"].in
       premium_amount: quote_premium,
       coverage_amount: application.sum_insured || rand(100000..5000000),
       commission_rate: company.commission_rate,
-      validity_period: [7, 14, 21, 30].sample,
-      status: ["draft", "submitted", "approved", "rejected"].sample,
+      validity_period: [ 7, 14, 21, 30 ].sample,
+      status: [ "draft", "submitted", "approved", "rejected" ].sample,
       coverage_details: {
         "basic_coverage" => "Standard coverage as per policy terms",
         "deductible" => rand(1000..10000),
@@ -388,13 +388,13 @@ all_users.each do |user|
       user: user,
       organization: user.organization,
       email_enabled: true,
-      sms_enabled: [true, false].sample,
-      whatsapp_enabled: [true, false].sample,
+      sms_enabled: [ true, false ].sample,
+      whatsapp_enabled: [ true, false ].sample,
       application_submitted: true,
       application_approved: true,
       quote_received: true,
       quote_expiring: true,
-      system_alerts: user.role.in?(["super_admin", "brokerage_admin"])
+      system_alerts: user.role.in?([ "super_admin", "brokerage_admin" ])
     )
   end
 end

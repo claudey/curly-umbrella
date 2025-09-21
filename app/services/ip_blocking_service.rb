@@ -4,9 +4,9 @@ class IpBlockingService
   include Singleton
 
   # Cache blocked IPs for fast lookup
-  BLOCKED_IPS_KEY = 'security:blocked_ips'
-  TEMPORARY_BLOCK_KEY = 'security:temp_blocked_ips'
-  WHITELIST_KEY = 'security:ip_whitelist'
+  BLOCKED_IPS_KEY = "security:blocked_ips"
+  TEMPORARY_BLOCK_KEY = "security:temp_blocked_ips"
+  WHITELIST_KEY = "security:ip_whitelist"
   DEFAULT_BLOCK_DURATION = 1.hour
 
   def self.block_ip(ip_address, reason, duration: DEFAULT_BLOCK_DURATION, permanent: false)
@@ -42,7 +42,7 @@ class IpBlockingService
       blocked_at: Time.current.to_i,
       blocked_until: permanent ? nil : (Time.current + duration).to_i,
       permanent: permanent,
-      blocked_by: 'system'
+      blocked_by: "system"
     }
 
     # Store in cache for fast lookup
@@ -57,11 +57,11 @@ class IpBlockingService
 
     # Log the block action
     Rails.logger.warn "IP #{ip_address} blocked: #{reason}"
-    
+
     # Create audit log
     AuditLog.log_security_event(
       nil,
-      'ip_blocked',
+      "ip_blocked",
       {
         ip_address: ip_address,
         reason: reason,
@@ -97,10 +97,10 @@ class IpBlockingService
     # Create audit log
     AuditLog.log_security_event(
       nil,
-      'ip_unblocked',
+      "ip_unblocked",
       {
         ip_address: ip_address,
-        reason: reason || 'Manual unblock',
+        reason: reason || "Manual unblock",
         unblocked_at: Time.current
       }
     )
@@ -166,7 +166,7 @@ class IpBlockingService
 
   def cleanup_expired_blocks
     expired_count = 0
-    
+
     # Get all temporary blocks
     temp_blocks = redis.hgetall(TEMPORARY_BLOCK_KEY)
     current_time = Time.current.to_i
@@ -174,8 +174,8 @@ class IpBlockingService
     temp_blocks.each do |ip, block_json|
       begin
         block_data = JSON.parse(block_json)
-        blocked_until = block_data['blocked_until']
-        
+        blocked_until = block_data["blocked_until"]
+
         if blocked_until && current_time > blocked_until
           redis.hdel(TEMPORARY_BLOCK_KEY, ip)
           expired_count += 1
@@ -200,8 +200,8 @@ class IpBlockingService
         data = JSON.parse(block_json)
         blocked_ips << {
           ip_address: ip,
-          reason: data['reason'],
-          blocked_at: Time.at(data['blocked_at']),
+          reason: data["reason"],
+          blocked_at: Time.at(data["blocked_at"]),
           permanent: true,
           expires_at: nil
         }
@@ -213,19 +213,19 @@ class IpBlockingService
     # Get temporary blocks
     temp_blocks = redis.hgetall(TEMPORARY_BLOCK_KEY)
     current_time = Time.current.to_i
-    
+
     temp_blocks.each do |ip, block_json|
       begin
         data = JSON.parse(block_json)
-        blocked_until = data['blocked_until']
-        
+        blocked_until = data["blocked_until"]
+
         # Skip expired blocks
         next if blocked_until && current_time > blocked_until
-        
+
         blocked_ips << {
           ip_address: ip,
-          reason: data['reason'],
-          blocked_at: Time.at(data['blocked_at']),
+          reason: data["reason"],
+          blocked_at: Time.at(data["blocked_at"]),
           permanent: false,
           expires_at: blocked_until ? Time.at(blocked_until) : nil
         }
@@ -241,16 +241,16 @@ class IpBlockingService
   def auto_block_suspicious_ips
     # Get IPs with multiple failed login attempts in the last hour
     suspicious_ips = AuditLog.where(
-      action: 'login_failure',
+      action: "login_failure",
       created_at: 1.hour.ago..Time.current
     ).group("details->>'ip_address'")
-     .having('COUNT(*) >= ?', 10)
+     .having("COUNT(*) >= ?", 10)
      .count
 
     blocked_count = 0
     suspicious_ips.each do |ip, attempt_count|
       next if ip.blank? || blocked?(ip) || local_ip?(ip)
-      
+
       if block_ip(ip, "Auto-blocked: #{attempt_count} failed login attempts", duration: 2.hours)
         blocked_count += 1
       end
@@ -266,13 +266,13 @@ class IpBlockingService
       ip_address: ip_address,
       reason: reason,
       added_at: Time.current.to_i,
-      added_by: 'system'
+      added_by: "system"
     }
 
     whitelist = Rails.cache.fetch(WHITELIST_KEY, expires_in: nil) { {} }
     whitelist[ip_address] = whitelist_data
     Rails.cache.write(WHITELIST_KEY, whitelist, expires_in: nil)
-    
+
     # Also unblock if currently blocked
     unblock_ip(ip_address, "Added to whitelist: #{reason}")
 
@@ -281,7 +281,7 @@ class IpBlockingService
 
   def whitelisted?(ip_address)
     return false if ip_address.blank?
-    
+
     whitelist = Rails.cache.fetch(WHITELIST_KEY, expires_in: nil) { {} }
     whitelist.key?(ip_address)
   end
@@ -291,12 +291,12 @@ class IpBlockingService
   def local_ip?(ip_address)
     # Don't block local/private IPs
     private_ranges = [
-      IPAddr.new('127.0.0.0/8'),    # Loopback
-      IPAddr.new('10.0.0.0/8'),     # Private Class A
-      IPAddr.new('172.16.0.0/12'),  # Private Class B
-      IPAddr.new('192.168.0.0/16'), # Private Class C
-      IPAddr.new('::1/128'),        # IPv6 loopback
-      IPAddr.new('fc00::/7')        # IPv6 private
+      IPAddr.new("127.0.0.0/8"),    # Loopback
+      IPAddr.new("10.0.0.0/8"),     # Private Class A
+      IPAddr.new("172.16.0.0/12"),  # Private Class B
+      IPAddr.new("192.168.0.0/16"), # Private Class C
+      IPAddr.new("::1/128"),        # IPv6 loopback
+      IPAddr.new("fc00::/7")        # IPv6 private
     ]
 
     begin
@@ -311,9 +311,9 @@ class IpBlockingService
     # In production, this could send to Slack, PagerDuty, etc.
     message = if permanent
                 "IP #{ip_address} permanently blocked: #{reason}"
-              else
+    else
                 "IP #{ip_address} temporarily blocked for #{duration}: #{reason}"
-              end
+    end
 
     Rails.logger.warn "IP_BLOCK_NOTIFICATION: #{message}"
 

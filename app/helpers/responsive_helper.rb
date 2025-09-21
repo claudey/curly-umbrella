@@ -1,9 +1,8 @@
 module ResponsiveHelper
-
   # Responsive utility classes for common patterns
   def responsive_classes(options = {})
     classes = []
-    
+
     # Padding
     if options[:padding]
       case options[:padding]
@@ -74,8 +73,8 @@ module ResponsiveHelper
 
   # Container classes for different content types
   def container_classes(type = :default, size: :default)
-    base_classes = ["mx-auto", "px-4", "sm:px-6"]
-    
+    base_classes = [ "mx-auto", "px-4", "sm:px-6" ]
+
     case size
     when :xs
       base_classes << "max-w-xs"
@@ -88,7 +87,7 @@ module ResponsiveHelper
     when :xl
       base_classes << "max-w-xl lg:px-8"
     when :full_width
-      base_classes = ["w-full", "px-4", "sm:px-6", "lg:px-8"]
+      base_classes = [ "w-full", "px-4", "sm:px-6", "lg:px-8" ]
     when :wide
       base_classes << "max-w-7xl lg:px-8"
     else
@@ -170,10 +169,10 @@ module ResponsiveHelper
   # Hide/show at specific breakpoints
   def breakpoint_visibility(show_at: [], hide_at: [])
     classes = []
-    
+
     # Default to hidden
     classes << "hidden" if show_at.any?
-    
+
     show_at.each do |breakpoint|
       case breakpoint.to_sym
       when :sm
@@ -209,8 +208,8 @@ module ResponsiveHelper
 
   # Responsive image classes
   def responsive_image_classes(aspect_ratio: :auto, object_fit: :cover)
-    classes = ["w-full"]
-    
+    classes = [ "w-full" ]
+
     case aspect_ratio
     when :square
       classes << "aspect-square"

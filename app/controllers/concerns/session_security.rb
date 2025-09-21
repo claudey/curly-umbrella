@@ -14,14 +14,14 @@ module SessionSecurity
   def track_session_activity
     return if login_action? # Skip during login process
     return unless current_user
-    
+
     # If no session_id exists yet, it will be created by after_action callback
     return unless session[:session_id]
 
     # Check if session is still valid
     unless SessionManagementService.is_session_valid?(current_user, session[:session_id])
       Rails.logger.warn "Invalid session detected for user #{current_user.id}, forcing logout"
-      force_user_logout('Session expired or invalid')
+      force_user_logout("Session expired or invalid")
       return
     end
 
@@ -53,15 +53,15 @@ module SessionSecurity
 
     request_info = {
       ip_address: get_client_ip,
-      user_agent: request.env['HTTP_USER_AGENT'],
+      user_agent: request.env["HTTP_USER_AGENT"],
       location: nil, # Could be populated with IP geolocation
       path: request.path,
       timestamp: Time.current
     }
 
     SessionManagementService.update_session_activity(
-      current_user, 
-      session[:session_id], 
+      current_user,
+      session[:session_id],
       request_info
     )
   end
@@ -71,24 +71,24 @@ module SessionSecurity
 
     # Generate or use existing session ID
     session[:session_id] ||= SecureRandom.hex(32)
-    
+
     request_info = {
       ip_address: get_client_ip,
-      user_agent: request.env['HTTP_USER_AGENT'],
+      user_agent: request.env["HTTP_USER_AGENT"],
       location: detect_location_from_ip(get_client_ip),
       device_fingerprint: generate_device_fingerprint
     }
 
     SessionManagementService.create_session(
-      current_user, 
-      session[:session_id], 
+      current_user,
+      session[:session_id],
       request_info
     )
 
     # Log successful login
     AuditLog.log_security_event(
       current_user,
-      'user_login',
+      "user_login",
       {
         ip_address: request_info[:ip_address],
         user_agent: request_info[:user_agent],
@@ -103,11 +103,11 @@ module SessionSecurity
     return unless current_user && session[:session_id]
 
     SessionManagementService.destroy_session(current_user, session[:session_id])
-    
+
     # Log logout
     AuditLog.log_security_event(
       current_user,
-      'user_logout',
+      "user_logout",
       {
         ip_address: get_client_ip,
         session_id: session[:session_id],
@@ -118,19 +118,19 @@ module SessionSecurity
     session[:session_id] = nil
   end
 
-  def force_user_logout(reason = 'Security violation')
+  def force_user_logout(reason = "Security violation")
     if current_user
       # Destroy all sessions for this user
       SessionManagementService.destroy_all_sessions(current_user)
-      
+
       # Log the forced logout
       AuditLog.log_security_event(
         current_user,
-        'forced_logout',
+        "forced_logout",
         {
           reason: reason,
           ip_address: get_client_ip,
-          user_agent: request.env['HTTP_USER_AGENT'],
+          user_agent: request.env["HTTP_USER_AGENT"],
           forced_at: Time.current
         }
       )
@@ -139,7 +139,7 @@ module SessionSecurity
     # Clear session
     session[:session_id] = nil
     sign_out(current_user) if user_signed_in?
-    
+
     # Redirect with message
     redirect_to new_user_session_path, alert: "Your session has been terminated for security reasons: #{reason}"
   end
@@ -148,7 +148,7 @@ module SessionSecurity
     return [] unless current_user
 
     sessions = SessionManagementService.get_active_sessions(current_user)
-    
+
     # Mark current session
     current_session_id = session[:session_id]
     sessions.map do |session_info|
@@ -161,17 +161,17 @@ module SessionSecurity
     return false unless current_user && session[:session_id]
 
     destroyed_count = SessionManagementService.destroy_all_sessions(
-      current_user, 
+      current_user,
       session[:session_id]
     )
 
     if destroyed_count > 0
       flash[:notice] = "Successfully terminated #{destroyed_count} other session(s)"
-      
+
       # Log the action
       AuditLog.log_security_event(
         current_user,
-        'terminate_other_sessions',
+        "terminate_other_sessions",
         {
           sessions_terminated: destroyed_count,
           ip_address: get_client_ip,
@@ -192,7 +192,7 @@ module SessionSecurity
     if session[:original_ip] != current_ip
       # Create security alert for IP change
       SecurityAlertJob.perform_later(
-        'session_ip_change',
+        "session_ip_change",
         "User session IP changed during active session",
         {
           user_id: current_user.id,
@@ -201,7 +201,7 @@ module SessionSecurity
           current_ip: current_ip,
           session_id: session[:session_id]
         },
-        'medium'
+        "medium"
       )
 
       # Update the IP for future checks
@@ -212,11 +212,11 @@ module SessionSecurity
   def validate_user_agent_consistency
     return unless session[:original_user_agent]
 
-    current_user_agent = request.env['HTTP_USER_AGENT']
+    current_user_agent = request.env["HTTP_USER_AGENT"]
     if session[:original_user_agent] != current_user_agent
       # This could indicate session hijacking or browser changes
       SecurityAlertJob.perform_later(
-        'session_user_agent_change',
+        "session_user_agent_change",
         "User agent changed during active session",
         {
           user_id: current_user.id,
@@ -225,7 +225,7 @@ module SessionSecurity
           current_user_agent: current_user_agent,
           session_id: session[:session_id]
         },
-        'low'
+        "low"
       )
     end
   end
@@ -235,7 +235,7 @@ module SessionSecurity
     return unless last_activity
 
     if Time.current - Time.parse(last_activity) > SessionManagementService::INACTIVE_SESSION_TIMEOUT
-      force_user_logout('Session timeout due to inactivity')
+      force_user_logout("Session timeout due to inactivity")
     else
       session[:last_activity_at] = Time.current.iso8601
     end
@@ -243,38 +243,38 @@ module SessionSecurity
 
   def login_action?
     # Skip session security checks during login process and immediate redirect after login
-    (controller_name == 'sessions' && action_name == 'create') ||
-    (controller_name == 'home' && action_name == 'index' && session[:just_logged_in])
+    (controller_name == "sessions" && action_name == "create") ||
+    (controller_name == "home" && action_name == "index" && session[:just_logged_in])
   end
 
   def detect_location_from_ip(ip_address)
     # This would integrate with a geolocation service like MaxMind
     # For now, return a placeholder
     return nil if ip_address.blank?
-    
+
     # You could use a gem like geocoder or maxmind-geoip2
     "Unknown Location" # Placeholder
   end
 
   def generate_device_fingerprint
     # Generate a fingerprint based on user agent, headers, etc.
-    user_agent = request.env['HTTP_USER_AGENT']
-    accept_language = request.env['HTTP_ACCEPT_LANGUAGE']
-    accept_encoding = request.env['HTTP_ACCEPT_ENCODING']
-    
-    fingerprint_data = [user_agent, accept_language, accept_encoding].compact.join('|')
+    user_agent = request.env["HTTP_USER_AGENT"]
+    accept_language = request.env["HTTP_ACCEPT_LANGUAGE"]
+    accept_encoding = request.env["HTTP_ACCEPT_ENCODING"]
+
+    fingerprint_data = [ user_agent, accept_language, accept_encoding ].compact.join("|")
     Digest::SHA256.hexdigest(fingerprint_data)[0, 16]
   end
 
   def get_client_ip
     # This method should be consistent with SecurityProtection concern
-    forwarded_ips = request.env['HTTP_X_FORWARDED_FOR']
-    
+    forwarded_ips = request.env["HTTP_X_FORWARDED_FOR"]
+
     if forwarded_ips
-      forwarded_ips.split(',').first.strip
+      forwarded_ips.split(",").first.strip
     else
-      request.env['HTTP_X_REAL_IP'] || 
-      request.env['REMOTE_ADDR'] || 
+      request.env["HTTP_X_REAL_IP"] ||
+      request.env["REMOTE_ADDR"] ||
       request.ip
     end
   end

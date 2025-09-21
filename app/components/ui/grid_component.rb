@@ -26,8 +26,8 @@ class Ui::GridComponent < ViewComponent::Base
   attr_reader :cols, :gap, :responsive, :auto_fit, :min_width, :additional_classes, :options
 
   def grid_classes
-    base_classes = ["grid"]
-    
+    base_classes = [ "grid" ]
+
     if auto_fit && min_width
       base_classes << "grid-cols-[repeat(auto-fit,minmax(#{min_width},1fr))]"
     elsif responsive
@@ -46,7 +46,7 @@ class Ui::GridComponent < ViewComponent::Base
       when 12
         base_classes << "grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-12"
       else
-        base_classes << "grid-cols-1 md:grid-cols-#{[cols, 6].min} lg:grid-cols-#{cols}"
+        base_classes << "grid-cols-1 md:grid-cols-#{[ cols, 6 ].min} lg:grid-cols-#{cols}"
       end
     else
       base_classes << "grid-cols-#{cols}"

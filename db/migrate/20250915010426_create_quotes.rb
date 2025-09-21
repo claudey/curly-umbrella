@@ -24,8 +24,8 @@ class CreateQuotes < ActiveRecord::Migration[8.0]
     end
 
     add_index :quotes, :quote_number, unique: true
-    add_index :quotes, [:motor_application_id, :insurance_company_id]
-    add_index :quotes, [:organization_id, :status]
+    add_index :quotes, [ :motor_application_id, :insurance_company_id ]
+    add_index :quotes, [ :organization_id, :status ]
     add_index :quotes, :expires_at
   end
 end

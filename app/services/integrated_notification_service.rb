@@ -2,27 +2,27 @@
 
 class IntegratedNotificationService
   include ActiveModel::Model
-  
+
   def self.process_document_event(document, event_type, **options)
     new.process_document_event(document, event_type, **options)
   end
-  
+
   def self.process_application_event(application, event_type, **options)
     new.process_application_event(application, event_type, **options)
   end
-  
+
   def self.process_quote_event(quote, event_type, **options)
     new.process_quote_event(quote, event_type, **options)
   end
-  
+
   def self.process_user_event(user, event_type, **options)
     new.process_user_event(user, event_type, **options)
   end
-  
+
   def process_document_event(document, event_type, **options)
     # Create audit log first
     create_document_audit_log(document, event_type, options)
-    
+
     # Process through existing document notification service
     case event_type
     when :uploaded
@@ -46,18 +46,18 @@ class IntegratedNotificationService
     when :compliance_flagged
       process_compliance_flagged_document(document, options)
     end
-    
+
     # Create system notifications for critical events
     create_system_notifications(document, event_type, options) if critical_document_event?(event_type)
-    
+
     # Send security alerts if needed
     create_security_alerts(document, event_type, options) if security_sensitive_event?(event_type)
   end
-  
+
   def process_application_event(application, event_type, **options)
     # Create audit log
     create_application_audit_log(application, event_type, options)
-    
+
     case event_type
     when :submitted
       notify_application_submitted(application)
@@ -75,11 +75,11 @@ class IntegratedNotificationService
       notify_bulk_application_operation(application, options)
     end
   end
-  
+
   def process_quote_event(quote, event_type, **options)
     # Create audit log
     create_quote_audit_log(quote, event_type, options)
-    
+
     case event_type
     when :received
       notify_quote_received(quote)
@@ -95,11 +95,11 @@ class IntegratedNotificationService
       notify_quote_premium_changed(quote, options[:old_premium], options[:new_premium])
     end
   end
-  
+
   def process_user_event(user, event_type, **options)
     # Create audit log
     create_user_audit_log(user, event_type, options)
-    
+
     case event_type
     when :role_changed
       notify_user_role_changed(user, options[:old_role], options[:new_role], options[:changed_by])
@@ -113,20 +113,20 @@ class IntegratedNotificationService
       notify_suspicious_user_activity(user, options[:activity_details])
     end
   end
-  
+
   private
-  
+
   # Document event processors
   def process_document_deletion(document, options)
     recipients = determine_critical_recipients(document.organization)
-    
+
     recipients.each do |user|
       create_notification(
         user: user,
-        type: 'document_deleted',
+        type: "document_deleted",
         title: "🗑️ Document Deleted: #{document.name}",
         message: "Document '#{document.name}' was permanently deleted by #{options[:deleted_by]&.full_name || 'System'}.",
-        priority: 'high',
+        priority: "high",
         data: {
           document_name: document.name,
           document_type: document.document_type,
@@ -136,43 +136,43 @@ class IntegratedNotificationService
         }
       )
     end
-    
+
     # Send email for compliance-sensitive documents
     if compliance_sensitive_document?(document)
       ComplianceMailer.document_deleted_alert(recipients, document, options[:deleted_by]).deliver_now
     end
   end
-  
+
   def process_compliance_flagged_document(document, options)
     compliance_officers = get_compliance_officers(document.organization)
     admins = get_organization_admins(document.organization)
     recipients = (compliance_officers + admins).uniq
-    
+
     recipients.each do |user|
       create_notification(
         user: user,
-        type: 'compliance_alert',
+        type: "compliance_alert",
         title: "⚠️ Compliance Issue: #{document.name}",
         message: "Document flagged for compliance review: #{options[:flag_reason]}",
-        priority: 'critical',
+        priority: "critical",
         data: {
           document_id: document.id,
           flag_reason: options[:flag_reason],
           flagged_by: options[:flagged_by]&.full_name,
-          severity: options[:severity] || 'medium'
+          severity: options[:severity] || "medium"
         }
       )
     end
   end
-  
+
   # Application event processors
   def notify_application_submitted(application)
     admins = get_organization_admins(application.organization)
-    
+
     admins.each do |user|
       create_notification(
         user: user,
-        type: 'application_submitted',
+        type: "application_submitted",
         title: "📋 New Application: #{application.insurance_type.humanize}",
         message: "#{application.user.full_name} submitted a new #{application.insurance_type} insurance application.",
         data: {
@@ -184,17 +184,17 @@ class IntegratedNotificationService
       )
     end
   end
-  
+
   def notify_application_deadline_approaching(application)
-    stakeholders = [application.user, *get_organization_admins(application.organization)].uniq
-    
+    stakeholders = [ application.user, *get_organization_admins(application.organization) ].uniq
+
     stakeholders.each do |user|
       create_notification(
         user: user,
-        type: 'deadline_approaching',
+        type: "deadline_approaching",
         title: "⏰ Application Deadline Approaching",
         message: "Insurance application for #{application.client&.full_name} has a deadline in 24 hours.",
-        priority: 'high',
+        priority: "high",
         data: {
           application_id: application.id,
           deadline: application.deadline,
@@ -203,17 +203,17 @@ class IntegratedNotificationService
       )
     end
   end
-  
+
   def notify_bulk_application_operation(application, options)
     security_admins = get_security_admins(application.organization)
-    
+
     security_admins.each do |user|
       create_notification(
         user: user,
-        type: 'bulk_operation_alert',
+        type: "bulk_operation_alert",
         title: "🔒 Bulk Operation Detected",
         message: "#{options[:operation_type]} performed on #{options[:count]} applications by #{options[:performed_by]&.full_name}.",
-        priority: 'high',
+        priority: "high",
         data: {
           operation_type: options[:operation_type],
           affected_count: options[:count],
@@ -223,15 +223,15 @@ class IntegratedNotificationService
       )
     end
   end
-  
+
   # Quote event processors
   def notify_quote_received(quote)
-    stakeholders = [quote.insurance_application.user, *get_organization_admins(quote.organization)].uniq
-    
+    stakeholders = [ quote.insurance_application.user, *get_organization_admins(quote.organization) ].uniq
+
     stakeholders.each do |user|
       create_notification(
         user: user,
-        type: 'quote_received',
+        type: "quote_received",
         title: "💰 New Quote Received",
         message: "#{quote.insurance_company.name} submitted a quote for #{quote.insurance_application.client&.full_name}.",
         data: {
@@ -243,14 +243,14 @@ class IntegratedNotificationService
       )
     end
   end
-  
+
   def notify_quote_premium_changed(quote, old_premium, new_premium)
-    stakeholders = [quote.insurance_application.user, *get_organization_admins(quote.organization)].uniq
-    
+    stakeholders = [ quote.insurance_application.user, *get_organization_admins(quote.organization) ].uniq
+
     stakeholders.each do |user|
       create_notification(
         user: user,
-        type: 'quote_premium_changed',
+        type: "quote_premium_changed",
         title: "📊 Quote Premium Updated",
         message: "#{quote.insurance_company.name} updated their quote premium from $#{old_premium} to $#{new_premium}.",
         data: {
@@ -263,20 +263,20 @@ class IntegratedNotificationService
       )
     end
   end
-  
+
   # User event processors
   def notify_user_role_changed(user, old_role, new_role, changed_by)
     admins = get_organization_admins(user.organization)
-    
+
     admins.each do |admin|
       next if admin == changed_by # Don't notify the person who made the change
-      
+
       create_notification(
         user: admin,
-        type: 'user_role_changed',
+        type: "user_role_changed",
         title: "👤 User Role Changed",
         message: "#{user.full_name}'s role was changed from #{old_role} to #{new_role} by #{changed_by.full_name}.",
-        priority: 'medium',
+        priority: "medium",
         data: {
           affected_user_id: user.id,
           old_role: old_role,
@@ -287,17 +287,17 @@ class IntegratedNotificationService
       )
     end
   end
-  
+
   def notify_suspicious_user_activity(user, activity_details)
     security_admins = get_security_admins(user.organization)
-    
+
     security_admins.each do |admin|
       create_notification(
         user: admin,
-        type: 'security_alert',
+        type: "security_alert",
         title: "🚨 Suspicious Activity Detected",
         message: "Suspicious activity detected for user #{user.full_name}: #{activity_details[:summary]}",
-        priority: 'critical',
+        priority: "critical",
         data: {
           affected_user_id: user.id,
           activity_type: activity_details[:type],
@@ -308,7 +308,7 @@ class IntegratedNotificationService
       )
     end
   end
-  
+
   # Audit log creation methods
   def create_document_audit_log(document, event_type, options)
     AuditLog.log_data_modification(
@@ -324,7 +324,7 @@ class IntegratedNotificationService
       }
     )
   end
-  
+
   def create_application_audit_log(application, event_type, options)
     AuditLog.log_data_modification(
       options[:user] || Current.user,
@@ -339,7 +339,7 @@ class IntegratedNotificationService
       }
     )
   end
-  
+
   def create_quote_audit_log(quote, event_type, options)
     AuditLog.log_financial_transaction(
       options[:user] || Current.user,
@@ -354,15 +354,15 @@ class IntegratedNotificationService
       }
     )
   end
-  
+
   def create_user_audit_log(user, event_type, options)
     AuditLog.create!(
       user: options[:user] || Current.user,
       organization: user.organization,
       auditable: user,
       action: event_type.to_s,
-      category: 'user_management',
-      resource_type: 'User',
+      category: "user_management",
+      resource_type: "User",
       resource_id: user.id,
       severity: determine_user_event_severity(event_type),
       details: {
@@ -372,68 +372,68 @@ class IntegratedNotificationService
       }
     )
   end
-  
+
   # Helper methods
   def critical_document_event?(event_type)
-    [:deleted, :compliance_flagged, :expired, :security_breach].include?(event_type)
+    [ :deleted, :compliance_flagged, :expired, :security_breach ].include?(event_type)
   end
-  
+
   def security_sensitive_event?(event_type)
-    [:deleted, :bulk_download, :unauthorized_access, :compliance_flagged].include?(event_type)
+    [ :deleted, :bulk_download, :unauthorized_access, :compliance_flagged ].include?(event_type)
   end
-  
+
   def compliance_sensitive_document?(document)
     sensitive_types = %w[policy contract legal compliance certificate audit financial]
     sensitive_types.include?(document.document_type.downcase)
   end
-  
+
   def determine_user_event_severity(event_type)
     case event_type
-    when :suspicious_activity, :account_locked then 'error'
-    when :role_changed, :permissions_changed then 'warning'
-    else 'info'
+    when :suspicious_activity, :account_locked then "error"
+    when :role_changed, :permissions_changed then "warning"
+    else "info"
     end
   end
-  
+
   def time_until_deadline(deadline)
-    return 'Past due' if deadline < Time.current
-    
+    return "Past due" if deadline < Time.current
+
     distance = deadline - Time.current
     hours = (distance / 1.hour).round
-    
+
     if hours < 24
       "#{hours} hours"
     else
       "#{(hours / 24).round} days"
     end
   end
-  
+
   # Recipient determination methods
   def determine_critical_recipients(organization)
     get_organization_admins(organization) + get_compliance_officers(organization)
   end
-  
+
   def get_organization_admins(organization)
     organization.users.joins(:user_roles)
-               .where(user_roles: { role: ['admin', 'brokerage_admin'] })
+               .where(user_roles: { role: [ "admin", "brokerage_admin" ] })
                .where(active: true)
   end
-  
+
   def get_compliance_officers(organization)
     organization.users.joins(:user_roles)
-               .where(user_roles: { role: 'compliance_officer' })
+               .where(user_roles: { role: "compliance_officer" })
                .where(active: true)
   end
-  
+
   def get_security_admins(organization)
     organization.users.joins(:user_roles)
-               .where(user_roles: { role: ['security_admin', 'admin'] })
+               .where(user_roles: { role: [ "security_admin", "admin" ] })
                .where(active: true)
   end
-  
-  def create_notification(user:, type:, title:, message:, priority: 'medium', data: {})
+
+  def create_notification(user:, type:, title:, message:, priority: "medium", data: {})
     return unless defined?(Notification) && Notification.table_exists?
-    
+
     Notification.create!(
       user: user,
       organization: user.organization,
@@ -446,22 +446,22 @@ class IntegratedNotificationService
   rescue => e
     Rails.logger.error "Failed to create integrated notification: #{e.message}"
   end
-  
+
   def create_system_notifications(resource, event_type, options)
     # Create high-priority system notifications for critical events
     return unless critical_document_event?(event_type)
-    
+
     system_admins = User.joins(:user_roles)
-                       .where(user_roles: { role: 'super_admin' })
+                       .where(user_roles: { role: "super_admin" })
                        .where(active: true)
-    
+
     system_admins.each do |admin|
       create_notification(
         user: admin,
-        type: 'system_alert',
+        type: "system_alert",
         title: "🔔 System Alert: #{event_type.to_s.humanize}",
         message: "Critical event detected: #{resource.class.name} #{event_type}",
-        priority: 'critical',
+        priority: "critical",
         data: {
           resource_type: resource.class.name,
           resource_id: resource.id,
@@ -472,15 +472,15 @@ class IntegratedNotificationService
       )
     end
   end
-  
+
   def create_security_alerts(resource, event_type, options)
     return unless defined?(SecurityAlert) && SecurityAlert.table_exists?
-    
+
     SecurityAlert.create!(
       organization: resource.try(:organization),
       alert_type: "integrated_#{event_type}",
       severity: determine_security_severity(event_type),
-      status: 'active',
+      status: "active",
       message: "#{resource.class.name} #{event_type} event detected",
       data: {
         resource_type: resource.class.name,
@@ -491,12 +491,12 @@ class IntegratedNotificationService
       triggered_at: Time.current
     )
   end
-  
+
   def determine_security_severity(event_type)
     case event_type
-    when :deleted, :compliance_flagged, :bulk_download then 'high'
-    when :unauthorized_access, :security_breach then 'critical'
-    else 'medium'
+    when :deleted, :compliance_flagged, :bulk_download then "high"
+    when :unauthorized_access, :security_breach then "critical"
+    else "medium"
     end
   end
 end

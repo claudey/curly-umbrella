@@ -9,31 +9,31 @@ module ChartHelper
       class: "chart-container",
       data: { controller: "#{type.to_s.gsub('_', '-')}-chart" }
     }
-    
+
     # Merge provided options
     merged_options = default_options.deep_merge(options)
-    
+
     # Extract CSS classes
-    css_classes = [merged_options.delete(:class)].flatten.compact.join(' ')
-    
+    css_classes = [ merged_options.delete(:class) ].flatten.compact.join(" ")
+
     # Set up data attributes for Stimulus
     data_attributes = merged_options.delete(:data) || {}
     data_attributes["#{type.to_s.gsub('_', '-')}-chart-data-value"] = data.to_json
-    
+
     # Add other chart options as data attributes
-    chart_options = %w[width height responsive animate x_key y_key label_key value_key 
-                       show_grid show_labels show_legend show_points show_values 
-                       orientation color_scheme curve fill_opacity gradient 
+    chart_options = %w[width height responsive animate x_key y_key label_key value_key
+                       show_grid show_labels show_legend show_points show_values
+                       orientation color_scheme curve fill_opacity gradient
                        inner_radius pad_angle margin]
-    
+
     chart_options.each do |option|
       key = option.to_sym
-      data_key = option.gsub('_', '-')
+      data_key = option.gsub("_", "-")
       if merged_options.key?(key)
         data_attributes["#{type.to_s.gsub('_', '-')}-chart-#{data_key}-value"] = merged_options[key]
       end
     end
-    
+
     # Build the container
     content_tag :div, class: css_classes, data: data_attributes do
       if block_given?
@@ -75,7 +75,7 @@ module ChartHelper
 
   def format_time_series_data(records, date_field, value_field, options = {})
     period = options[:period] || :day
-    
+
     grouped_data = case period
     when :day
       records.group_by_day(date_field, format: "%Y-%m-%d")
@@ -90,7 +90,7 @@ module ChartHelper
     end
 
     aggregation = options[:aggregation] || :count
-    
+
     result = case aggregation
     when :count
       grouped_data.count
@@ -136,7 +136,7 @@ module ChartHelper
 
   def format_comparison_data(records, category_field, value_field, options = {})
     aggregation = options[:aggregation] || :sum
-    
+
     result = case aggregation
     when :count
       records.group(category_field).count
@@ -178,7 +178,7 @@ module ChartHelper
   # Chart configuration presets
   def currency_chart_options(base_options = {})
     {
-      y_key: 'value',
+      y_key: "value",
       show_grid: true,
       animate: true,
       responsive: true
@@ -187,7 +187,7 @@ module ChartHelper
 
   def percentage_chart_options(base_options = {})
     {
-      y_key: 'value',
+      y_key: "value",
       show_grid: true,
       show_percentages: true,
       animate: true,
@@ -197,13 +197,13 @@ module ChartHelper
 
   def timeline_chart_options(base_options = {})
     {
-      x_key: 'date',
-      y_key: 'value',
+      x_key: "date",
+      y_key: "value",
       show_grid: true,
       show_points: true,
       animate: true,
       responsive: true,
-      curve: 'curveMonotoneX'
+      curve: "curveMonotoneX"
     }.merge(base_options)
   end
 

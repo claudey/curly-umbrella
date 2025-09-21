@@ -24,12 +24,12 @@ class CreateInsuranceApplications < ActiveRecord::Migration[8.0]
 
       t.timestamps
     end
-    
-    add_index :insurance_applications, [:application_number, :organization_id], unique: true
-    add_index :insurance_applications, [:organization_id, :status]
-    add_index :insurance_applications, [:insurance_type, :status]
-    add_index :insurance_applications, [:client_id], name: 'idx_insurance_applications_client_id'
-    add_index :insurance_applications, [:user_id], name: 'idx_insurance_applications_user_id'
+
+    add_index :insurance_applications, [ :application_number, :organization_id ], unique: true
+    add_index :insurance_applications, [ :organization_id, :status ]
+    add_index :insurance_applications, [ :insurance_type, :status ]
+    add_index :insurance_applications, [ :client_id ], name: 'idx_insurance_applications_client_id'
+    add_index :insurance_applications, [ :user_id ], name: 'idx_insurance_applications_user_id'
     add_index :insurance_applications, :discarded_at
     add_index :insurance_applications, :submitted_at
   end

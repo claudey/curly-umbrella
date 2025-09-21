@@ -16,8 +16,8 @@ class CreateApplicationDistributions < ActiveRecord::Migration[8.0]
 
       t.timestamps
     end
-    
-    add_index :application_distributions, [:motor_application_id, :insurance_company_id], 
+
+    add_index :application_distributions, [ :motor_application_id, :insurance_company_id ],
               unique: true, name: 'idx_unique_app_company_distribution'
     add_index :application_distributions, :status
     add_index :application_distributions, :distribution_method

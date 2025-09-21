@@ -13,9 +13,9 @@ class CreateSmsLogs < ActiveRecord::Migration[8.0]
 
       t.timestamps
     end
-    
+
     add_index :sms_logs, :status
     add_index :sms_logs, :sent_at
-    add_index :sms_logs, [:organization_id, :sent_at]
+    add_index :sms_logs, [ :organization_id, :sent_at ]
   end
 end

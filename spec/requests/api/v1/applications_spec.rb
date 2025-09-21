@@ -5,7 +5,7 @@ RSpec.describe 'API V1 Applications', type: :request do
   let(:user) { create(:user, organization: organization) }
   let(:client) { create(:client, organization: organization) }
   let(:api_key) { create(:api_key, organization: organization, user: user) }
-  
+
   let(:valid_headers) do
     {
       'Authorization' => "Bearer #{api_key.key}",
@@ -13,7 +13,7 @@ RSpec.describe 'API V1 Applications', type: :request do
       'Accept' => 'application/json'
     }
   end
-  
+
   let(:invalid_headers) do
     {
       'Authorization' => 'Bearer invalid_key',
@@ -21,7 +21,7 @@ RSpec.describe 'API V1 Applications', type: :request do
       'Accept' => 'application/json'
     }
   end
-  
+
   before { ActsAsTenant.current_tenant = organization }
   after { ActsAsTenant.current_tenant = nil }
 
@@ -37,10 +37,10 @@ RSpec.describe 'API V1 Applications', type: :request do
     context 'with valid authentication' do
       it 'returns all applications for the organization' do
         get '/api/v1/applications', headers: valid_headers
-        
+
         expect(response).to have_http_status(:ok)
         expect(response.content_type).to include('application/json')
-        
+
         json_response = JSON.parse(response.body)
         expect(json_response['success']).to be true
         expect(json_response['data']['applications']).to be_an(Array)
@@ -52,9 +52,9 @@ RSpec.describe 'API V1 Applications', type: :request do
       it 'supports pagination' do
         # Create more applications
         create_list(:insurance_application, 10, organization: organization, user: user, client: client)
-        
+
         get '/api/v1/applications', params: { page: 1, per_page: 5 }, headers: valid_headers
-        
+
         expect(response).to have_http_status(:ok)
         json_response = JSON.parse(response.body)
         expect(json_response['data']['applications'].length).to eq(5)
@@ -66,9 +66,9 @@ RSpec.describe 'API V1 Applications', type: :request do
       it 'supports filtering by status' do
         applications[0].update!(status: 'submitted')
         applications[1].update!(status: 'approved')
-        
+
         get '/api/v1/applications', params: { status: 'submitted' }, headers: valid_headers
-        
+
         expect(response).to have_http_status(:ok)
         json_response = JSON.parse(response.body)
         expect(json_response['data']['applications'].length).to eq(1)
@@ -77,7 +77,7 @@ RSpec.describe 'API V1 Applications', type: :request do
 
       it 'supports filtering by application type' do
         get '/api/v1/applications', params: { application_type: 'motor' }, headers: valid_headers
-        
+
         expect(response).to have_http_status(:ok)
         json_response = JSON.parse(response.body)
         expect(json_response['data']['applications'].length).to eq(1)
@@ -86,7 +86,7 @@ RSpec.describe 'API V1 Applications', type: :request do
 
       it 'includes related data when requested' do
         get '/api/v1/applications', params: { include: 'quotes,documents' }, headers: valid_headers
-        
+
         expect(response).to have_http_status(:ok)
         json_response = JSON.parse(response.body)
         application_data = json_response['data']['applications'][0]
@@ -98,7 +98,7 @@ RSpec.describe 'API V1 Applications', type: :request do
     context 'with invalid authentication' do
       it 'returns 401 unauthorized' do
         get '/api/v1/applications', headers: invalid_headers
-        
+
         expect(response).to have_http_status(:unauthorized)
         json_response = JSON.parse(response.body)
         expect(json_response['success']).to be false
@@ -107,7 +107,7 @@ RSpec.describe 'API V1 Applications', type: :request do
 
       it 'returns 401 without authorization header' do
         get '/api/v1/applications', headers: { 'Content-Type' => 'application/json' }
-        
+
         expect(response).to have_http_status(:unauthorized)
         json_response = JSON.parse(response.body)
         expect(json_response['error']['message']).to include('Authorization header missing')
@@ -120,11 +120,11 @@ RSpec.describe 'API V1 Applications', type: :request do
         50.times do
           get '/api/v1/applications', headers: valid_headers
         end
-        
+
         # The 51st request should be rate limited
         get '/api/v1/applications', headers: valid_headers
         expect(response).to have_http_status(:too_many_requests)
-        
+
         json_response = JSON.parse(response.body)
         expect(json_response['error']['code']).to eq('RATE_LIMIT_EXCEEDED')
       end
@@ -138,7 +138,7 @@ RSpec.describe 'API V1 Applications', type: :request do
     context 'with valid authentication' do
       it 'returns the specific application' do
         get "/api/v1/applications/#{application.id}", headers: valid_headers
-        
+
         expect(response).to have_http_status(:ok)
         json_response = JSON.parse(response.body)
         expect(json_response['success']).to be true
@@ -148,7 +148,7 @@ RSpec.describe 'API V1 Applications', type: :request do
 
       it 'includes quotes and documents in response' do
         get "/api/v1/applications/#{application.id}", headers: valid_headers
-        
+
         expect(response).to have_http_status(:ok)
         json_response = JSON.parse(response.body)
         application_data = json_response['data']['application']
@@ -159,7 +159,7 @@ RSpec.describe 'API V1 Applications', type: :request do
 
       it 'returns 404 for non-existent application' do
         get '/api/v1/applications/99999', headers: valid_headers
-        
+
         expect(response).to have_http_status(:not_found)
         json_response = JSON.parse(response.body)
         expect(json_response['success']).to be false
@@ -170,10 +170,10 @@ RSpec.describe 'API V1 Applications', type: :request do
     context 'cross-tenant access prevention' do
       let(:other_organization) { create(:organization) }
       let(:other_application) { create(:insurance_application, organization: other_organization) }
-      
+
       it 'prevents access to applications from other organizations' do
         get "/api/v1/applications/#{other_application.id}", headers: valid_headers
-        
+
         expect(response).to have_http_status(:not_found)
       end
     end
@@ -208,7 +208,7 @@ RSpec.describe 'API V1 Applications', type: :request do
         expect {
           post '/api/v1/applications', params: valid_application_params.to_json, headers: valid_headers
         }.to change(InsuranceApplication, :count).by(1)
-        
+
         expect(response).to have_http_status(:created)
         json_response = JSON.parse(response.body)
         expect(json_response['success']).to be true
@@ -218,14 +218,14 @@ RSpec.describe 'API V1 Applications', type: :request do
 
       it 'automatically generates application number' do
         post '/api/v1/applications', params: valid_application_params.to_json, headers: valid_headers
-        
+
         json_response = JSON.parse(response.body)
         expect(json_response['data']['application']['application_number']).to match(/^APP\d{6}$/)
       end
 
       it 'sets correct organization and user' do
         post '/api/v1/applications', params: valid_application_params.to_json, headers: valid_headers
-        
+
         application = InsuranceApplication.last
         expect(application.organization).to eq(organization)
         expect(application.user).to eq(user)
@@ -235,9 +235,9 @@ RSpec.describe 'API V1 Applications', type: :request do
     context 'with invalid data' do
       it 'returns validation errors for missing required fields' do
         invalid_params = { application: { application_type: 'motor' } }
-        
+
         post '/api/v1/applications', params: invalid_params.to_json, headers: valid_headers
-        
+
         expect(response).to have_http_status(:unprocessable_entity)
         json_response = JSON.parse(response.body)
         expect(json_response['success']).to be false
@@ -248,9 +248,9 @@ RSpec.describe 'API V1 Applications', type: :request do
       it 'validates motor-specific fields' do
         invalid_motor_params = valid_application_params.deep_dup
         invalid_motor_params[:application][:vehicle_make] = nil
-        
+
         post '/api/v1/applications', params: invalid_motor_params.to_json, headers: valid_headers
-        
+
         expect(response).to have_http_status(:unprocessable_entity)
         json_response = JSON.parse(response.body)
         expect(json_response['error']['details']).to include('vehicle_make')
@@ -269,14 +269,14 @@ RSpec.describe 'API V1 Applications', type: :request do
             vehicle_make: 'Honda'
           }
         }
-        
+
         put "/api/v1/applications/#{application.id}", params: update_params.to_json, headers: valid_headers
-        
+
         expect(response).to have_http_status(:ok)
         json_response = JSON.parse(response.body)
         expect(json_response['data']['application']['first_name']).to eq('Jane')
         expect(json_response['data']['application']['vehicle_make']).to eq('Honda')
-        
+
         application.reload
         expect(application.first_name).to eq('Jane')
         expect(application.vehicle_make).to eq('Honda')
@@ -284,11 +284,11 @@ RSpec.describe 'API V1 Applications', type: :request do
 
       it 'prevents updating after submission' do
         application.update!(status: 'submitted')
-        
+
         update_params = { application: { first_name: 'Jane' } }
-        
+
         put "/api/v1/applications/#{application.id}", params: update_params.to_json, headers: valid_headers
-        
+
         expect(response).to have_http_status(:unprocessable_entity)
         json_response = JSON.parse(response.body)
         expect(json_response['error']['message']).to include('cannot be updated')
@@ -302,12 +302,12 @@ RSpec.describe 'API V1 Applications', type: :request do
     context 'with valid authentication' do
       it 'submits the application for review' do
         post "/api/v1/applications/#{application.id}/submit", headers: valid_headers
-        
+
         expect(response).to have_http_status(:ok)
         json_response = JSON.parse(response.body)
         expect(json_response['success']).to be true
         expect(json_response['data']['application']['status']).to eq('submitted')
-        
+
         application.reload
         expect(application.status).to eq('submitted')
         expect(application.submitted_at).to be_present
@@ -315,9 +315,9 @@ RSpec.describe 'API V1 Applications', type: :request do
 
       it 'prevents duplicate submission' do
         application.update!(status: 'submitted')
-        
+
         post "/api/v1/applications/#{application.id}/submit", headers: valid_headers
-        
+
         expect(response).to have_http_status(:unprocessable_entity)
         json_response = JSON.parse(response.body)
         expect(json_response['error']['message']).to include('already submitted')
@@ -336,7 +336,7 @@ RSpec.describe 'API V1 Applications', type: :request do
 
     it 'returns documents for the application' do
       get "/api/v1/applications/#{application.id}/documents", headers: valid_headers
-      
+
       expect(response).to have_http_status(:ok)
       json_response = JSON.parse(response.body)
       expect(json_response['data']['documents']).to be_an(Array)
@@ -355,7 +355,7 @@ RSpec.describe 'API V1 Applications', type: :request do
 
     it 'returns quotes for the application' do
       get "/api/v1/applications/#{application.id}/quotes", headers: valid_headers
-      
+
       expect(response).to have_http_status(:ok)
       json_response = JSON.parse(response.body)
       expect(json_response['data']['quotes']).to be_an(Array)
@@ -364,7 +364,7 @@ RSpec.describe 'API V1 Applications', type: :request do
 
     it 'includes quote details and status' do
       get "/api/v1/applications/#{application.id}/quotes", headers: valid_headers
-      
+
       json_response = JSON.parse(response.body)
       quote_data = json_response['data']['quotes'][0]
       expect(quote_data).to have_key('quote_number')
@@ -378,11 +378,11 @@ RSpec.describe 'API V1 Applications', type: :request do
     context 'large datasets' do
       it 'handles large numbers of applications efficiently' do
         create_list(:insurance_application, 100, organization: organization, user: user, client: client)
-        
+
         start_time = Time.current
         get '/api/v1/applications', params: { per_page: 50 }, headers: valid_headers
         response_time = Time.current - start_time
-        
+
         expect(response).to have_http_status(:ok)
         expect(response_time).to be < 2.seconds
       end
@@ -390,10 +390,10 @@ RSpec.describe 'API V1 Applications', type: :request do
 
     context 'malformed requests' do
       it 'handles invalid JSON gracefully' do
-        post '/api/v1/applications', 
-             params: '{ invalid json }', 
+        post '/api/v1/applications',
+             params: '{ invalid json }',
              headers: valid_headers
-        
+
         expect(response).to have_http_status(:bad_request)
         json_response = JSON.parse(response.body)
         expect(json_response['error']['code']).to eq('INVALID_JSON')
@@ -401,11 +401,11 @@ RSpec.describe 'API V1 Applications', type: :request do
 
       it 'handles missing content-type header' do
         headers_without_content_type = valid_headers.except('Content-Type')
-        
-        post '/api/v1/applications', 
-             params: valid_application_params.to_json, 
+
+        post '/api/v1/applications',
+             params: valid_application_params.to_json,
              headers: headers_without_content_type
-        
+
         expect(response).to have_http_status(:unsupported_media_type)
       end
     end
@@ -413,7 +413,7 @@ RSpec.describe 'API V1 Applications', type: :request do
     context 'API versioning' do
       it 'returns proper version information in headers' do
         get '/api/v1/applications', headers: valid_headers
-        
+
         expect(response.headers['API-Version']).to eq('1.0')
         expect(response.headers['X-RateLimit-Limit']).to be_present
         expect(response.headers['X-RateLimit-Remaining']).to be_present

@@ -40,6 +40,6 @@ module BrokerSync
     config.generators.system_tests = nil
 
     # Ensure middleware directory is autoloaded
-    config.autoload_paths << Rails.root.join('app', 'middleware')
+    config.autoload_paths << Rails.root.join("app", "middleware")
   end
 end

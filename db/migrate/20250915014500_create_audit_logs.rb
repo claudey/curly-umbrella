@@ -15,12 +15,12 @@ class CreateAuditLogs < ActiveRecord::Migration[8.0]
 
       t.timestamps
     end
-    
-    add_index :audit_logs, [:user_id, :created_at]
-    add_index :audit_logs, [:organization_id, :created_at]
-    add_index :audit_logs, [:auditable_type, :auditable_id]
-    add_index :audit_logs, [:category, :severity]
-    add_index :audit_logs, [:action, :created_at]
+
+    add_index :audit_logs, [ :user_id, :created_at ]
+    add_index :audit_logs, [ :organization_id, :created_at ]
+    add_index :audit_logs, [ :auditable_type, :auditable_id ]
+    add_index :audit_logs, [ :category, :severity ]
+    add_index :audit_logs, [ :action, :created_at ]
     add_index :audit_logs, :ip_address
     add_index :audit_logs, :created_at
   end

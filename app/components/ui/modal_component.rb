@@ -35,10 +35,10 @@ class Ui::ModalComponent < ViewComponent::Base
 
   def modal_classes
     base_classes = [
-      "fixed", "inset-0", "z-50", "flex", "items-center", "justify-center", 
+      "fixed", "inset-0", "z-50", "flex", "items-center", "justify-center",
       "p-4", "transition-opacity", "duration-300"
     ]
-    
+
     base_classes << (open ? "opacity-100" : "opacity-0 pointer-events-none")
     base_classes.join(" ")
   end
@@ -49,18 +49,18 @@ class Ui::ModalComponent < ViewComponent::Base
 
   def dialog_classes
     base_classes = [
-      "relative", "bg-white", "rounded-xl", "shadow-2xl", 
+      "relative", "bg-white", "rounded-xl", "shadow-2xl",
       "transform", "transition-all", "duration-300", "max-h-full", "overflow-hidden"
     ]
 
     # Size classes
     size_classes = case size
-    when "sm" then ["w-full", "max-w-sm"]
-    when "md" then ["w-full", "max-w-md"] 
-    when "lg" then ["w-full", "max-w-lg"]
-    when "xl" then ["w-full", "max-w-2xl"]
-    when "full" then ["w-full", "h-full", "max-w-none", "rounded-none"]
-    else ["w-full", "max-w-md"]
+    when "sm" then [ "w-full", "max-w-sm" ]
+    when "md" then [ "w-full", "max-w-md" ]
+    when "lg" then [ "w-full", "max-w-lg" ]
+    when "xl" then [ "w-full", "max-w-2xl" ]
+    when "full" then [ "w-full", "h-full", "max-w-none", "rounded-none" ]
+    else [ "w-full", "max-w-md" ]
     end
 
     base_classes.concat(size_classes)

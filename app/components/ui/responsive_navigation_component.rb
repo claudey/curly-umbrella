@@ -26,9 +26,9 @@ class Ui::ResponsiveNavigationComponent < ViewComponent::Base
   attr_reader :variant, :sticky, :transparent, :mobile_breakpoint, :additional_classes, :options
 
   def nav_classes
-    base_classes = ["relative", "z-40"]
+    base_classes = [ "relative", "z-40" ]
     base_classes << "sticky top-0" if sticky
-    
+
     if transparent
       base_classes << "bg-transparent"
     else

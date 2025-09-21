@@ -7,7 +7,7 @@ class AddAdminFieldsToOrganizations < ActiveRecord::Migration[8.0]
     add_column :organizations, :max_users, :integer
     add_column :organizations, :max_applications, :integer
     add_column :organizations, :billing_email, :string
-    
+
     add_index :organizations, :subdomain, unique: true
     add_index :organizations, :active
   end

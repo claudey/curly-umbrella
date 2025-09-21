@@ -11,10 +11,10 @@ class CreateUserRoles < ActiveRecord::Migration[8.0]
 
       t.timestamps
     end
-    
-    add_index :user_roles, [:user_id, :role_id], unique: true
-    add_index :user_roles, [:user_id, :active]
-    add_index :user_roles, [:role_id, :active]
+
+    add_index :user_roles, [ :user_id, :role_id ], unique: true
+    add_index :user_roles, [ :user_id, :active ]
+    add_index :user_roles, [ :role_id, :active ]
     add_index :user_roles, :expires_at
   end
 end

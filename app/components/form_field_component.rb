@@ -1,7 +1,7 @@
 class FormFieldComponent < ApplicationComponent
   option :form, Types::Any
   option :field, Types::Symbol
-  option :type, Types::String, default: proc { 'text' }
+  option :type, Types::String, default: proc { "text" }
   option :label, Types::String.optional, default: proc { nil }
   option :placeholder, Types::String.optional, default: proc { nil }
   option :help_text, Types::String.optional, default: proc { nil }
@@ -10,12 +10,12 @@ class FormFieldComponent < ApplicationComponent
   option :readonly, Types::Bool, default: proc { false }
   option :options, Types::Array.optional, default: proc { nil } # For select fields
   option :multiple, Types::Bool, default: proc { false }
-  option :size, Types::String, default: proc { 'normal' } # xs, sm, normal, lg
+  option :size, Types::String, default: proc { "normal" } # xs, sm, normal, lg
   option :validation, Types::Hash, default: proc { {} }
   option :stimulus_controller, Types::String.optional, default: proc { nil }
   option :stimulus_data, Types::Hash, default: proc { {} }
-  option :wrapper_classes, Types::String, default: proc { '' }
-  option :input_classes, Types::String, default: proc { '' }
+  option :wrapper_classes, Types::String, default: proc { "" }
+  option :input_classes, Types::String, default: proc { "" }
 
   private
 
@@ -44,51 +44,51 @@ class FormFieldComponent < ApplicationComponent
 
   def input_base_classes
     case @type
-    when 'select'
-      'select select-bordered'
-    when 'textarea'
-      'textarea textarea-bordered'
-    when 'checkbox'
-      'checkbox'
-    when 'radio'
-      'radio'
-    when 'range'
-      'range'
-    when 'file'
-      'file-input file-input-bordered'
+    when "select"
+      "select select-bordered"
+    when "textarea"
+      "textarea textarea-bordered"
+    when "checkbox"
+      "checkbox"
+    when "radio"
+      "radio"
+    when "range"
+      "range"
+    when "file"
+      "file-input file-input-bordered"
     else
-      'input input-bordered'
+      "input input-bordered"
     end
   end
 
   def size_wrapper_class
     case @size
-    when 'xs' then 'max-w-xs'
-    when 'sm' then 'max-w-sm'
-    when 'lg' then 'max-w-lg'
-    else ''
+    when "xs" then "max-w-xs"
+    when "sm" then "max-w-sm"
+    when "lg" then "max-w-lg"
+    else ""
     end
   end
 
   def size_input_class
     case @size
-    when 'xs' then 'input-xs'
-    when 'sm' then 'input-sm'
-    when 'lg' then 'input-lg'
-    else ''
+    when "xs" then "input-xs"
+    when "sm" then "input-sm"
+    when "lg" then "input-lg"
+    else ""
     end
   end
 
   def error_classes
     case @type
-    when 'select'
-      'select-error'
-    when 'textarea'
-      'textarea-error'
-    when 'file'
-      'file-input-error'
+    when "select"
+      "select-error"
+    when "textarea"
+      "textarea-error"
+    when "file"
+      "file-input-error"
     else
-      'input-error'
+      "input-error"
     end
   end
 
@@ -109,19 +109,19 @@ class FormFieldComponent < ApplicationComponent
 
   def stimulus_attributes
     attrs = {}
-    
+
     if @stimulus_controller
-      attrs['data-controller'] = @stimulus_controller
+      attrs["data-controller"] = @stimulus_controller
     end
-    
+
     @stimulus_data.each do |key, value|
       attrs["data-#{@stimulus_controller}-#{key}"] = value
     end
 
     # Add validation attributes
     if @validation.any?
-      attrs['data-controller'] = [attrs['data-controller'], 'form-validation'].compact.join(' ')
-      attrs['data-form-validation-rules-value'] = @validation.to_json
+      attrs["data-controller"] = [ attrs["data-controller"], "form-validation" ].compact.join(" ")
+      attrs["data-form-validation-rules-value"] = @validation.to_json
     end
 
     attrs
@@ -138,27 +138,27 @@ class FormFieldComponent < ApplicationComponent
 
     # Add HTML5 validation attributes
     case @type
-    when 'email'
-      attrs[:type] = 'email'
-    when 'tel'
-      attrs[:type] = 'tel'
-    when 'url'
-      attrs[:type] = 'url'
-    when 'number'
-      attrs[:type] = 'number'
+    when "email"
+      attrs[:type] = "email"
+    when "tel"
+      attrs[:type] = "tel"
+    when "url"
+      attrs[:type] = "url"
+    when "number"
+      attrs[:type] = "number"
       attrs[:step] = @validation[:step] if @validation[:step]
       attrs[:min] = @validation[:min] if @validation[:min]
       attrs[:max] = @validation[:max] if @validation[:max]
-    when 'date'
-      attrs[:type] = 'date'
-    when 'datetime'
-      attrs[:type] = 'datetime-local'
-    when 'time'
-      attrs[:type] = 'time'
-    when 'password'
-      attrs[:type] = 'password'
-    when 'range'
-      attrs[:type] = 'range'
+    when "date"
+      attrs[:type] = "date"
+    when "datetime"
+      attrs[:type] = "datetime-local"
+    when "time"
+      attrs[:type] = "time"
+    when "password"
+      attrs[:type] = "password"
+    when "range"
+      attrs[:type] = "range"
       attrs[:min] = @validation[:min] || 0
       attrs[:max] = @validation[:max] || 100
       attrs[:step] = @validation[:step] || 1
@@ -168,7 +168,7 @@ class FormFieldComponent < ApplicationComponent
     if @validation[:minlength]
       attrs[:minlength] = @validation[:minlength]
     end
-    
+
     if @validation[:maxlength]
       attrs[:maxlength] = @validation[:maxlength]
     end
@@ -183,17 +183,17 @@ class FormFieldComponent < ApplicationComponent
 
   def render_input
     case @type
-    when 'select'
+    when "select"
       render_select_field
-    when 'textarea'
+    when "textarea"
       render_textarea_field
-    when 'checkbox'
+    when "checkbox"
       render_checkbox_field
-    when 'radio'
+    when "radio"
       render_radio_field
-    when 'file'
+    when "file"
       render_file_field
-    when 'range'
+    when "range"
       render_range_field
     else
       render_text_field
@@ -213,8 +213,8 @@ class FormFieldComponent < ApplicationComponent
   def render_select_field
     if @options
       options_html = options_for_select(@options, @form.object&.send(@field))
-      @form.select(@field, options_html, 
-                  { include_blank: !@required }, 
+      @form.select(@field, options_html,
+                  { include_blank: !@required },
                   input_attributes.merge(multiple: @multiple))
     else
       @form.select(@field, [], {}, input_attributes)
@@ -234,7 +234,7 @@ class FormFieldComponent < ApplicationComponent
         @options.map do |option|
           value = option.is_a?(Array) ? option[1] : option
           label_text = option.is_a?(Array) ? option[0] : option
-          
+
           content_tag(:label, class: "label cursor-pointer justify-start gap-3") do
             @form.radio_button(@field, value, class: "radio radio-primary") +
             content_tag(:span, label_text, class: "label-text")
