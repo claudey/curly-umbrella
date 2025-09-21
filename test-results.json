@@ -131,21 +131,21 @@
   },
   "suites": [
     {
-      "title": "quick-dashboard-test.spec.js",
-      "file": "quick-dashboard-test.spec.js",
+      "title": "final-dashboard-check.spec.js",
+      "file": "final-dashboard-check.spec.js",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "Quick Dashboard Test",
-          "file": "quick-dashboard-test.spec.js",
+          "title": "Final Dashboard Layout Check",
+          "file": "final-dashboard-check.spec.js",
           "line": 3,
           "column": 6,
           "specs": [
             {
-              "title": "Check if dashboard styling is fixed",
-              "ok": false,
+              "title": "Capture final dashboard with DaisyUI layout",
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -158,62 +158,32 @@
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 2603,
-                      "error": {
-                        "message": "Error: locator.isVisible: Error: strict mode violation: locator('.bg-blue-600') resolved to 2 elements:\n    1) <a href=\"/documents/new\" class=\"bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors\">Upload Document</a> aka getByRole('main').locator('a').filter({ hasText: /^Upload Document$/ })\n    2) <div class=\"bg-blue-600 text-white rounded-lg shadow-md\">…</div> aka getByRole('main').locator('div').filter({ hasText: 'Total Documents +0 this month' }).nth(2)\n\nCall log:\n\u001b[2m    - checking visibility of locator('.bg-blue-600')\u001b[22m\n",
-                        "stack": "Error: locator.isVisible: Error: strict mode violation: locator('.bg-blue-600') resolved to 2 elements:\n    1) <a href=\"/documents/new\" class=\"bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors\">Upload Document</a> aka getByRole('main').locator('a').filter({ hasText: /^Upload Document$/ })\n    2) <div class=\"bg-blue-600 text-white rounded-lg shadow-md\">…</div> aka getByRole('main').locator('div').filter({ hasText: 'Total Documents +0 this month' }).nth(2)\n\nCall log:\n\u001b[2m    - checking visibility of locator('.bg-blue-600')\u001b[22m\n\n    at /Users/ayitey/Projects/brokersync/tests/playwright/quick-dashboard-test.spec.js:19:66",
-                        "location": {
-                          "file": "/Users/ayitey/Projects/brokersync/tests/playwright/quick-dashboard-test.spec.js",
-                          "column": 66,
-                          "line": 19
-                        },
-                        "snippet": "  17 |     // Check if we have proper Tailwind styling\n  18 |     const hasTailwindBackground = await page.locator('.bg-gray-50').isVisible();\n> 19 |     const hasTailwindButton = await page.locator('.bg-blue-600').isVisible();\n     |                                                                  ^\n  20 |     \n  21 |     console.log(`Tailwind background: ${hasTailwindBackground}`);\n  22 |     console.log(`Tailwind button: ${hasTailwindButton}`);"
-                      },
-                      "errors": [
+                      "status": "passed",
+                      "duration": 2951,
+                      "errors": [],
+                      "stdout": [
                         {
-                          "location": {
-                            "file": "/Users/ayitey/Projects/brokersync/tests/playwright/quick-dashboard-test.spec.js",
-                            "column": 66,
-                            "line": 19
-                          },
-                          "message": "Error: locator.isVisible: Error: strict mode violation: locator('.bg-blue-600') resolved to 2 elements:\n    1) <a href=\"/documents/new\" class=\"bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors\">Upload Document</a> aka getByRole('main').locator('a').filter({ hasText: /^Upload Document$/ })\n    2) <div class=\"bg-blue-600 text-white rounded-lg shadow-md\">…</div> aka getByRole('main').locator('div').filter({ hasText: 'Total Documents +0 this month' }).nth(2)\n\nCall log:\n\u001b[2m    - checking visibility of locator('.bg-blue-600')\u001b[22m\n\n\n  17 |     // Check if we have proper Tailwind styling\n  18 |     const hasTailwindBackground = await page.locator('.bg-gray-50').isVisible();\n> 19 |     const hasTailwindButton = await page.locator('.bg-blue-600').isVisible();\n     |                                                                  ^\n  20 |     \n  21 |     console.log(`Tailwind background: ${hasTailwindBackground}`);\n  22 |     console.log(`Tailwind button: ${hasTailwindButton}`);\n    at /Users/ayitey/Projects/brokersync/tests/playwright/quick-dashboard-test.spec.js:19:66"
+                          "text": "Found 11 DaisyUI cards\n"
+                        },
+                        {
+                          "text": "Found 11 DaisyUI buttons\n"
+                        },
+                        {
+                          "text": "Found 2 grid layouts\n"
                         }
                       ],
-                      "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-09-20T23:56:59.892Z",
+                      "startTime": "2025-09-21T00:21:08.989Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/ayitey/Projects/brokersync/test-results/quick-dashboard-test-Quick-26939--dashboard-styling-is-fixed-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/ayitey/Projects/brokersync/test-results/quick-dashboard-test-Quick-26939--dashboard-styling-is-fixed-chromium/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/ayitey/Projects/brokersync/test-results/quick-dashboard-test-Quick-26939--dashboard-styling-is-fixed-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/ayitey/Projects/brokersync/tests/playwright/quick-dashboard-test.spec.js",
-                        "column": 66,
-                        "line": 19
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
-              "id": "782ee24f62e15298a821-2fd8b3074503a03b0aed",
-              "file": "quick-dashboard-test.spec.js",
+              "id": "17c00a4e4fc813491735-84ec26edd5cfb8d64819",
+              "file": "final-dashboard-check.spec.js",
               "line": 4,
               "column": 3
             }
@@ -224,11 +194,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2025-09-20T23:56:57.704Z",
-    "duration": 5641.964,
-    "expected": 0,
+    "startTime": "2025-09-21T00:21:06.691Z",
+    "duration": 5985.689,
+    "expected": 1,
     "skipped": 0,
-    "unexpected": 1,
+    "unexpected": 0,
     "flaky": 0
   }
 }

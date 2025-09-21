@@ -1,316 +1,298 @@
-<div class="w-full px-4 py-6 bg-gray-50 min-h-screen">
-  <!-- Dashboard Header -->
-  <div class="flex justify-between items-center mb-6">
-    <div>
-      <h1 class="text-2xl font-bold text-gray-900 mb-1">Dashboard</h1>
-      <p class="text-gray-600 mb-0">Welcome back, <%= current_user.display_name %>! Here's what's happening with your documents.</p>
-    </div>
-    
-    <div class="flex gap-2">
-      <%= link_to "Upload Document", new_document_path, class: "bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors" %>
-      <%= link_to "View All Documents", documents_path, class: "border border-blue-600 text-blue-600 px-4 py-2 rounded-md hover:bg-blue-50 transition-colors" %>
-    </div>
+<!-- Dashboard Header -->
+<div class="flex justify-between items-center mb-6">
+  <div>
+    <h1 class="text-3xl font-bold">Dashboard</h1>
+    <p class="text-base-content/70 mt-1">Welcome back, <%= current_user.display_name %>! Here's what's happening with your documents.</p>
   </div>
+  
+  <div class="flex gap-2">
+    <%= link_to "Upload Document", new_document_path, class: "btn btn-primary" %>
+    <%= link_to "View All Documents", documents_path, class: "btn btn-outline btn-primary" %>
+  </div>
+</div>
 
-  <!-- Key Metrics Row -->
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-    <div class="bg-blue-600 text-white rounded-lg shadow-md">
-      <div class="p-6 text-center">
-        <div class="flex justify-between items-center">
-          <div>
-            <h2 class="text-2xl font-bold mb-1"><%= number_with_delimiter(@document_metrics[:total_documents]) %></h2>
-            <p class="mb-0">Total Documents</p>
-          </div>
-          <i class="fas fa-file-alt text-2xl opacity-75"></i>
+<!-- Key Metrics Row -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  <!-- Total Documents Card -->
+  <div class="card bg-primary text-primary-content">
+    <div class="card-body">
+      <div class="flex justify-between items-center">
+        <div>
+          <h2 class="card-title text-2xl font-bold"><%= number_with_delimiter(@document_metrics[:total_documents]) %></h2>
+          <p>Total Documents</p>
         </div>
-        <div class="mt-2">
-          <small class="opacity-75">
-            +<%= @document_metrics[:documents_this_month] %> this month
-          </small>
-        </div>
+        <div class="text-3xl opacity-70">📄</div>
       </div>
-    </div>
-    
-    <div class="bg-green-600 text-white rounded-lg shadow-md">
-      <div class="p-6 text-center">
-        <div class="flex justify-between items-center">
-          <div>
-            <h2 class="text-2xl font-bold mb-1"><%= number_with_delimiter(@document_metrics[:active_documents]) %></h2>
-            <p class="mb-0">Active Documents</p>
-          </div>
-          <i class="fas fa-check-circle text-2xl opacity-75"></i>
-        </div>
-        <div class="mt-2">
-          <small class="opacity-75">
-            <%= number_to_percentage((@document_metrics[:active_documents].to_f / [@document_metrics[:total_documents], 1].max) * 100, precision: 1) %> of total
-          </small>
-        </div>
-      </div>
-    </div>
-    
-    <div class="bg-yellow-500 text-white rounded-lg shadow-md">
-      <div class="p-6 text-center">
-        <div class="flex justify-between items-center">
-          <div>
-            <h2 class="text-2xl font-bold mb-1"><%= @document_metrics[:expiring_soon] %></h2>
-            <p class="mb-0">Expiring Soon</p>
-          </div>
-          <i class="fas fa-clock text-2xl opacity-75"></i>
-        </div>
-        <div class="mt-2">
-          <small class="opacity-75">
-            Next 7 days
-          </small>
-        </div>
-      </div>
-    </div>
-    
-    <div class="bg-cyan-600 text-white rounded-lg shadow-md">
-      <div class="p-6 text-center">
-        <div class="flex justify-between items-center">
-          <div>
-            <h2 class="text-2xl font-bold mb-1"><%= format_file_size(@document_metrics[:total_file_size]) %></h2>
-            <p class="mb-0">Storage Used</p>
-          </div>
-          <i class="fas fa-cloud text-2xl opacity-75"></i>
-        </div>
-        <div class="mt-2">
-          <small class="opacity-75">
-            Across all documents
-          </small>
-        </div>
+      <div class="text-xs opacity-70 mt-2">
+        +<%= @document_metrics[:documents_this_month] %> this month
       </div>
     </div>
   </div>
-
-  <!-- Main Dashboard Content -->
-  <div class="row">
-    <!-- Left Column -->
-    <div class="col-lg-8">
-      <!-- Recent Documents -->
-      <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="card-title mb-0">Recent Documents</h5>
-          <%= link_to "View All", documents_path, class: "btn btn-sm btn-outline-primary" %>
+  
+  <!-- Active Documents Card -->
+  <div class="card bg-success text-success-content">
+    <div class="card-body">
+      <div class="flex justify-between items-center">
+        <div>
+          <h2 class="card-title text-2xl font-bold"><%= number_with_delimiter(@document_metrics[:active_documents]) %></h2>
+          <p>Active Documents</p>
         </div>
-        <div class="card-body p-0">
-          <% if @recent_documents.any? %>
-            <div class="table-responsive">
-              <table class="table table-hover mb-0">
-                <thead class="table-light">
+        <div class="text-3xl opacity-70">✅</div>
+      </div>
+      <div class="text-xs opacity-70 mt-2">
+        <%= number_to_percentage((@document_metrics[:active_documents].to_f / [@document_metrics[:total_documents], 1].max) * 100, precision: 1) %> of total
+      </div>
+    </div>
+  </div>
+  
+  <!-- Expiring Soon Card -->
+  <div class="card bg-warning text-warning-content">
+    <div class="card-body">
+      <div class="flex justify-between items-center">
+        <div>
+          <h2 class="card-title text-2xl font-bold"><%= @document_metrics[:expiring_soon] %></h2>
+          <p>Expiring Soon</p>
+        </div>
+        <div class="text-3xl opacity-70">⏰</div>
+      </div>
+      <div class="text-xs opacity-70 mt-2">
+        Next 7 days
+      </div>
+    </div>
+  </div>
+  
+  <!-- Storage Used Card -->
+  <div class="card bg-info text-info-content">
+    <div class="card-body">
+      <div class="flex justify-between items-center">
+        <div>
+          <h2 class="card-title text-2xl font-bold"><%= format_file_size(@document_metrics[:total_file_size]) %></h2>
+          <p>Storage Used</p>
+        </div>
+        <div class="text-3xl opacity-70">☁️</div>
+      </div>
+      <div class="text-xs opacity-70 mt-2">
+        Across all documents
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Dashboard Content -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Left Column - Main Content -->
+  <div class="lg:col-span-2 space-y-6">
+    <!-- Recent Documents -->
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="card-title">Recent Documents</h2>
+          <%= link_to "View All", documents_path, class: "btn btn-sm btn-outline" %>
+        </div>
+        
+        <% if @recent_documents.any? %>
+          <div class="overflow-x-auto">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Document</th>
+                  <th>Type</th>
+                  <th>Size</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @recent_documents.each do |document| %>
                   <tr>
-                    <th>Document</th>
-                    <th>Type</th>
-                    <th>Size</th>
-                    <th>Created</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <% @recent_documents.each do |document| %>
-                    <tr>
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <i class="<%= document_icon_class(document.document_type) %> me-2"></i>
-                          <div>
-                            <%= link_to document.name, document, class: "text-decoration-none fw-bold" %>
-                            <% if document.description.present? %>
-                              <br><small class="text-muted"><%= truncate(document.description, length: 40) %></small>
-                            <% end %>
-                          </div>
-                        </div>
-                      </td>
-                      <td><span class="badge <%= document_type_badge_class(document.document_type) %>"><%= document.document_type.humanize %></span></td>
-                      <td><%= document.human_file_size %></td>
-                      <td>
-                        <%= time_ago_in_words(document.created_at) %> ago
-                        <br><small class="text-muted">by <%= document.user.full_name %></small>
-                      </td>
-                      <td><%= document_status_badge(document) %></td>
-                      <td>
-                        <div class="btn-group btn-group-sm">
-                          <%= link_to "View", document, class: "btn btn-outline-primary btn-sm" %>
-                          <%= link_to "Download", download_document_path(document), class: "btn btn-outline-secondary btn-sm" %>
-                        </div>
-                      </td>
-                    </tr>
-                  <% end %>
-                </tbody>
-              </table>
-            </div>
-          <% else %>
-            <div class="text-center py-4">
-              <i class="fas fa-file-alt fa-2x text-muted mb-2"></i>
-              <p class="text-muted">No documents yet. <%= link_to "Upload your first document", new_document_path, class: "text-decoration-none" %>.</p>
-            </div>
-          <% end %>
-        </div>
-      </div>
-
-      <!-- Document Type Breakdown Chart -->
-      <div class="card mb-4">
-        <div class="card-header">
-          <h5 class="card-title mb-0">Document Types Overview</h5>
-        </div>
-        <div class="card-body">
-          <% if @document_type_breakdown.any? %>
-            <div class="row">
-              <% @document_type_breakdown.each do |type, count| %>
-                <div class="col-md-6 mb-3">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                      <i class="<%= document_icon_class(type) %> me-2"></i>
-                      <span><%= type.humanize %></span>
-                    </div>
-                    <div class="d-flex align-items-center">
-                      <span class="badge <%= document_type_badge_class(type) %> me-2"><%= count %></span>
-                      <div class="progress" style="width: 60px; height: 8px;">
-                        <div class="progress-bar" role="progressbar" 
-                             style="width: <%= (count.to_f / @document_metrics[:total_documents] * 100).round(1) %>%">
+                    <td>
+                      <div class="flex items-center space-x-3">
+                        <div class="text-lg">📄</div>
+                        <div>
+                          <%= link_to document.name, document, class: "link font-semibold" %>
+                          <% if document.description.present? %>
+                            <br><div class="text-sm opacity-70"><%= truncate(document.description, length: 40) %></div>
+                          <% end %>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
-              <% end %>
-            </div>
-          <% else %>
-            <p class="text-muted text-center">No document data available yet.</p>
-          <% end %>
-        </div>
+                    </td>
+                    <td><div class="badge badge-outline"><%= document.document_type.humanize %></div></td>
+                    <td><%= document.human_file_size %></td>
+                    <td>
+                      <%= time_ago_in_words(document.created_at) %> ago
+                      <br><div class="text-sm opacity-70">by <%= document.user.full_name %></div>
+                    </td>
+                    <td>
+                      <div class="flex gap-1">
+                        <%= link_to "View", document, class: "btn btn-xs btn-outline" %>
+                        <%= link_to "Download", download_document_path(document), class: "btn btn-xs btn-ghost" %>
+                      </div>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <div class="text-center py-8">
+            <div class="text-4xl mb-4">📄</div>
+            <p class="text-base-content/70">No documents yet. <%= link_to "Upload your first document", new_document_path, class: "link link-primary" %>.</p>
+          </div>
+        <% end %>
       </div>
     </div>
 
-    <!-- Right Column -->
-    <div class="col-lg-4">
-      <!-- Quick Actions -->
-      <div class="card mb-4">
-        <div class="card-header">
-          <h6 class="card-title mb-0">Quick Actions</h6>
-        </div>
-        <div class="card-body">
-          <div class="d-grid gap-2">
-            <%= link_to new_document_path, class: "btn btn-primary" do %>
-              <i class="fas fa-upload me-2"></i>Upload Document
-            <% end %>
-            <%= link_to documents_path, class: "btn btn-outline-primary" do %>
-              <i class="fas fa-search me-2"></i>Browse Documents
-            <% end %>
-            <%= link_to archived_documents_path, class: "btn btn-outline-secondary" do %>
-              <i class="fas fa-archive me-2"></i>View Archived
-            <% end %>
-            <%= link_to expiring_documents_path, class: "btn btn-outline-warning" do %>
-              <i class="fas fa-clock me-2"></i>Expiring Documents
-            <% end %>
-          </div>
-        </div>
-      </div>
-
-      <!-- Upcoming Tasks -->
-      <div class="card mb-4">
-        <div class="card-header">
-          <h6 class="card-title mb-0">Upcoming Tasks</h6>
-        </div>
-        <div class="card-body p-0">
-          <% if @upcoming_tasks.any? %>
-            <div class="list-group list-group-flush">
-              <% @upcoming_tasks.first(5).each do |task| %>
-                <div class="list-group-item d-flex justify-content-between align-items-start">
-                  <div class="me-auto">
-                    <div class="fw-bold">
-                      <%= link_to task[:title], task[:url], class: "text-decoration-none" %>
-                    </div>
-                    <small class="text-muted"><%= task[:description] %></small>
-                  </div>
-                  <span class="badge bg-<%= task[:priority] == 'high' ? 'danger' : task[:priority] == 'medium' ? 'warning' : 'secondary' %> rounded-pill">
-                    <%= task[:priority] %>
-                  </span>
+    <!-- Document Type Breakdown Chart -->
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title mb-4">Document Types Overview</h2>
+        
+        <% if @document_type_breakdown.any? %>
+          <div class="space-y-4">
+            <% @document_type_breakdown.each do |type, count| %>
+              <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                  <div class="text-lg">📁</div>
+                  <span><%= type.humanize %></span>
                 </div>
-              <% end %>
-            </div>
-          <% else %>
-            <div class="text-center py-3">
-              <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
-              <p class="text-muted mb-0">All caught up!</p>
-            </div>
-          <% end %>
-        </div>
-      </div>
-
-      <!-- My Recent Activity -->
-      <div class="card mb-4">
-        <div class="card-header">
-          <h6 class="card-title mb-0">My Recent Documents</h6>
-        </div>
-        <div class="card-body p-0">
-          <% if @my_recent_documents.any? %>
-            <div class="list-group list-group-flush">
-              <% @my_recent_documents.each do |document| %>
-                <div class="list-group-item">
-                  <div class="d-flex align-items-center">
-                    <i class="<%= document_icon_class(document.document_type) %> me-2"></i>
-                    <div class="flex-grow-1">
-                      <%= link_to document.name, document, class: "text-decoration-none fw-bold" %>
-                      <br><small class="text-muted">
-                        <%= time_ago_in_words(document.created_at) %> ago • <%= document.human_file_size %>
-                      </small>
-                    </div>
-                  </div>
+                <div class="flex items-center space-x-2">
+                  <div class="badge badge-outline"><%= count %></div>
+                  <progress class="progress progress-primary w-16" value="<%= (count.to_f / @document_metrics[:total_documents] * 100).round(1) %>" max="100"></progress>
                 </div>
-              <% end %>
-            </div>
-            <div class="card-footer text-center">
-              <%= link_to "View all my documents", documents_path(user: current_user.id), class: "btn btn-sm btn-outline-primary" %>
-            </div>
-          <% else %>
-            <div class="text-center py-3">
-              <p class="text-muted mb-0">No recent documents</p>
-            </div>
-          <% end %>
-        </div>
-      </div>
-
-      <!-- Storage Usage -->
-      <div class="card">
-        <div class="card-header">
-          <h6 class="card-title mb-0">Storage & System Info</h6>
-        </div>
-        <div class="card-body">
-          <div class="mb-3">
-            <div class="d-flex justify-content-between">
-              <span>Documents</span>
-              <span><%= @document_metrics[:total_documents] %></span>
-            </div>
-            <div class="d-flex justify-content-between">
-              <span>Total Storage</span>
-              <span><%= format_file_size(@document_metrics[:total_file_size]) %></span>
-            </div>
-            <div class="d-flex justify-content-between">
-              <span>Organization Users</span>
-              <span><%= @system_metrics[:total_users] %></span>
-            </div>
-            <% if @system_metrics[:total_applications] > 0 %>
-              <div class="d-flex justify-content-between">
-                <span>Applications</span>
-                <span><%= @system_metrics[:total_applications] %></span>
               </div>
             <% end %>
           </div>
-          
-          <% if @category_breakdown.any? %>
-            <hr>
-            <div>
-              <h6 class="mb-2">Top Categories</h6>
-              <% @category_breakdown.each do |category, count| %>
-                <div class="d-flex justify-content-between">
-                  <span><%= category.humanize %></span>
-                  <span class="badge bg-light text-dark"><%= count %></span>
+        <% else %>
+          <div class="text-center py-4">
+            <p class="text-base-content/70">No document data available yet.</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column - Sidebar Content -->
+  <div class="space-y-6">
+    <!-- Quick Actions -->
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h3 class="card-title mb-4">Quick Actions</h3>
+        <div class="space-y-2">
+          <%= link_to new_document_path, class: "btn btn-primary w-full justify-start" do %>
+            📤 Upload Document
+          <% end %>
+          <%= link_to documents_path, class: "btn btn-outline w-full justify-start" do %>
+            🔍 Browse Documents
+          <% end %>
+          <%= link_to archived_documents_path, class: "btn btn-outline w-full justify-start" do %>
+            📦 View Archived
+          <% end %>
+          <%= link_to expiring_documents_path, class: "btn btn-warning w-full justify-start" do %>
+            ⏰ Expiring Documents
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upcoming Tasks -->
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h3 class="card-title mb-4">Upcoming Tasks</h3>
+        
+        <% if @upcoming_tasks.any? %>
+          <div class="space-y-3">
+            <% @upcoming_tasks.first(5).each do |task| %>
+              <div class="flex justify-between items-start p-3 bg-base-200 rounded-lg">
+                <div class="flex-1">
+                  <%= link_to task[:title], task[:url], class: "link font-semibold" %>
+                  <div class="text-sm text-base-content/70 mt-1"><%= task[:description] %></div>
                 </div>
-              <% end %>
+                <% if task[:priority] == 'high' %>
+                  <div class="badge badge-error"><%= task[:priority] %></div>
+                <% elsif task[:priority] == 'medium' %>
+                  <div class="badge badge-warning"><%= task[:priority] %></div>
+                <% else %>
+                  <div class="badge badge-ghost"><%= task[:priority] %></div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="text-center py-6">
+            <div class="text-4xl mb-2">✅</div>
+            <p class="text-base-content/70">All caught up!</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- My Recent Documents -->
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h3 class="card-title mb-4">My Recent Documents</h3>
+        
+        <% if @my_recent_documents.any? %>
+          <div class="space-y-3">
+            <% @my_recent_documents.each do |document| %>
+              <div class="flex items-center space-x-3 p-2 hover:bg-base-200 rounded-lg transition-colors">
+                <div class="text-lg">📄</div>
+                <div class="flex-1">
+                  <%= link_to document.name, document, class: "link font-semibold block" %>
+                  <div class="text-sm text-base-content/70">
+                    <%= time_ago_in_words(document.created_at) %> ago • <%= document.human_file_size %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          <div class="mt-4 text-center">
+            <%= link_to "View all my documents", documents_path(user: current_user.id), class: "btn btn-sm btn-outline" %>
+          </div>
+        <% else %>
+          <div class="text-center py-4">
+            <p class="text-base-content/70">No recent documents</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Storage & System Info -->
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h3 class="card-title mb-4">Storage & System Info</h3>
+        
+        <div class="space-y-3">
+          <div class="flex justify-between">
+            <span>Documents</span>
+            <span class="font-mono"><%= @document_metrics[:total_documents] %></span>
+          </div>
+          <div class="flex justify-between">
+            <span>Total Storage</span>
+            <span class="font-mono"><%= format_file_size(@document_metrics[:total_file_size]) %></span>
+          </div>
+          <div class="flex justify-between">
+            <span>Organization Users</span>
+            <span class="font-mono"><%= @system_metrics[:total_users] %></span>
+          </div>
+          <% if @system_metrics[:total_applications] > 0 %>
+            <div class="flex justify-between">
+              <span>Applications</span>
+              <span class="font-mono"><%= @system_metrics[:total_applications] %></span>
             </div>
           <% end %>
         </div>
+        
+        <% if @category_breakdown.any? %>
+          <div class="divider">Top Categories</div>
+          <div class="space-y-2">
+            <% @category_breakdown.each do |category, count| %>
+              <div class="flex justify-between items-center">
+                <span><%= category.humanize %></span>
+                <div class="badge badge-neutral"><%= count %></div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
       </div>
     </div>
   </div>
