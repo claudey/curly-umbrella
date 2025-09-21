@@ -1,34 +1,22 @@
-<%# 
-  Empty State Component
-  Usage: 
-    <%= render 'shared/empty_state', 
-        icon: :inbox, 
-        title: 'No items found', 
-        description: 'Get started by creating your first item.' do %>
-      <%= render Ui::ButtonComponent.new(variant: 'primary', icon: :plus) do %>
-        Create Item
-      <% end %>
-    <% end %>
-%>
 
 <div class="text-center py-12">
   <div class="mx-auto w-24 h-24 flex items-center justify-center bg-gray-100 rounded-full mb-4">
     <%= phosphor_icon(icon, size: 12, css_class: "text-gray-400") %>
   </div>
-  
+
   <h3 class="text-lg font-medium text-gray-900 mb-2">
     <%= title %>
   </h3>
-  
+
   <% if local_assigns[:description] %>
     <p class="text-gray-500 mb-6 max-w-sm mx-auto">
       <%= description %>
     </p>
   <% end %>
-  
-  <% if content.present? %>
+
+  <% if local_assigns[:content]..present? %>
     <div class="flex justify-center">
-      <%= content %>
+      <%= local_assigns[:content] %>
     </div>
   <% end %>
 </div>

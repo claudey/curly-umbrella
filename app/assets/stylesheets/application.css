@@ -9,6 +9,8 @@
  * Consider organizing styles into separate files for maintainability.
  */
 
+/* Application styles */
+
 /* Print styles */
 @import "print.css";
 

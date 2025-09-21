@@ -1,4 +1,4 @@
-class Ui::DesignSystem < ViewComponent::Base
+module Ui::DesignSystem
   # Design System Constants and Configuration
   
   # Color Palette - Extended from DaisyUI with modern additions
@@ -548,16 +548,4 @@ class Ui::DesignSystem < ViewComponent::Base
     end
   end
   
-  private
-  
-  def initialize
-    super
-  end
-  
-  def call
-    # This component serves as a utility class and doesn't render directly
-    content_tag :div, class: "design-system-reference hidden" do
-      "BrokerSync Design System - Advanced UI Components"
-    end
-  end
 end

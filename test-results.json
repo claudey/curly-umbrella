@@ -1,0 +1,234 @@
+{
+  "config": {
+    "configFile": "/Users/ayitey/Projects/brokersync/playwright.config.js",
+    "rootDir": "/Users/ayitey/Projects/brokersync/tests/playwright",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/Users/ayitey/Projects/brokersync/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/ayitey/Projects/brokersync/tests/playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/ayitey/Projects/brokersync/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "/Users/ayitey/Projects/brokersync/tests/playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/ayitey/Projects/brokersync/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "/Users/ayitey/Projects/brokersync/tests/playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/ayitey/Projects/brokersync/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "Mobile Chrome",
+        "name": "Mobile Chrome",
+        "testDir": "/Users/ayitey/Projects/brokersync/tests/playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/ayitey/Projects/brokersync/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "Mobile Safari",
+        "name": "Mobile Safari",
+        "testDir": "/Users/ayitey/Projects/brokersync/tests/playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.55.0",
+    "workers": 4,
+    "webServer": {
+      "command": "bin/rails server -p 3000",
+      "port": 3000,
+      "reuseExistingServer": true,
+      "env": {
+        "RAILS_ENV": "development"
+      }
+    }
+  },
+  "suites": [
+    {
+      "title": "quick-dashboard-test.spec.js",
+      "file": "quick-dashboard-test.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Quick Dashboard Test",
+          "file": "quick-dashboard-test.spec.js",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Check if dashboard styling is fixed",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 2603,
+                      "error": {
+                        "message": "Error: locator.isVisible: Error: strict mode violation: locator('.bg-blue-600') resolved to 2 elements:\n    1) <a href=\"/documents/new\" class=\"bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors\">Upload Document</a> aka getByRole('main').locator('a').filter({ hasText: /^Upload Document$/ })\n    2) <div class=\"bg-blue-600 text-white rounded-lg shadow-md\">…</div> aka getByRole('main').locator('div').filter({ hasText: 'Total Documents +0 this month' }).nth(2)\n\nCall log:\n\u001b[2m    - checking visibility of locator('.bg-blue-600')\u001b[22m\n",
+                        "stack": "Error: locator.isVisible: Error: strict mode violation: locator('.bg-blue-600') resolved to 2 elements:\n    1) <a href=\"/documents/new\" class=\"bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors\">Upload Document</a> aka getByRole('main').locator('a').filter({ hasText: /^Upload Document$/ })\n    2) <div class=\"bg-blue-600 text-white rounded-lg shadow-md\">…</div> aka getByRole('main').locator('div').filter({ hasText: 'Total Documents +0 this month' }).nth(2)\n\nCall log:\n\u001b[2m    - checking visibility of locator('.bg-blue-600')\u001b[22m\n\n    at /Users/ayitey/Projects/brokersync/tests/playwright/quick-dashboard-test.spec.js:19:66",
+                        "location": {
+                          "file": "/Users/ayitey/Projects/brokersync/tests/playwright/quick-dashboard-test.spec.js",
+                          "column": 66,
+                          "line": 19
+                        },
+                        "snippet": "  17 |     // Check if we have proper Tailwind styling\n  18 |     const hasTailwindBackground = await page.locator('.bg-gray-50').isVisible();\n> 19 |     const hasTailwindButton = await page.locator('.bg-blue-600').isVisible();\n     |                                                                  ^\n  20 |     \n  21 |     console.log(`Tailwind background: ${hasTailwindBackground}`);\n  22 |     console.log(`Tailwind button: ${hasTailwindButton}`);"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/ayitey/Projects/brokersync/tests/playwright/quick-dashboard-test.spec.js",
+                            "column": 66,
+                            "line": 19
+                          },
+                          "message": "Error: locator.isVisible: Error: strict mode violation: locator('.bg-blue-600') resolved to 2 elements:\n    1) <a href=\"/documents/new\" class=\"bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors\">Upload Document</a> aka getByRole('main').locator('a').filter({ hasText: /^Upload Document$/ })\n    2) <div class=\"bg-blue-600 text-white rounded-lg shadow-md\">…</div> aka getByRole('main').locator('div').filter({ hasText: 'Total Documents +0 this month' }).nth(2)\n\nCall log:\n\u001b[2m    - checking visibility of locator('.bg-blue-600')\u001b[22m\n\n\n  17 |     // Check if we have proper Tailwind styling\n  18 |     const hasTailwindBackground = await page.locator('.bg-gray-50').isVisible();\n> 19 |     const hasTailwindButton = await page.locator('.bg-blue-600').isVisible();\n     |                                                                  ^\n  20 |     \n  21 |     console.log(`Tailwind background: ${hasTailwindBackground}`);\n  22 |     console.log(`Tailwind button: ${hasTailwindButton}`);\n    at /Users/ayitey/Projects/brokersync/tests/playwright/quick-dashboard-test.spec.js:19:66"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-20T23:56:59.892Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/ayitey/Projects/brokersync/test-results/quick-dashboard-test-Quick-26939--dashboard-styling-is-fixed-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/ayitey/Projects/brokersync/test-results/quick-dashboard-test-Quick-26939--dashboard-styling-is-fixed-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/ayitey/Projects/brokersync/test-results/quick-dashboard-test-Quick-26939--dashboard-styling-is-fixed-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/ayitey/Projects/brokersync/tests/playwright/quick-dashboard-test.spec.js",
+                        "column": 66,
+                        "line": 19
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "782ee24f62e15298a821-2fd8b3074503a03b0aed",
+              "file": "quick-dashboard-test.spec.js",
+              "line": 4,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-09-20T23:56:57.704Z",
+    "duration": 5641.964,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

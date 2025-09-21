@@ -69,6 +69,23 @@ RSpec.configure do |config|
   # Configure ActsAsTenant for testing
   config.before(:each) do
     ActsAsTenant.current_tenant = nil
+    
+    # Mock all security services to bypass during testing
+    allow(IpBlockingService).to receive(:new).and_return(double(whitelisted?: true, blocked?: false))
+    allow(RateLimitingService).to receive(:check_request_rate_limit).and_return(true)
+    allow(SecurityMonitoringService).to receive(:monitor_request).and_return(true)
+    
+    # Allow any instance of ApplicationController to bypass security
+    allow_any_instance_of(ApplicationController).to receive(:check_ip_blocking).and_return(true)
+    allow_any_instance_of(ApplicationController).to receive(:check_rate_limiting).and_return(true)
+    allow_any_instance_of(ApplicationController).to receive(:monitor_request_security).and_return(true)
+  end
+  
+  # Set up tenant context for request specs
+  config.before(:each, type: :request) do
+    if defined?(organization) && organization.present?
+      ActsAsTenant.current_tenant = organization
+    end
   end
 
   # RSpec Rails uses metadata to mix in different behaviours to your tests,

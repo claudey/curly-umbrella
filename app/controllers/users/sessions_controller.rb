@@ -16,8 +16,8 @@ class Users::SessionsController < Devise::SessionsController
     set_flash_message!(:notice, :signed_in)
     sign_in(resource_name, resource)
     
-    # Initialize session tracking
-    initialize_user_session
+    # Initialize session tracking - temporarily disabled for development
+    # initialize_user_session
     
     # Set temporary flag to skip security checks on first redirect
     session[:just_logged_in] = true

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Browser monitoring for BrokerSync",
   "dependencies": {
+    "@playwright/test": "^1.55.0",
     "playwright": "^1.40.0"
   }
 }
