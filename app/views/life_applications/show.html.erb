@@ -1,0 +1,145 @@
+<% content_for :title, "Life Insurance Application" %>
+
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold text-gray-900">Life Insurance Application</h1>
+  <div class="flex gap-2">
+    <% if @life_application.draft? %>
+      <%= link_to "Edit", edit_life_application_path(@life_application), class: "btn btn-primary" %>
+    <% end %>
+    <%= link_to "Back", life_applications_path, class: "btn btn-outline" %>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Application Details -->
+  <div class="lg:col-span-2">
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">Application Details</h2>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="label">
+              <span class="label-text font-semibold">Client</span>
+            </label>
+            <p class="text-lg"><%= @life_application.client.full_name %></p>
+          </div>
+          
+          <div>
+            <label class="label">
+              <span class="label-text font-semibold">Coverage Amount</span>
+            </label>
+            <p class="text-lg">
+              <% if @life_application.coverage_amount.present? %>
+                <%= number_to_currency(@life_application.coverage_amount) %>
+              <% else %>
+                <span class="text-gray-400">Not specified</span>
+              <% end %>
+            </p>
+          </div>
+          
+          <div>
+            <label class="label">
+              <span class="label-text font-semibold">Beneficiary</span>
+            </label>
+            <p class="text-lg">
+              <% if @life_application.beneficiary_name.present? %>
+                <%= @life_application.beneficiary_name %>
+                <% if @life_application.beneficiary_relationship.present? %>
+                  (<%= @life_application.beneficiary_relationship.humanize %>)
+                <% end %>
+              <% else %>
+                <span class="text-gray-400">Not specified</span>
+              <% end %>
+            </p>
+          </div>
+          
+          <div>
+            <label class="label">
+              <span class="label-text font-semibold">Status</span>
+            </label>
+            <span class="badge <%= @life_application.status_color %> badge-lg">
+              <%= @life_application.status.humanize %>
+            </span>
+          </div>
+        </div>
+        
+        <% if @life_application.medical_history.present? %>
+          <div class="mt-4">
+            <label class="label">
+              <span class="label-text font-semibold">Medical History</span>
+            </label>
+            <p><%= simple_format(@life_application.medical_history) %></p>
+          </div>
+        <% end %>
+        
+        <% if @life_application.lifestyle_factors.present? %>
+          <div class="mt-4">
+            <label class="label">
+              <span class="label-text font-semibold">Lifestyle Factors</span>
+            </label>
+            <p><%= simple_format(@life_application.lifestyle_factors) %></p>
+          </div>
+        <% end %>
+        
+        <% if @life_application.notes.present? %>
+          <div class="mt-4">
+            <label class="label">
+              <span class="label-text font-semibold">Notes</span>
+            </label>
+            <p><%= simple_format(@life_application.notes) %></p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Actions & Status -->
+  <div>
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">Actions</h2>
+        
+        <div class="space-y-2">
+          <% if @life_application.can_be_submitted? %>
+            <%= link_to submit_application_life_application_path(@life_application), method: :patch, 
+                class: "btn btn-success w-full" do %>
+              Submit Application
+            <% end %>
+          <% end %>
+          
+          <% if @life_application.can_be_reviewed? %>
+            <%= link_to start_review_life_application_path(@life_application), method: :patch, 
+                class: "btn btn-info w-full" do %>
+              Start Review
+            <% end %>
+          <% end %>
+          
+          <% if @life_application.can_be_approved? %>
+            <%= link_to approve_life_application_path(@life_application), method: :patch, 
+                class: "btn btn-success w-full" do %>
+              Approve
+            <% end %>
+          <% end %>
+          
+          <% if @life_application.can_be_rejected? %>
+            <%= link_to reject_life_application_path(@life_application), method: :patch, 
+                class: "btn btn-error w-full",
+                confirm: "Are you sure?" do %>
+              Reject
+            <% end %>
+          <% end %>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <div>
+          <label class="label">
+            <span class="label-text font-semibold">Created</span>
+          </label>
+          <p><%= @life_application.created_at.strftime("%B %d, %Y") %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

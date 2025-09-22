@@ -1,0 +1,57 @@
+<% content_for :title, "Pending Insurance Companies" %>
+
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold text-gray-900">Pending Insurance Companies</h1>
+  <%= link_to "All Companies", insurance_companies_admin_index_path, class: "btn btn-outline" %>
+</div>
+
+<div class="card bg-base-100 shadow-xl">
+  <div class="card-body">
+    <% if @insurance_companies.any? %>
+      <div class="overflow-x-auto">
+        <table class="table table-zebra w-full">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>License Number</th>
+              <th>Submitted</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @insurance_companies.each do |company| %>
+              <tr>
+                <td>
+                  <div class="font-medium"><%= company.name %></div>
+                  <% if company.contact_person.present? %>
+                    <div class="text-sm text-gray-500"><%= company.contact_person %></div>
+                  <% end %>
+                </td>
+                <td><%= company.email %></td>
+                <td><%= company.license_number %></td>
+                <td><%= company.created_at.strftime("%m/%d/%Y") %></td>
+                <td>
+                  <div class="flex gap-2">
+                    <%= link_to "View", insurance_companies_admin_path(company), class: "btn btn-ghost btn-xs" %>
+                    <%= link_to "Approve", approve_insurance_companies_admin_path(company), 
+                        method: :patch, class: "btn btn-success btn-xs" %>
+                    <%= link_to "Reject", reject_insurance_companies_admin_path(company), 
+                        method: :patch, class: "btn btn-error btn-xs", confirm: "Are you sure?" %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="text-center py-12">
+        <div class="text-6xl mb-4">⏳</div>
+        <h3 class="text-lg font-semibold mb-2">No pending insurance companies</h3>
+        <p class="text-gray-500 mb-4">All companies have been reviewed.</p>
+        <%= link_to "View All Companies", insurance_companies_admin_index_path, class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,86 @@
+<% content_for :title, "All Clients" %>
+
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold text-gray-900">All Clients</h1>
+  <%= link_to "Add Client", new_client_path, class: "btn btn-primary" %>
+</div>
+
+<!-- Search Form -->
+<div class="mb-6">
+  <%= form_with url: clients_path, method: :get, local: true, class: "flex gap-4" do |form| %>
+    <%= form.text_field :search, placeholder: "Search clients...", value: params[:search], class: "input input-bordered flex-1" %>
+    <%= form.submit "Search", class: "btn btn-outline" %>
+    <% if params[:search].present? %>
+      <%= link_to "Clear", clients_path, class: "btn btn-ghost" %>
+    <% end %>
+  <% end %>
+</div>
+
+<!-- Clients Table -->
+<div class="card bg-base-100 shadow-xl">
+  <div class="card-body">
+    <% if @clients.any? %>
+      <div class="overflow-x-auto">
+        <table class="table table-zebra w-full">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @clients.each do |client| %>
+              <tr>
+                <td>
+                  <div class="font-medium"><%= client.full_name %></div>
+                </td>
+                <td><%= client.email %></td>
+                <td><%= client.phone %></td>
+                <td>
+                  <span class="badge badge-outline"><%= client.client_type&.humanize %></span>
+                </td>
+                <td>
+                  <span class="badge <%= client.status == 'active' ? 'badge-success' : 'badge-warning' %>">
+                    <%= client.status&.humanize %>
+                  </span>
+                </td>
+                <td><%= client.created_at.strftime("%m/%d/%Y") %></td>
+                <td>
+                  <div class="flex gap-2">
+                    <%= link_to "View", client, class: "btn btn-ghost btn-xs" %>
+                    <%= link_to "Edit", edit_client_path(client), class: "btn btn-ghost btn-xs" %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <% if respond_to?(:paginate) %>
+        <div class="flex justify-center mt-6">
+          <%= paginate @clients %>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="text-center py-12">
+        <div class="text-6xl mb-4">👥</div>
+        <h3 class="text-lg font-semibold mb-2">No clients found</h3>
+        <p class="text-gray-500 mb-4">
+          <% if params[:search].present? %>
+            No clients match your search criteria.
+          <% else %>
+            Start by adding your first client.
+          <% end %>
+        </p>
+        <%= link_to "Add Client", new_client_path, class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

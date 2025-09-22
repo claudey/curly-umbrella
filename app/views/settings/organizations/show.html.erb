@@ -1,0 +1,105 @@
+<% content_for :title, "Organization Settings" %>
+
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold text-gray-900">Organization Settings</h1>
+  <%= link_to "Edit", edit_settings_organization_path, class: "btn btn-primary" %>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- Organization Information -->
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title">Organization Information</h2>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="label">
+            <span class="label-text font-semibold">Organization Name</span>
+          </label>
+          <p class="text-lg"><%= @organization.name %></p>
+        </div>
+        
+        <div>
+          <label class="label">
+            <span class="label-text font-semibold">Email</span>
+          </label>
+          <p class="text-lg"><%= @organization.email || 'Not specified' %></p>
+        </div>
+        
+        <div>
+          <label class="label">
+            <span class="label-text font-semibold">Phone</span>
+          </label>
+          <p class="text-lg"><%= @organization.phone || 'Not specified' %></p>
+        </div>
+        
+        <div>
+          <label class="label">
+            <span class="label-text font-semibold">License Number</span>
+          </label>
+          <p class="text-lg"><%= @organization.license_number %></p>
+        </div>
+        
+        <% if @organization.website.present? %>
+          <div>
+            <label class="label">
+              <span class="label-text font-semibold">Website</span>
+            </label>
+            <p class="text-lg">
+              <%= link_to @organization.website, @organization.website, 
+                  target: '_blank', class: 'link link-primary' %>
+            </p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Address & Contact -->
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title">Address & Contact</h2>
+      
+      <div class="space-y-4">
+        <% if @organization.address.present? %>
+          <div>
+            <label class="label">
+              <span class="label-text font-semibold">Address</span>
+            </label>
+            <p class="text-lg">
+              <%= @organization.address %><br>
+              <% if @organization.city.present? || @organization.state.present? || @organization.zip_code.present? %>
+                <%= [@organization.city, @organization.state, @organization.zip_code].compact.join(", ") %>
+              <% end %>
+            </p>
+          </div>
+        <% else %>
+          <div>
+            <label class="label">
+              <span class="label-text font-semibold">Address</span>
+            </label>
+            <p class="text-gray-500">Not specified</p>
+          </div>
+        <% end %>
+        
+        <% if @organization.tax_id.present? %>
+          <div>
+            <label class="label">
+              <span class="label-text font-semibold">Tax ID</span>
+            </label>
+            <p class="text-lg"><%= @organization.tax_id %></p>
+          </div>
+        <% end %>
+        
+        <% if @organization.description.present? %>
+          <div>
+            <label class="label">
+              <span class="label-text font-semibold">Description</span>
+            </label>
+            <p class="text-lg"><%= simple_format(@organization.description) %></p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

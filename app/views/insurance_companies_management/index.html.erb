@@ -1,0 +1,85 @@
+<% content_for :title, "Insurance Companies" %>
+
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold text-gray-900">Insurance Companies</h1>
+  <%= link_to "Add Company", new_insurance_companies_admin_path, class: "btn btn-primary" %>
+</div>
+
+<!-- Status Filter -->
+<div class="mb-6">
+  <div class="flex gap-2">
+    <%= link_to "All Companies", insurance_companies_admin_index_path, 
+        class: "btn btn-sm #{'btn-active' if request.path == insurance_companies_admin_index_path}" %>
+    <%= link_to "Pending Approval", pending_insurance_companies_admin_index_path, 
+        class: "btn btn-sm #{'btn-active' if request.path == pending_insurance_companies_admin_index_path}" %>
+  </div>
+</div>
+
+<div class="card bg-base-100 shadow-xl">
+  <div class="card-body">
+    <% if @insurance_companies.any? %>
+      <div class="overflow-x-auto">
+        <table class="table table-zebra w-full">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>License Number</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @insurance_companies.each do |company| %>
+              <tr>
+                <td>
+                  <div class="font-medium"><%= company.name %></div>
+                  <% if company.contact_person.present? %>
+                    <div class="text-sm text-gray-500"><%= company.contact_person %></div>
+                  <% end %>
+                </td>
+                <td><%= company.email %></td>
+                <td><%= company.phone %></td>
+                <td><%= company.license_number %></td>
+                <td>
+                  <% case company.status %>
+                  <% when 'active' %>
+                    <span class="badge badge-success"><%= company.status.humanize %></span>
+                  <% when 'pending_approval' %>
+                    <span class="badge badge-warning"><%= company.status.humanize %></span>
+                  <% when 'rejected' %>
+                    <span class="badge badge-error"><%= company.status.humanize %></span>
+                  <% else %>
+                    <span class="badge badge-outline"><%= company.status&.humanize %></span>
+                  <% end %>
+                </td>
+                <td><%= company.created_at.strftime("%m/%d/%Y") %></td>
+                <td>
+                  <div class="flex gap-2">
+                    <%= link_to "View", insurance_companies_admin_path(company), class: "btn btn-ghost btn-xs" %>
+                    <%= link_to "Edit", edit_insurance_companies_admin_path(company), class: "btn btn-ghost btn-xs" %>
+                    <% if company.status == 'pending_approval' %>
+                      <%= link_to "Approve", approve_insurance_companies_admin_path(company), 
+                          method: :patch, class: "btn btn-success btn-xs" %>
+                      <%= link_to "Reject", reject_insurance_companies_admin_path(company), 
+                          method: :patch, class: "btn btn-error btn-xs", confirm: "Are you sure?" %>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="text-center py-12">
+        <div class="text-6xl mb-4">🏢</div>
+        <h3 class="text-lg font-semibold mb-2">No insurance companies found</h3>
+        <p class="text-gray-500 mb-4">Start by adding an insurance company.</p>
+        <%= link_to "Add Company", new_insurance_companies_admin_path, class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -118,6 +118,19 @@ Rails.application.routes.draw do
   end
 
   resource :notification_preferences, only: [ :show, :update ]
+  # Client management routes
+  resources :clients do
+    member do
+      patch :activate
+      patch :deactivate
+    end
+    
+    collection do
+      get :search
+    end
+  end
+
+  # Application routes for different insurance types
   resources :motor_applications do
     member do
       patch :submit_application
@@ -126,6 +139,63 @@ Rails.application.routes.draw do
       patch :reject
       get :print
     end
+  end
+
+  resources :life_applications do
+    member do
+      patch :submit_application
+      patch :start_review
+      patch :approve
+      patch :reject
+      get :print
+    end
+  end
+
+  resources :fire_applications do
+    member do
+      patch :submit_application
+      patch :start_review
+      patch :approve
+      patch :reject
+      get :print
+    end
+  end
+
+  resources :residential_applications do
+    member do
+      patch :submit_application
+      patch :start_review
+      patch :approve
+      patch :reject
+      get :print
+    end
+  end
+
+  # Insurance companies management
+  resources :insurance_companies_management, except: [:destroy], path: 'insurance_companies_admin', as: :insurance_companies_admin do
+    member do
+      patch :approve
+      patch :reject
+      patch :activate
+      patch :deactivate
+    end
+    
+    collection do
+      get :pending
+    end
+  end
+
+  # Settings routes
+  namespace :settings do
+    resource :organization, only: [:show, :edit, :update], controller: 'organizations'
+    resources :users do
+      member do
+        patch :activate
+        patch :deactivate
+        patch :reset_password
+      end
+    end
+    resource :preferences, only: [:show, :update]
   end
   devise_for :users, controllers: {
     sessions: "users/sessions",

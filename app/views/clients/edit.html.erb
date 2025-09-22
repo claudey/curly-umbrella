@@ -1,0 +1,103 @@
+<% content_for :title, "Edit #{@client.full_name}" %>
+
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold text-gray-900">Edit <%= @client.full_name %></h1>
+  <div class="flex gap-2">
+    <%= link_to "View", @client, class: "btn btn-outline" %>
+    <%= link_to "Back", clients_path, class: "btn btn-ghost" %>
+  </div>
+</div>
+
+<div class="card bg-base-100 shadow-xl max-w-4xl mx-auto">
+  <div class="card-body">
+    <%= form_with model: @client, local: true, class: "space-y-6" do |form| %>
+      <% if @client.errors.any? %>
+        <div class="alert alert-error">
+          <h3 class="font-bold">Please fix the following errors:</h3>
+          <ul class="list-disc list-inside">
+            <% @client.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="form-control">
+          <%= form.label :first_name, class: "label" %>
+          <%= form.text_field :first_name, class: "input input-bordered", required: true %>
+        </div>
+
+        <div class="form-control">
+          <%= form.label :last_name, class: "label" %>
+          <%= form.text_field :last_name, class: "input input-bordered", required: true %>
+        </div>
+
+        <div class="form-control">
+          <%= form.label :email, class: "label" %>
+          <%= form.email_field :email, class: "input input-bordered", required: true %>
+        </div>
+
+        <div class="form-control">
+          <%= form.label :phone, class: "label" %>
+          <%= form.telephone_field :phone, class: "input input-bordered" %>
+        </div>
+
+        <div class="form-control">
+          <%= form.label :client_type, class: "label" %>
+          <%= form.select :client_type, 
+              options_for_select([
+                ['Individual', 'individual'],
+                ['Business', 'business'],
+                ['Corporate', 'corporate']
+              ], @client.client_type), 
+              { prompt: 'Select client type' }, 
+              { class: "select select-bordered" } %>
+        </div>
+
+        <div class="form-control">
+          <%= form.label :status, class: "label" %>
+          <%= form.select :status, 
+              options_for_select([
+                ['Active', 'active'],
+                ['Inactive', 'inactive']
+              ], @client.status), 
+              {}, 
+              { class: "select select-bordered" } %>
+        </div>
+      </div>
+
+      <div class="form-control">
+        <%= form.label :address, class: "label" %>
+        <%= form.text_area :address, class: "textarea textarea-bordered", rows: 2 %>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="form-control">
+          <%= form.label :city, class: "label" %>
+          <%= form.text_field :city, class: "input input-bordered" %>
+        </div>
+
+        <div class="form-control">
+          <%= form.label :state, class: "label" %>
+          <%= form.text_field :state, class: "input input-bordered" %>
+        </div>
+
+        <div class="form-control">
+          <%= form.label :zip_code, class: "label" %>
+          <%= form.text_field :zip_code, class: "input input-bordered" %>
+        </div>
+      </div>
+
+      <div class="form-control">
+        <%= form.label :notes, class: "label" %>
+        <%= form.text_area :notes, class: "textarea textarea-bordered", rows: 4, placeholder: "Any additional notes about this client..." %>
+      </div>
+
+      <div class="card-actions justify-end">
+        <%= link_to "Cancel", @client, class: "btn btn-ghost" %>
+        <%= form.submit "Update Client", class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

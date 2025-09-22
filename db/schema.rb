@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_21_235643) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_22_211838) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -225,6 +225,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_21_235643) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "discarded_at"
+    t.bigint "user_id", null: false
+    t.string "client_type", default: "individual"
+    t.string "status", default: "active"
     t.index ["discarded_at"], name: "index_clients_on_discarded_at"
     t.index ["email"], name: "idx_clients_email_gin", opclass: :gin_trgm_ops, using: :gin
     t.index ["email"], name: "index_clients_on_email"
@@ -234,6 +237,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_21_235643) do
     t.index ["last_name"], name: "idx_clients_last_name_gin", opclass: :gin_trgm_ops, using: :gin
     t.index ["organization_id"], name: "index_clients_on_organization_id"
     t.index ["phone"], name: "index_clients_on_phone"
+    t.index ["user_id"], name: "index_clients_on_user_id"
   end
 
   create_table "company_preferences", force: :cascade do |t|
@@ -333,6 +337,29 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_21_235643) do
     t.index ["updated_by_id"], name: "index_feature_flags_on_updated_by_id"
   end
 
+  create_table "fire_applications", force: :cascade do |t|
+    t.bigint "client_id", null: false
+    t.bigint "user_id", null: false
+    t.bigint "organization_id", null: false
+    t.string "property_address"
+    t.decimal "property_value"
+    t.integer "building_type"
+    t.integer "construction_year"
+    t.text "security_features"
+    t.text "fire_safety_measures"
+    t.text "notes"
+    t.integer "status", default: 0
+    t.datetime "submitted_at"
+    t.datetime "reviewed_at"
+    t.datetime "approved_at"
+    t.datetime "rejected_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["client_id"], name: "index_fire_applications_on_client_id"
+    t.index ["organization_id"], name: "index_fire_applications_on_organization_id"
+    t.index ["user_id"], name: "index_fire_applications_on_user_id"
+  end
+
   create_table "insurance_applications", force: :cascade do |t|
     t.string "application_number", null: false
     t.string "insurance_type", null: false
@@ -414,6 +441,28 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_21_235643) do
     t.index ["email"], name: "index_insurance_companies_on_email", unique: true
     t.index ["license_number"], name: "index_insurance_companies_on_license_number", unique: true
     t.index ["name"], name: "index_insurance_companies_on_name"
+  end
+
+  create_table "life_applications", force: :cascade do |t|
+    t.bigint "client_id", null: false
+    t.bigint "user_id", null: false
+    t.bigint "organization_id", null: false
+    t.decimal "coverage_amount"
+    t.string "beneficiary_name"
+    t.string "beneficiary_relationship"
+    t.text "medical_history"
+    t.text "lifestyle_factors"
+    t.text "notes"
+    t.integer "status", default: 0
+    t.datetime "submitted_at"
+    t.datetime "reviewed_at"
+    t.datetime "approved_at"
+    t.datetime "rejected_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["client_id"], name: "index_life_applications_on_client_id"
+    t.index ["organization_id"], name: "index_life_applications_on_organization_id"
+    t.index ["user_id"], name: "index_life_applications_on_user_id"
   end
 
   create_table "motor_applications", force: :cascade do |t|
@@ -600,6 +649,30 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_21_235643) do
     t.index ["quoted_by_id"], name: "index_quotes_on_quoted_by_id"
   end
 
+  create_table "residential_applications", force: :cascade do |t|
+    t.bigint "client_id", null: false
+    t.bigint "user_id", null: false
+    t.bigint "organization_id", null: false
+    t.string "property_address"
+    t.decimal "property_value"
+    t.integer "dwelling_type"
+    t.integer "construction_year"
+    t.integer "roof_type"
+    t.string "heating_system"
+    t.text "security_features"
+    t.text "notes"
+    t.integer "status", default: 0
+    t.datetime "submitted_at"
+    t.datetime "reviewed_at"
+    t.datetime "approved_at"
+    t.datetime "rejected_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["client_id"], name: "index_residential_applications_on_client_id"
+    t.index ["organization_id"], name: "index_residential_applications_on_organization_id"
+    t.index ["user_id"], name: "index_residential_applications_on_user_id"
+  end
+
   create_table "role_permissions", force: :cascade do |t|
     t.bigint "role_id", null: false
     t.bigint "permission_id", null: false
@@ -783,6 +856,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_21_235643) do
   add_foreign_key "brokerage_agents", "organizations"
   add_foreign_key "brokerage_agents", "users"
   add_foreign_key "clients", "organizations"
+  add_foreign_key "clients", "users"
   add_foreign_key "company_preferences", "insurance_companies"
   add_foreign_key "distribution_analytics", "insurance_companies"
   add_foreign_key "distribution_analytics", "motor_applications"
@@ -792,6 +866,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_21_235643) do
   add_foreign_key "feature_flags", "organizations"
   add_foreign_key "feature_flags", "users", column: "created_by_id"
   add_foreign_key "feature_flags", "users", column: "updated_by_id"
+  add_foreign_key "fire_applications", "clients"
+  add_foreign_key "fire_applications", "organizations"
+  add_foreign_key "fire_applications", "users"
   add_foreign_key "insurance_applications", "clients"
   add_foreign_key "insurance_applications", "organizations"
   add_foreign_key "insurance_applications", "users"
@@ -799,6 +876,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_21_235643) do
   add_foreign_key "insurance_applications", "users", column: "rejected_by_id"
   add_foreign_key "insurance_applications", "users", column: "reviewed_by_id"
   add_foreign_key "insurance_companies", "users", column: "approved_by_id"
+  add_foreign_key "life_applications", "clients"
+  add_foreign_key "life_applications", "organizations"
+  add_foreign_key "life_applications", "users"
   add_foreign_key "motor_applications", "clients"
   add_foreign_key "motor_applications", "organizations"
   add_foreign_key "motor_applications", "users", column: "approved_by_id"
@@ -813,6 +893,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_21_235643) do
   add_foreign_key "quotes", "motor_applications"
   add_foreign_key "quotes", "organizations"
   add_foreign_key "quotes", "users", column: "quoted_by_id"
+  add_foreign_key "residential_applications", "clients"
+  add_foreign_key "residential_applications", "organizations"
+  add_foreign_key "residential_applications", "users"
   add_foreign_key "role_permissions", "permissions"
   add_foreign_key "role_permissions", "roles"
   add_foreign_key "role_permissions", "users", column: "granted_by_id"

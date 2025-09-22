@@ -97,7 +97,7 @@
               <% if user_signed_in? %>
                 <li>
                   <%= link_to search_index_path, class: "flex items-center space-x-3" do %>
-                    <%= nav_icon(:ßmagnifying_glass) %>
+                    <%= nav_icon(:magnifying_glass) %>
                     Global Search
                   <% end %>
                 </li>
@@ -109,8 +109,8 @@
                       Clients
                     </summary>
                     <ul>
-                      <li><a href="#">All Clients</a></li>
-                      <li><a href="#">Add Client</a></li>
+                      <li><%= link_to "All Clients", clients_path %></li>
+                      <li><%= link_to "Add Client", new_client_path %></li>
                     </ul>
                   </details>
                 </li>
@@ -124,9 +124,9 @@
                     </summary>
                     <ul>
                       <li><%= link_to "Motor Insurance", motor_applications_path %></li>
-                      <li><a href="#">Life Insurance</a></li>
-                      <li><a href="#">Fire Insurance</a></li>
-                      <li><a href="#">Residential Insurance</a></li>
+                      <li><%= link_to "Life Insurance", life_applications_path %></li>
+                      <li><%= link_to "Fire Insurance", fire_applications_path %></li>
+                      <li><%= link_to "Residential Insurance", residential_applications_path %></li>
                     </ul>
                   </details>
                 </li>
@@ -170,8 +170,8 @@
                       Insurance Companies
                     </summary>
                     <ul>
-                      <li><a href="#">All Companies</a></li>
-                      <li><a href="#">Pending Approval</a></li>
+                      <li><%= link_to "All Companies", insurance_companies_admin_index_path %></li>
+                      <li><%= link_to "Pending Approval", pending_insurance_companies_admin_index_path %></li>
                     </ul>
                   </details>
                 </li>
@@ -184,8 +184,8 @@
                       Reports
                     </summary>
                     <ul>
-                      <li><a href="#">Performance</a></li>
-                      <li><a href="#">Analytics</a></li>
+                      <li><%= link_to "Performance", executive_dashboard_performance_path %></li>
+                      <li><%= link_to "Analytics", executive_dashboard_analytics_path %></li>
                     </ul>
                   </details>
                 </li>
@@ -198,9 +198,9 @@
                       Settings
                     </summary>
                     <ul>
-                      <li><a href="#">Organization</a></li>
-                      <li><a href="#">Users</a></li>
-                      <li><a href="#">Preferences</a></li>
+                      <li><%= link_to "Organization", settings_organization_path %></li>
+                      <li><%= link_to "Users", settings_users_path %></li>
+                      <li><%= link_to "Preferences", settings_preferences_path %></li>
                     </ul>
                   </details>
                 </li>

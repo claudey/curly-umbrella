@@ -1,0 +1,71 @@
+<% content_for :title, "Residential Insurance Applications" %>
+
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold text-gray-900">Residential Insurance Applications</h1>
+  <%= link_to "New Application", new_residential_application_path, class: "btn btn-primary" %>
+</div>
+
+<div class="card bg-base-100 shadow-xl">
+  <div class="card-body">
+    <% if @residential_applications.any? %>
+      <div class="overflow-x-auto">
+        <table class="table table-zebra w-full">
+          <thead>
+            <tr>
+              <th>Client</th>
+              <th>Property Address</th>
+              <th>Property Value</th>
+              <th>Dwelling Type</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @residential_applications.each do |application| %>
+              <tr>
+                <td>
+                  <div class="font-medium"><%= application.client.full_name %></div>
+                </td>
+                <td><%= application.property_address %></td>
+                <td>
+                  <% if application.property_value.present? %>
+                    <%= number_to_currency(application.property_value) %>
+                  <% else %>
+                    <span class="text-gray-400">Not specified</span>
+                  <% end %>
+                </td>
+                <td>
+                  <% if application.dwelling_type.present? %>
+                    <span class="badge badge-outline"><%= application.dwelling_type.humanize %></span>
+                  <% end %>
+                </td>
+                <td>
+                  <span class="badge <%= application.status_color %>">
+                    <%= application.status.humanize %>
+                  </span>
+                </td>
+                <td><%= application.created_at.strftime("%m/%d/%Y") %></td>
+                <td>
+                  <div class="flex gap-2">
+                    <%= link_to "View", application, class: "btn btn-ghost btn-xs" %>
+                    <% if application.draft? %>
+                      <%= link_to "Edit", edit_residential_application_path(application), class: "btn btn-ghost btn-xs" %>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="text-center py-12">
+        <div class="text-6xl mb-4">🏠</div>
+        <h3 class="text-lg font-semibold mb-2">No residential insurance applications found</h3>
+        <p class="text-gray-500 mb-4">Start by creating a new residential insurance application.</p>
+        <%= link_to "New Application", new_residential_application_path, class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

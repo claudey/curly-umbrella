@@ -1,0 +1,105 @@
+<% content_for :title, "Life Insurance Applications" %>
+
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold text-gray-900">Life Insurance Applications</h1>
+  <%= link_to "New Application", new_life_application_path, class: "btn btn-primary" %>
+</div>
+
+<!-- Status Filter -->
+<div class="mb-6">
+  <div class="flex gap-2">
+    <%= link_to "All", life_applications_path, 
+        class: "btn btn-sm #{'btn-active' if params[:status].blank?}" %>
+    <%= link_to "Draft", life_applications_path(status: 'draft'), 
+        class: "btn btn-sm #{'btn-active' if params[:status] == 'draft'}" %>
+    <%= link_to "Submitted", life_applications_path(status: 'submitted'), 
+        class: "btn btn-sm #{'btn-active' if params[:status] == 'submitted'}" %>
+    <%= link_to "Under Review", life_applications_path(status: 'under_review'), 
+        class: "btn btn-sm #{'btn-active' if params[:status] == 'under_review'}" %>
+    <%= link_to "Approved", life_applications_path(status: 'approved'), 
+        class: "btn btn-sm #{'btn-active' if params[:status] == 'approved'}" %>
+    <%= link_to "Rejected", life_applications_path(status: 'rejected'), 
+        class: "btn btn-sm #{'btn-active' if params[:status] == 'rejected'}" %>
+  </div>
+</div>
+
+<!-- Applications Table -->
+<div class="card bg-base-100 shadow-xl">
+  <div class="card-body">
+    <% if @life_applications.any? %>
+      <div class="overflow-x-auto">
+        <table class="table table-zebra w-full">
+          <thead>
+            <tr>
+              <th>Client</th>
+              <th>Coverage Amount</th>
+              <th>Beneficiary</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @life_applications.each do |application| %>
+              <tr>
+                <td>
+                  <div class="font-medium"><%= application.client.full_name %></div>
+                  <div class="text-sm text-gray-500"><%= application.client.email %></div>
+                </td>
+                <td>
+                  <% if application.coverage_amount.present? %>
+                    <%= number_to_currency(application.coverage_amount) %>
+                  <% else %>
+                    <span class="text-gray-400">Not specified</span>
+                  <% end %>
+                </td>
+                <td>
+                  <% if application.beneficiary_name.present? %>
+                    <div class="font-medium"><%= application.beneficiary_name %></div>
+                    <div class="text-sm text-gray-500"><%= application.beneficiary_relationship&.humanize %></div>
+                  <% else %>
+                    <span class="text-gray-400">Not specified</span>
+                  <% end %>
+                </td>
+                <td>
+                  <span class="badge <%= application.status_color %>">
+                    <%= application.status.humanize %>
+                  </span>
+                </td>
+                <td><%= application.created_at.strftime("%m/%d/%Y") %></td>
+                <td>
+                  <div class="flex gap-2">
+                    <%= link_to "View", application, class: "btn btn-ghost btn-xs" %>
+                    <% if application.draft? %>
+                      <%= link_to "Edit", edit_life_application_path(application), class: "btn btn-ghost btn-xs" %>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <% if respond_to?(:paginate) %>
+        <div class="flex justify-center mt-6">
+          <%= paginate @life_applications %>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="text-center py-12">
+        <div class="text-6xl mb-4">📋</div>
+        <h3 class="text-lg font-semibold mb-2">No life insurance applications found</h3>
+        <p class="text-gray-500 mb-4">
+          <% if params[:status].present? %>
+            No applications with "<%= params[:status].humanize %>" status.
+          <% else %>
+            Start by creating a new life insurance application.
+          <% end %>
+        </p>
+        <%= link_to "New Application", new_life_application_path, class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

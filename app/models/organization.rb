@@ -3,7 +3,12 @@ class Organization < ApplicationRecord
 
   has_many :users, dependent: :destroy
   has_many :quotes, dependent: :destroy
+  has_many :clients, dependent: :destroy
+  has_many :documents, dependent: :destroy
   has_many :motor_applications, dependent: :destroy
+  has_many :life_applications, dependent: :destroy
+  has_many :fire_applications, dependent: :destroy
+  has_many :residential_applications, dependent: :destroy
   has_many :insurance_applications, dependent: :destroy
   has_many :roles, dependent: :destroy
   has_many :api_keys, dependent: :destroy

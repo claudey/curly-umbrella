@@ -1,0 +1,137 @@
+<% content_for :title, "User Preferences" %>
+
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold text-gray-900">User Preferences</h1>
+</div>
+
+<div class="card bg-base-100 shadow-xl max-w-4xl mx-auto">
+  <div class="card-body">
+    <%= form_with model: @user_preferences, url: settings_preferences_path, local: true, class: "space-y-6" do |form| %>
+      <% if @user_preferences.errors.any? %>
+        <div class="alert alert-error">
+          <h3 class="font-bold">Please fix the following errors:</h3>
+          <ul class="list-disc list-inside">
+            <% @user_preferences.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <!-- Appearance Settings -->
+      <div class="card bg-base-50">
+        <div class="card-body">
+          <h3 class="card-title text-lg">Appearance</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="form-control">
+              <%= form.label :theme, class: "label" %>
+              <%= form.select :theme, 
+                  options_for_select([
+                    ['Light', 'light'],
+                    ['Dark', 'dark'],
+                    ['Auto', 'auto']
+                  ], @user_preferences.theme || 'light'), 
+                  {}, 
+                  { class: "select select-bordered" } %>
+            </div>
+
+            <div class="form-control">
+              <%= form.label :dashboard_layout, class: "label" %>
+              <%= form.select :dashboard_layout, 
+                  options_for_select([
+                    ['Grid', 'grid'],
+                    ['List', 'list'],
+                    ['Compact', 'compact']
+                  ], @user_preferences.dashboard_layout || 'grid'), 
+                  {}, 
+                  { class: "select select-bordered" } %>
+            </div>
+
+            <div class="form-control">
+              <%= form.label :items_per_page, class: "label" %>
+              <%= form.select :items_per_page, 
+                  options_for_select([
+                    ['10', 10],
+                    ['25', 25],
+                    ['50', 50],
+                    ['100', 100]
+                  ], @user_preferences.items_per_page || 25), 
+                  {}, 
+                  { class: "select select-bordered" } %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Localization Settings -->
+      <div class="card bg-base-50">
+        <div class="card-body">
+          <h3 class="card-title text-lg">Localization</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="form-control">
+              <%= form.label :language, class: "label" %>
+              <%= form.select :language, 
+                  options_for_select([
+                    ['English', 'en'],
+                    ['Spanish', 'es'],
+                    ['French', 'fr']
+                  ], @user_preferences.language || 'en'), 
+                  {}, 
+                  { class: "select select-bordered" } %>
+            </div>
+
+            <div class="form-control">
+              <%= form.label :timezone, class: "label" %>
+              <%= form.select :timezone, 
+                  options_for_select([
+                    ['Eastern Time', 'Eastern Time (US & Canada)'],
+                    ['Central Time', 'Central Time (US & Canada)'],
+                    ['Mountain Time', 'Mountain Time (US & Canada)'],
+                    ['Pacific Time', 'Pacific Time (US & Canada)'],
+                    ['UTC', 'UTC']
+                  ], @user_preferences.timezone || 'Eastern Time (US & Canada)'), 
+                  {}, 
+                  { class: "select select-bordered" } %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notification Settings -->
+      <div class="card bg-base-50">
+        <div class="card-body">
+          <h3 class="card-title text-lg">Notifications</h3>
+          
+          <div class="space-y-4">
+            <div class="form-control">
+              <label class="cursor-pointer label">
+                <%= form.check_box :email_notifications, class: "checkbox" %>
+                <span class="label-text">Email notifications</span>
+              </label>
+            </div>
+
+            <div class="form-control">
+              <label class="cursor-pointer label">
+                <%= form.check_box :push_notifications, class: "checkbox" %>
+                <span class="label-text">Push notifications</span>
+              </label>
+            </div>
+
+            <div class="form-control">
+              <label class="cursor-pointer label">
+                <%= form.check_box :sms_notifications, class: "checkbox" %>
+                <span class="label-text">SMS notifications</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-actions justify-end">
+        <%= form.submit "Save Preferences", class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

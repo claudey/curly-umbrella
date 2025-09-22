@@ -1,0 +1,96 @@
+<% content_for :title, "New Residential Insurance Application" %>
+
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold text-gray-900">New Residential Insurance Application</h1>
+  <%= link_to "Back", residential_applications_path, class: "btn btn-outline" %>
+</div>
+
+<div class="card bg-base-100 shadow-xl max-w-4xl mx-auto">
+  <div class="card-body">
+    <%= form_with model: @residential_application, local: true, class: "space-y-6" do |form| %>
+      <% if @residential_application.errors.any? %>
+        <div class="alert alert-error">
+          <h3 class="font-bold">Please fix the following errors:</h3>
+          <ul class="list-disc list-inside">
+            <% @residential_application.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="form-control">
+          <%= form.label :client_id, "Client", class: "label" %>
+          <%= form.collection_select :client_id, @clients, :id, :full_name, 
+              { prompt: 'Select a client' }, 
+              { class: "select select-bordered", required: true } %>
+        </div>
+
+        <div class="form-control">
+          <%= form.label :property_value, class: "label" %>
+          <%= form.number_field :property_value, class: "input input-bordered", step: 1000, min: 0 %>
+        </div>
+
+        <div class="form-control">
+          <%= form.label :dwelling_type, class: "label" %>
+          <%= form.select :dwelling_type, 
+              options_for_select([
+                ['Single Family', 'single_family'],
+                ['Townhouse', 'townhouse'],
+                ['Condominium', 'condominium'],
+                ['Duplex', 'duplex'],
+                ['Mobile Home', 'mobile_home']
+              ]), 
+              { prompt: 'Select dwelling type' }, 
+              { class: "select select-bordered" } %>
+        </div>
+
+        <div class="form-control">
+          <%= form.label :construction_year, class: "label" %>
+          <%= form.number_field :construction_year, class: "input input-bordered", min: 1800, max: Date.current.year %>
+        </div>
+
+        <div class="form-control">
+          <%= form.label :roof_type, class: "label" %>
+          <%= form.select :roof_type, 
+              options_for_select([
+                ['Asphalt Shingles', 'asphalt_shingles'],
+                ['Metal', 'metal'],
+                ['Tile', 'tile'],
+                ['Slate', 'slate'],
+                ['Wood', 'wood'],
+                ['Other', 'other']
+              ]), 
+              { prompt: 'Select roof type' }, 
+              { class: "select select-bordered" } %>
+        </div>
+
+        <div class="form-control">
+          <%= form.label :heating_system, class: "label" %>
+          <%= form.text_field :heating_system, class: "input input-bordered" %>
+        </div>
+      </div>
+
+      <div class="form-control">
+        <%= form.label :property_address, class: "label" %>
+        <%= form.text_area :property_address, class: "textarea textarea-bordered", rows: 2 %>
+      </div>
+
+      <div class="form-control">
+        <%= form.label :security_features, class: "label" %>
+        <%= form.text_area :security_features, class: "textarea textarea-bordered", rows: 3 %>
+      </div>
+
+      <div class="form-control">
+        <%= form.label :notes, class: "label" %>
+        <%= form.text_area :notes, class: "textarea textarea-bordered", rows: 3 %>
+      </div>
+
+      <div class="card-actions justify-end">
+        <%= link_to "Cancel", residential_applications_path, class: "btn btn-ghost" %>
+        <%= form.submit "Create Application", class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

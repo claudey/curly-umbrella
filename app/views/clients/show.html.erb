@@ -1,0 +1,136 @@
+<% content_for :title, @client.full_name %>
+
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold text-gray-900"><%= @client.full_name %></h1>
+  <div class="flex gap-2">
+    <%= link_to "Edit", edit_client_path(@client), class: "btn btn-primary" %>
+    <%= link_to "Back", clients_path, class: "btn btn-outline" %>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Client Information -->
+  <div class="lg:col-span-2">
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">Client Information</h2>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="label">
+              <span class="label-text font-semibold">First Name</span>
+            </label>
+            <p class="text-lg"><%= @client.first_name %></p>
+          </div>
+          
+          <div>
+            <label class="label">
+              <span class="label-text font-semibold">Last Name</span>
+            </label>
+            <p class="text-lg"><%= @client.last_name %></p>
+          </div>
+          
+          <div>
+            <label class="label">
+              <span class="label-text font-semibold">Email</span>
+            </label>
+            <p class="text-lg"><%= @client.email %></p>
+          </div>
+          
+          <div>
+            <label class="label">
+              <span class="label-text font-semibold">Phone</span>
+            </label>
+            <p class="text-lg"><%= @client.phone %></p>
+          </div>
+          
+          <div>
+            <label class="label">
+              <span class="label-text font-semibold">Client Type</span>
+            </label>
+            <span class="badge badge-outline badge-lg"><%= @client.client_type&.humanize %></span>
+          </div>
+          
+          <div>
+            <label class="label">
+              <span class="label-text font-semibold">Status</span>
+            </label>
+            <span class="badge <%= @client.status == 'active' ? 'badge-success' : 'badge-warning' %> badge-lg">
+              <%= @client.status&.humanize %>
+            </span>
+          </div>
+        </div>
+        
+        <% if @client.address.present? %>
+          <div class="mt-4">
+            <label class="label">
+              <span class="label-text font-semibold">Address</span>
+            </label>
+            <p class="text-lg">
+              <%= @client.address %><br>
+              <% if @client.city.present? || @client.state.present? || @client.zip_code.present? %>
+                <%= [@client.city, @client.state, @client.zip_code].compact.join(", ") %>
+              <% end %>
+            </p>
+          </div>
+        <% end %>
+        
+        <% if @client.notes.present? %>
+          <div class="mt-4">
+            <label class="label">
+              <span class="label-text font-semibold">Notes</span>
+            </label>
+            <p class="text-lg"><%= simple_format(@client.notes) %></p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Actions & Status -->
+  <div>
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">Actions</h2>
+        
+        <div class="space-y-2">
+          <%= link_to edit_client_path(@client), class: "btn btn-outline w-full" do %>
+            <%= phosphor_icon(:pencil, size: 4) %>
+            Edit Client
+          <% end %>
+          
+          <% if @client.status == 'active' %>
+            <%= link_to deactivate_client_path(@client), method: :patch, 
+                class: "btn btn-warning w-full",
+                confirm: "Are you sure you want to deactivate this client?" do %>
+              <%= phosphor_icon(:user_minus, size: 4) %>
+              Deactivate
+            <% end %>
+          <% else %>
+            <%= link_to activate_client_path(@client), method: :patch, 
+                class: "btn btn-success w-full" do %>
+              <%= phosphor_icon(:user_plus, size: 4) %>
+              Activate
+            <% end %>
+          <% end %>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <div>
+          <label class="label">
+            <span class="label-text font-semibold">Created</span>
+          </label>
+          <p><%= @client.created_at.strftime("%B %d, %Y at %I:%M %p") %></p>
+        </div>
+        
+        <div>
+          <label class="label">
+            <span class="label-text font-semibold">Last Updated</span>
+          </label>
+          <p><%= @client.updated_at.strftime("%B %d, %Y at %I:%M %p") %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

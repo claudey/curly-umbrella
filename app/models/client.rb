@@ -3,6 +3,7 @@ class Client < ApplicationRecord
   acts_as_tenant :organization
 
   belongs_to :organization
+  belongs_to :user
 
   validates :first_name, presence: true, length: { minimum: 2, maximum: 50 }
   validates :last_name, presence: true, length: { minimum: 2, maximum: 50 }
@@ -13,7 +14,11 @@ class Client < ApplicationRecord
   validates :id_type, inclusion: { in: %w[national_id passport drivers_license voters_id], allow_blank: true }
   validates :marital_status, inclusion: { in: %w[single married divorced widowed separated], allow_blank: true }
   validates :preferred_contact_method, inclusion: { in: %w[email phone sms whatsapp] }
+  validates :client_type, inclusion: { in: %w[individual business corporate] }
+  validates :status, inclusion: { in: %w[active inactive] }
 
+  scope :active, -> { where(status: 'active') }
+  scope :inactive, -> { where(status: 'inactive') }
   scope :by_name, ->(name) { where("CONCAT(first_name, ' ', last_name) ILIKE ?", "%#{name}%") }
   scope :by_email, ->(email) { where("email ILIKE ?", "%#{email}%") }
   scope :by_phone, ->(phone) { where("phone ILIKE ?", "%#{phone}%") }

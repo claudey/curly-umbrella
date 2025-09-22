@@ -1,0 +1,94 @@
+<% content_for :title, "User Management" %>
+
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold text-gray-900">User Management</h1>
+  <%= link_to "Add User", new_settings_user_path, class: "btn btn-primary" %>
+</div>
+
+<!-- Search Form -->
+<div class="mb-6">
+  <%= form_with url: settings_users_path, method: :get, local: true, class: "flex gap-4" do |form| %>
+    <%= form.text_field :search, placeholder: "Search users...", value: params[:search], class: "input input-bordered flex-1" %>
+    <%= form.submit "Search", class: "btn btn-outline" %>
+    <% if params[:search].present? %>
+      <%= link_to "Clear", settings_users_path, class: "btn btn-ghost" %>
+    <% end %>
+  <% end %>
+</div>
+
+<div class="card bg-base-100 shadow-xl">
+  <div class="card-body">
+    <% if @users.any? %>
+      <div class="overflow-x-auto">
+        <table class="table table-zebra w-full">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Last Sign In</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @users.each do |user| %>
+              <tr>
+                <td>
+                  <div class="font-medium"><%= user.full_name %></div>
+                  <% if user.department.present? %>
+                    <div class="text-sm text-gray-500"><%= user.department %></div>
+                  <% end %>
+                </td>
+                <td><%= user.email %></td>
+                <td>
+                  <span class="badge badge-outline"><%= user.role&.humanize %></span>
+                </td>
+                <td>
+                  <span class="badge <%= user.status == 'active' ? 'badge-success' : 'badge-warning' %>">
+                    <%= user.status&.humanize %>
+                  </span>
+                </td>
+                <td>
+                  <% if user.last_sign_in_at.present? %>
+                    <%= user.last_sign_in_at.strftime("%m/%d/%Y") %>
+                  <% else %>
+                    <span class="text-gray-400">Never</span>
+                  <% end %>
+                </td>
+                <td>
+                  <div class="flex gap-2">
+                    <%= link_to "View", settings_user_path(user), class: "btn btn-ghost btn-xs" %>
+                    <%= link_to "Edit", edit_settings_user_path(user), class: "btn btn-ghost btn-xs" %>
+                    <% if user != current_user %>
+                      <% if user.status == 'active' %>
+                        <%= link_to "Deactivate", deactivate_settings_user_path(user), 
+                            method: :patch, class: "btn btn-warning btn-xs", confirm: "Are you sure?" %>
+                      <% else %>
+                        <%= link_to "Activate", activate_settings_user_path(user), 
+                            method: :patch, class: "btn btn-success btn-xs" %>
+                      <% end %>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="text-center py-12">
+        <div class="text-6xl mb-4">👥</div>
+        <h3 class="text-lg font-semibold mb-2">No users found</h3>
+        <p class="text-gray-500 mb-4">
+          <% if params[:search].present? %>
+            No users match your search criteria.
+          <% else %>
+            Start by adding users to your organization.
+          <% end %>
+        </p>
+        <%= link_to "Add User", new_settings_user_path, class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>
