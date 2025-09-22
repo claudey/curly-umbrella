@@ -79,6 +79,7 @@ module IconHelper
       "folder" => :folder,
       "buildings" => :buildings,
       "users" => :users,
+      "calculator" => :calculator,
 
       # Additional mapped icons (avoiding duplicates)
       "pencil" => :pencil,
@@ -91,7 +92,7 @@ module IconHelper
       "squares_four" => :squares_four,
       "sign_out" => :sign_out,
       "sign_in" => :sign_in,
-      "magnifying_glass" => :magnifying_glass,
+      "magnifying-glass" => :magnifying_glass,
       "paper_plane" => :paper_plane,
       "clipboard_text" => :clipboard_text,
       "file_text" => :file_text,
@@ -127,9 +128,9 @@ module IconHelper
   end
 
   def phosphor_icon(name, variant: :regular, size: 20, css_class: nil, **options)
-    # Convert string names to symbols for consistency
-    name = name.to_sym if name.is_a?(String)
-    variant = variant.to_sym if variant.is_a?(String)
+    # Convert symbol names to strings for the gem
+    name = name.to_s if name.is_a?(Symbol)
+    variant = variant.to_s if variant.is_a?(Symbol)
 
     # Default CSS classes
     classes = [ "w-#{size_to_class(size)}", "h-#{size_to_class(size)}" ]
@@ -137,13 +138,11 @@ module IconHelper
 
     # Set default attributes
     svg_options = {
-      class: classes.join(" "),
-      fill: "currentColor",
-      viewBox: "0 0 256 256"
+      class: classes.join(" ")
     }.merge(options)
 
     # Generate the icon using the phosphor_icons gem
-    phosphor_icon_tag(name, variant: variant, **svg_options)
+    super(name, style: variant, **svg_options)
   rescue StandardError
     # Fallback to a default icon if the requested icon doesn't exist
     content_tag(:div, "?", class: "w-#{size_to_class(size)} h-#{size_to_class(size)} flex items-center justify-center bg-gray-200 rounded text-xs")
