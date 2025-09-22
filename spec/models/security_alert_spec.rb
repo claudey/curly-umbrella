@@ -69,7 +69,7 @@ RSpec.describe SecurityAlert, type: :model do
     it 'filters alerts for organization' do
       other_org = create(:organization)
       other_alert = create(:security_alert, organization: other_org)
-      
+
       org_alerts = SecurityAlert.for_organization(organization)
       expect(org_alerts).to include(recent_alert)
       expect(org_alerts).to_not include(other_alert)
@@ -83,9 +83,9 @@ RSpec.describe SecurityAlert, type: :model do
     describe '#resolve!' do
       it 'resolves alert with notes' do
         notes = "Issue was a false positive"
-        
+
         alert.resolve!(resolver, notes)
-        
+
         expect(alert.status).to eq('resolved')
         expect(alert.resolved_by).to eq(resolver)
         expect(alert.resolved_at).to be_present
@@ -94,7 +94,7 @@ RSpec.describe SecurityAlert, type: :model do
 
       it 'resolves alert without notes' do
         alert.resolve!(resolver)
-        
+
         expect(alert.status).to eq('resolved')
         expect(alert.resolved_by).to eq(resolver)
         expect(alert.resolved_at).to be_present
@@ -105,9 +105,9 @@ RSpec.describe SecurityAlert, type: :model do
     describe '#dismiss!' do
       it 'dismisses alert with reason' do
         reason = "Known behavior"
-        
+
         alert.dismiss!(resolver, reason)
-        
+
         expect(alert.status).to eq('dismissed')
         expect(alert.resolved_by).to eq(resolver)
         expect(alert.resolved_at).to be_present
@@ -118,7 +118,7 @@ RSpec.describe SecurityAlert, type: :model do
     describe '#investigate!' do
       it 'marks alert as under investigation' do
         alert.investigate!(resolver)
-        
+
         expect(alert.status).to eq('investigating')
         expect(alert.resolved_by).to eq(resolver)
         expect(alert.resolved_at).to be_nil
@@ -247,7 +247,7 @@ RSpec.describe SecurityAlert, type: :model do
   describe '#time_since_triggered' do
     it 'returns time elapsed since trigger' do
       alert = create(:security_alert, organization: organization, triggered_at: 2.hours.ago)
-      
+
       expect(alert.time_since_triggered).to be_within(1.minute).of(2.hours)
     end
 
@@ -261,7 +261,7 @@ RSpec.describe SecurityAlert, type: :model do
     it 'formats user data correctly' do
       data = { 'user' => { 'name' => 'John Doe', 'email' => 'john@example.com' } }
       alert = create(:security_alert, organization: organization, data: data)
-      
+
       formatted = alert.formatted_data
       expect(formatted['User']).to eq('John Doe (john@example.com)')
     end
@@ -269,7 +269,7 @@ RSpec.describe SecurityAlert, type: :model do
     it 'formats IP address correctly' do
       data = { 'ip_address' => '192.168.1.1' }
       alert = create(:security_alert, organization: organization, data: data)
-      
+
       formatted = alert.formatted_data
       expect(formatted['IP Address']).to eq('192.168.1.1')
     end
@@ -277,19 +277,19 @@ RSpec.describe SecurityAlert, type: :model do
     it 'formats count fields correctly' do
       data = { 'attempt_count' => 5, 'access_count' => 10 }
       alert = create(:security_alert, organization: organization, data: data)
-      
+
       formatted = alert.formatted_data
       expect(formatted['Attempt count']).to eq(5)
       expect(formatted['Access count']).to eq(10)
     end
 
     it 'humanizes other field names' do
-      data = { 'current_hour' => 23, 'typical_hours' => [9, 10, 11] }
+      data = { 'current_hour' => 23, 'typical_hours' => [ 9, 10, 11 ] }
       alert = create(:security_alert, organization: organization, data: data)
-      
+
       formatted = alert.formatted_data
       expect(formatted['Current hour']).to eq(23)
-      expect(formatted['Typical hours']).to eq([9, 10, 11])
+      expect(formatted['Typical hours']).to eq([ 9, 10, 11 ])
     end
 
     it 'returns empty hash when data is not a hash' do
@@ -346,7 +346,7 @@ RSpec.describe SecurityAlert, type: :model do
   describe 'factory creation' do
     it 'creates valid security alert' do
       alert = create(:security_alert, organization: organization)
-      
+
       expect(alert).to be_valid
       expect(alert.organization).to eq(organization)
       expect(alert.triggered_at).to be_present

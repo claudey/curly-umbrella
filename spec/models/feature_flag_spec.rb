@@ -18,7 +18,7 @@ RSpec.describe FeatureFlag, type: :model do
     it 'validates uniqueness of key scoped to organization' do
       create(:feature_flag, key: 'test_flag', organization: organization)
       new_flag = build(:feature_flag, key: 'test_flag', organization: organization)
-      
+
       expect(new_flag).to_not be_valid
       expect(new_flag.errors[:key]).to include('has already been taken')
     end
@@ -27,7 +27,7 @@ RSpec.describe FeatureFlag, type: :model do
       other_org = create(:organization)
       create(:feature_flag, key: 'test_flag', organization: organization)
       new_flag = build(:feature_flag, key: 'test_flag', organization: other_org)
-      
+
       expect(new_flag).to be_valid
     end
   end
@@ -50,7 +50,7 @@ RSpec.describe FeatureFlag, type: :model do
   describe 'callbacks' do
     it 'sets defaults on creation' do
       flag = create(:feature_flag)
-      
+
       expect(flag.enabled).to be false
       expect(flag.user_groups).to eq([])
       expect(flag.conditions).to eq({})
@@ -89,7 +89,7 @@ RSpec.describe FeatureFlag, type: :model do
         flag.update!(percentage: 50)
         result1 = flag.enabled_for?(user)
         result2 = flag.enabled_for?(user)
-        
+
         expect(result1).to eq(result2)
       end
     end
@@ -97,8 +97,8 @@ RSpec.describe FeatureFlag, type: :model do
     context 'with user groups' do
       before do
         # Mock the groups association for testing
-        allow(user).to receive(:groups).and_return(double(pluck: ->(attr) { 
-          attr == :name ? ['beta_users'] : []
+        allow(user).to receive(:groups).and_return(double(pluck: ->(attr) {
+          attr == :name ? [ 'beta_users' ] : []
         }))
       end
 
@@ -108,16 +108,16 @@ RSpec.describe FeatureFlag, type: :model do
       end
 
       it 'returns true when user is in allowed group' do
-        flag.update!(user_groups: ['beta_users'])
+        flag.update!(user_groups: [ 'beta_users' ])
         expect(flag.enabled_for?(user)).to be true
       end
 
       it 'returns false when user is not in allowed group' do
-        allow(user).to receive(:groups).and_return(double(pluck: ->(attr) { 
-          attr == :name ? ['admin_users'] : []
+        allow(user).to receive(:groups).and_return(double(pluck: ->(attr) {
+          attr == :name ? [ 'admin_users' ] : []
         }))
-        
-        flag.update!(user_groups: ['beta_users'])
+
+        flag.update!(user_groups: [ 'beta_users' ])
         expect(flag.enabled_for?(user)).to be false
       end
     end
@@ -126,34 +126,34 @@ RSpec.describe FeatureFlag, type: :model do
       it 'evaluates role condition correctly' do
         flag.update!(conditions: { 'role' => 'agent' })
         user.update!(role: 'agent')
-        
+
         expect(flag.enabled_for?(user)).to be true
       end
 
       it 'evaluates email domain condition correctly' do
         flag.update!(conditions: { 'email_domain' => 'example.com' })
         user.update!(email: 'test@example.com')
-        
+
         expect(flag.enabled_for?(user)).to be true
       end
 
       it 'evaluates created_after condition correctly' do
         flag.update!(conditions: { 'created_after' => 1.year.ago.to_date.to_s })
-        
+
         expect(flag.enabled_for?(user)).to be true
       end
 
       it 'evaluates context condition correctly' do
         flag.update!(conditions: { 'context' => { 'feature' => 'premium' } })
         context = { feature: 'premium' }
-        
+
         expect(flag.enabled_for?(user, context)).to be true
       end
 
       it 'returns false when conditions are not met' do
         flag.update!(conditions: { 'role' => 'admin' })
         user.update!(role: 'agent')
-        
+
         expect(flag.enabled_for?(user)).to be false
       end
     end
@@ -179,10 +179,10 @@ RSpec.describe FeatureFlag, type: :model do
   describe '#toggle!' do
     it 'toggles enabled state' do
       flag = create(:feature_flag, enabled: false)
-      
+
       flag.toggle!
       expect(flag.enabled?).to be true
-      
+
       flag.toggle!
       expect(flag.enabled?).to be false
     end
@@ -212,7 +212,7 @@ RSpec.describe FeatureFlag, type: :model do
     it 'passes context to flag evaluation' do
       flag.update!(conditions: { 'context' => { 'plan' => 'premium' } })
       context = { plan: 'premium' }
-      
+
       expect(FeatureFlag.enabled?('test_feature', user, context)).to be true
     end
   end
@@ -222,7 +222,7 @@ RSpec.describe FeatureFlag, type: :model do
       expect {
         FeatureFlag.create_or_update_flag('new_feature', name: 'New Feature', enabled: true)
       }.to change(FeatureFlag, :count).by(1)
-      
+
       flag = FeatureFlag.find_by(key: 'new_feature')
       expect(flag.name).to eq('New Feature')
       expect(flag.enabled?).to be true
@@ -230,9 +230,9 @@ RSpec.describe FeatureFlag, type: :model do
 
     it 'updates existing flag' do
       existing_flag = create(:feature_flag, key: 'existing_feature', enabled: false)
-      
+
       FeatureFlag.create_or_update_flag('existing_feature', enabled: true, percentage: 50)
-      
+
       existing_flag.reload
       expect(existing_flag.enabled?).to be true
       expect(existing_flag.percentage).to eq(50)
@@ -245,7 +245,7 @@ RSpec.describe FeatureFlag, type: :model do
     it 'distributes users consistently based on hash' do
       users = create_list(:user, 100, organization: organization)
       enabled_count = users.count { |u| flag.enabled_for?(u) }
-      
+
       # Should be roughly 30% (allowing for some variance due to hashing)
       expect(enabled_count).to be_between(20, 40)
     end
@@ -258,10 +258,10 @@ RSpec.describe FeatureFlag, type: :model do
 
   describe 'serialization' do
     it 'serializes user_groups as JSON array' do
-      flag = create(:feature_flag, user_groups: ['admins', 'beta_users'])
+      flag = create(:feature_flag, user_groups: [ 'admins', 'beta_users' ])
       flag.reload
-      
-      expect(flag.user_groups).to eq(['admins', 'beta_users'])
+
+      expect(flag.user_groups).to eq([ 'admins', 'beta_users' ])
       expect(flag.user_groups).to be_a(Array)
     end
 
@@ -269,7 +269,7 @@ RSpec.describe FeatureFlag, type: :model do
       conditions = { 'role' => 'admin', 'email_domain' => 'company.com' }
       flag = create(:feature_flag, conditions: conditions)
       flag.reload
-      
+
       expect(flag.conditions).to eq(conditions)
       expect(flag.conditions).to be_a(Hash)
     end

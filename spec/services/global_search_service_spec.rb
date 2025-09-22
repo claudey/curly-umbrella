@@ -4,18 +4,18 @@ RSpec.describe GlobalSearchService, type: :service do
   let(:organization) { create(:organization) }
   let(:user) { create(:user, organization: organization) }
   let(:other_organization) { create(:organization) }
-  
+
   # Create test data
   let!(:client1) { create(:client, organization: organization, first_name: 'John', last_name: 'Doe', email: 'john.doe@example.com') }
   let!(:client2) { create(:client, organization: organization, first_name: 'Jane', last_name: 'Smith', email: 'jane.smith@company.com') }
   let!(:external_client) { create(:client, organization: other_organization, first_name: 'John', last_name: 'External') }
-  
+
   let!(:application1) { create(:insurance_application, organization: organization, client: client1, application_type: 'motor', status: 'submitted') }
   let!(:application2) { create(:insurance_application, organization: organization, client: client2, application_type: 'fire', status: 'approved') }
-  
+
   let!(:quote1) { create(:quote, organization: organization, application: application1, total_premium: 1200.00, status: 'pending') }
   let!(:quote2) { create(:quote, organization: organization, application: application2, total_premium: 850.00, status: 'accepted') }
-  
+
   let!(:document1) { create(:document, organization: organization, user: user, name: 'Motor Insurance Policy', document_type: 'policy_document') }
   let!(:document2) { create(:document, organization: organization, user: user, name: 'Fire Safety Certificate', document_type: 'certificate') }
 
@@ -23,7 +23,7 @@ RSpec.describe GlobalSearchService, type: :service do
     it 'sets the current user and search parameters' do
       params = { query: 'test', scope: 'all' }
       service = GlobalSearchService.new(user, params)
-      
+
       expect(service.current_user).to eq(user)
       expect(service.params).to eq(params)
     end
@@ -48,7 +48,7 @@ RSpec.describe GlobalSearchService, type: :service do
 
       it 'finds clients by name' do
         results = service.search
-        
+
         expect(results[:clients][:results]).to include(client1)
         expect(results[:clients][:results]).not_to include(external_client)
         expect(results[:clients][:count]).to eq(1)
@@ -56,7 +56,7 @@ RSpec.describe GlobalSearchService, type: :service do
 
       it 'respects organization boundaries' do
         results = service.search
-        
+
         # Should not find clients from other organizations
         all_results = results.values.flat_map { |v| v.is_a?(Hash) ? v[:results] || [] : [] }
         expect(all_results).not_to include(external_client)
@@ -64,7 +64,7 @@ RSpec.describe GlobalSearchService, type: :service do
 
       it 'includes search metadata' do
         results = service.search
-        
+
         expect(results[:total_count]).to be > 0
         expect(results[:search_time]).to be_a(Float)
         expect(results[:query]).to eq('John')
@@ -91,7 +91,7 @@ RSpec.describe GlobalSearchService, type: :service do
 
       it 'finds clients by email' do
         results = service.search
-        
+
         expect(results[:clients][:results]).to include(client2)
         expect(results[:clients][:count]).to eq(1)
       end
@@ -102,7 +102,7 @@ RSpec.describe GlobalSearchService, type: :service do
 
       it 'finds quotes by premium amount' do
         results = service.search
-        
+
         expect(results[:quotes][:results]).to include(quote1)
         expect(results[:quotes][:count]).to eq(1)
       end
@@ -113,7 +113,7 @@ RSpec.describe GlobalSearchService, type: :service do
 
       it 'returns empty results' do
         results = service.search
-        
+
         expect(results[:total_count]).to eq(0)
         expect(results[:clients][:count]).to eq(0)
         expect(results[:applications][:count]).to eq(0)
@@ -127,19 +127,19 @@ RSpec.describe GlobalSearchService, type: :service do
 
       it 'paginates results correctly' do
         results = service.search
-        
+
         expect(results).to have_key(:pagination)
         expect(results[:pagination]).to include(:current_page, :per_page, :total_pages)
       end
 
       it 'limits results per page' do
         results = service.search
-        
-        total_results = results[:clients][:results].size + 
-                       results[:applications][:results].size + 
-                       results[:quotes][:results].size + 
+
+        total_results = results[:clients][:results].size +
+                       results[:applications][:results].size +
+                       results[:quotes][:results].size +
                        results[:documents][:results].size
-        
+
         expect(total_results).to be <= 2
       end
     end
@@ -150,7 +150,7 @@ RSpec.describe GlobalSearchService, type: :service do
 
     it 'returns search suggestions' do
       suggestions = service.suggestions
-      
+
       expect(suggestions).to be_an(Array)
       expect(suggestions.first).to have_key(:type)
       expect(suggestions.first).to have_key(:value)
@@ -160,14 +160,14 @@ RSpec.describe GlobalSearchService, type: :service do
 
     it 'includes different types of suggestions' do
       suggestions = service.suggestions
-      
+
       suggestion_types = suggestions.map { |s| s[:type] }.uniq
       expect(suggestion_types).to include('client')
     end
 
     it 'limits number of suggestions' do
       suggestions = service.suggestions
-      
+
       expect(suggestions.size).to be <= 10
     end
   end
@@ -177,7 +177,7 @@ RSpec.describe GlobalSearchService, type: :service do
 
     it 'returns available filters for each scope' do
       filters = service.filters
-      
+
       expect(filters).to have_key(:clients)
       expect(filters).to have_key(:applications)
       expect(filters).to have_key(:quotes)
@@ -186,10 +186,10 @@ RSpec.describe GlobalSearchService, type: :service do
 
     it 'includes filter counts' do
       filters = service.filters
-      
+
       expect(filters[:applications]).to have_key(:statuses)
       expect(filters[:applications][:statuses]).to be_an(Array)
-      
+
       if filters[:applications][:statuses].any?
         filter = filters[:applications][:statuses].first
         expect(filter).to have_key(:value)
@@ -211,7 +211,7 @@ RSpec.describe GlobalSearchService, type: :service do
 
     it 'returns recent search queries for the user' do
       recent = service.recent_searches
-      
+
       expect(recent).to be_an(Array)
       expect(recent.size).to be <= 5
       expect(recent.first).to have_key(:query)
@@ -221,7 +221,7 @@ RSpec.describe GlobalSearchService, type: :service do
 
     it 'orders by most recent first' do
       recent = service.recent_searches
-      
+
       expect(recent.first[:query]).to eq('john doe')
     end
   end
@@ -233,7 +233,7 @@ RSpec.describe GlobalSearchService, type: :service do
       expect {
         service.save_search(15)
       }.to change(SearchHistory, :count).by(1)
-      
+
       history = SearchHistory.last
       expect(history.user).to eq(user)
       expect(history.query).to eq('test search')
@@ -242,7 +242,7 @@ RSpec.describe GlobalSearchService, type: :service do
 
     it 'does not save empty queries' do
       service = GlobalSearchService.new(user, { query: '' })
-      
+
       expect {
         service.save_search(0)
       }.not_to change(SearchHistory, :count)
@@ -264,7 +264,7 @@ RSpec.describe GlobalSearchService, type: :service do
       start_time = Time.current
       results = service.search
       end_time = Time.current
-      
+
       search_duration = end_time - start_time
       expect(search_duration).to be < 2.0 # Should complete within 2 seconds
       expect(results[:search_time]).to be < 2.0
@@ -283,7 +283,7 @@ RSpec.describe GlobalSearchService, type: :service do
 
     it 'handles invalid scope gracefully' do
       service = GlobalSearchService.new(user, { query: 'test', scope: 'invalid_scope' })
-      
+
       expect { service.search }.not_to raise_error
       results = service.search
       expect(results[:total_count]).to eq(0)
@@ -292,14 +292,14 @@ RSpec.describe GlobalSearchService, type: :service do
     it 'handles SQL injection attempts' do
       malicious_query = "'; DROP TABLE users; --"
       service = GlobalSearchService.new(user, { query: malicious_query })
-      
+
       expect { service.search }.not_to raise_error
     end
 
     it 'handles very long search queries' do
       long_query = 'a' * 1000
       service = GlobalSearchService.new(user, { query: long_query })
-      
+
       expect { service.search }.not_to raise_error
     end
   end
@@ -311,7 +311,7 @@ RSpec.describe GlobalSearchService, type: :service do
 
     it 'respects document access permissions' do
       results = service.search
-      
+
       # Other user should not see private documents they don't own
       expect(results[:documents][:results]).not_to include(restricted_document)
     end
@@ -319,7 +319,7 @@ RSpec.describe GlobalSearchService, type: :service do
     it 'allows users to see their own private documents' do
       owner_service = GlobalSearchService.new(user, { query: restricted_document.name })
       results = owner_service.search
-      
+
       expect(results[:documents][:results]).to include(restricted_document)
     end
   end
@@ -335,7 +335,7 @@ RSpec.describe GlobalSearchService, type: :service do
         results_count: anything,
         search_time: anything
       )
-      
+
       service.search
     end
   end

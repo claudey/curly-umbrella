@@ -42,7 +42,7 @@ RSpec.describe "Search Requests", type: :request do
 
         expect(response).to have_http_status(:ok)
         expect(response.content_type).to include('application/json')
-        
+
         json_response = JSON.parse(response.body)
         expect(json_response).to have_key('html')
         expect(json_response).to have_key('total_count')
@@ -62,8 +62,8 @@ RSpec.describe "Search Requests", type: :request do
       let!(:fire_app) { create(:insurance_application, organization: organization, application_type: 'fire') }
 
       it 'applies status filters correctly' do
-        get search_path, params: { 
-          query: 'insurance', 
+        get search_path, params: {
+          query: 'insurance',
           scope: 'applications',
           filters: { status: 'draft' }
         }
@@ -73,10 +73,10 @@ RSpec.describe "Search Requests", type: :request do
       end
 
       it 'applies multiple filters' do
-        get search_path, params: { 
+        get search_path, params: {
           query: 'insurance',
           scope: 'applications',
-          filters: { 
+          filters: {
             status: 'draft',
             application_type: 'motor'
           }
@@ -141,7 +141,7 @@ RSpec.describe "Search Requests", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.content_type).to include('application/json')
-      
+
       json_response = JSON.parse(response.body)
       expect(json_response).to have_key('suggestions')
       expect(json_response['suggestions']).to be_an(Array)
@@ -165,7 +165,7 @@ RSpec.describe "Search Requests", type: :request do
   describe "POST /search/save" do
     it 'saves search to user history' do
       expect {
-        post save_search_path, params: { 
+        post save_search_path, params: {
           query: 'motor insurance',
           results_count: 15,
           search_time: 0.25
@@ -173,7 +173,7 @@ RSpec.describe "Search Requests", type: :request do
       }.to change(SearchHistory, :count).by(1)
 
       expect(response).to have_http_status(:ok)
-      
+
       history = SearchHistory.last
       expect(history.user).to eq(user)
       expect(history.query).to eq('motor insurance')
@@ -182,7 +182,7 @@ RSpec.describe "Search Requests", type: :request do
 
     it 'does not save empty queries' do
       expect {
-        post save_search_path, params: { 
+        post save_search_path, params: {
           query: '',
           results_count: 0
         }, xhr: true
@@ -202,7 +202,7 @@ RSpec.describe "Search Requests", type: :request do
       get history_search_path, xhr: true
 
       expect(response).to have_http_status(:ok)
-      
+
       json_response = JSON.parse(response.body)
       expect(json_response).to have_key('history')
       expect(json_response['history']).to be_an(Array)
@@ -229,7 +229,7 @@ RSpec.describe "Search Requests", type: :request do
       }.to change { user.search_histories.count }.from(5).to(0)
 
       expect(response).to have_http_status(:ok)
-      
+
       json_response = JSON.parse(response.body)
       expect(json_response['success']).to be true
     end
@@ -244,14 +244,14 @@ RSpec.describe "Search Requests", type: :request do
     it 'caches search results appropriately' do
       # First request
       get search_path, params: { query: 'insurance' }
-      
+
       expect(response).to have_http_status(:ok)
       expect(response.headers['Cache-Control']).to be_present
     end
 
     it 'varies cache by user and organization' do
       get search_path, params: { query: 'test' }
-      
+
       expect(response.headers['Vary']).to include('User')
     end
 
@@ -259,7 +259,7 @@ RSpec.describe "Search Requests", type: :request do
       start_time = Time.current
       get search_path, params: { query: 'client', scope: 'all' }
       end_time = Time.current
-      
+
       expect(end_time - start_time).to be < 3.0
       expect(response).to have_http_status(:ok)
     end

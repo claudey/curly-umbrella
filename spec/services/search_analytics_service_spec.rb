@@ -19,7 +19,7 @@ RSpec.describe SearchAnalyticsService, type: :service do
       expect {
         SearchAnalyticsService.track_search(search_params)
       }.to change(SearchHistory, :count).by(1)
-      
+
       history = SearchHistory.last
       expect(history.user).to eq(user)
       expect(history.query).to eq('motor insurance')
@@ -31,7 +31,7 @@ RSpec.describe SearchAnalyticsService, type: :service do
         filters: { status: 'active' },
         user_agent: 'Mozilla/5.0...'
       ))
-      
+
       history = SearchHistory.last
       expect(history.metadata['scope']).to eq('all')
       expect(history.metadata['search_time']).to eq(0.25)
@@ -42,7 +42,7 @@ RSpec.describe SearchAnalyticsService, type: :service do
       expect {
         SearchAnalyticsService.track_search(search_params.merge(query: ''))
       }.not_to change(SearchHistory, :count)
-      
+
       expect {
         SearchAnalyticsService.track_search(search_params.merge(query: nil))
       }.not_to change(SearchHistory, :count)
@@ -50,7 +50,7 @@ RSpec.describe SearchAnalyticsService, type: :service do
 
     it 'handles tracking errors gracefully' do
       allow(SearchHistory).to receive(:create!).and_raise(StandardError.new('Database error'))
-      
+
       expect {
         SearchAnalyticsService.track_search(search_params)
       }.not_to raise_error
@@ -70,7 +70,7 @@ RSpec.describe SearchAnalyticsService, type: :service do
 
     it 'returns search statistics for organization users only' do
       stats = SearchAnalyticsService.organization_search_stats(organization, 7.days.ago, Time.current)
-      
+
       expect(stats[:total_searches]).to eq(3) # Excludes external user
       expect(stats[:unique_users]).to eq(2)
       expect(stats[:average_results]).to be_within(0.1).of(7.67) # (10+5+8)/3
@@ -78,7 +78,7 @@ RSpec.describe SearchAnalyticsService, type: :service do
 
     it 'includes popular queries for the organization' do
       stats = SearchAnalyticsService.organization_search_stats(organization, 7.days.ago, Time.current)
-      
+
       expect(stats[:popular_queries]).to be_an(Array)
       expect(stats[:popular_queries].first[:query]).to eq('motor insurance')
       expect(stats[:popular_queries].first[:count]).to eq(2)
@@ -86,7 +86,7 @@ RSpec.describe SearchAnalyticsService, type: :service do
 
     it 'calculates search trends' do
       stats = SearchAnalyticsService.organization_search_stats(organization, 7.days.ago, Time.current)
-      
+
       expect(stats).to have_key(:daily_breakdown)
       expect(stats[:daily_breakdown]).to be_an(Array)
     end
@@ -94,29 +94,29 @@ RSpec.describe SearchAnalyticsService, type: :service do
 
   describe '.search_performance_metrics' do
     before do
-      create(:search_history, user: user, query: 'fast query', results_count: 10, 
+      create(:search_history, user: user, query: 'fast query', results_count: 10,
              metadata: { search_time: 0.1 }, created_at: 1.hour.ago)
-      create(:search_history, user: user, query: 'slow query', results_count: 5, 
+      create(:search_history, user: user, query: 'slow query', results_count: 5,
              metadata: { search_time: 2.5 }, created_at: 2.hours.ago)
-      create(:search_history, user: user, query: 'medium query', results_count: 8, 
+      create(:search_history, user: user, query: 'medium query', results_count: 8,
              metadata: { search_time: 0.8 }, created_at: 3.hours.ago)
     end
 
     it 'calculates search performance statistics' do
       metrics = SearchAnalyticsService.search_performance_metrics(1.day.ago, Time.current)
-      
+
       expect(metrics).to have_key(:average_search_time)
       expect(metrics).to have_key(:median_search_time)
       expect(metrics).to have_key(:percentile_95_time)
       expect(metrics).to have_key(:slow_searches_count)
-      
+
       expect(metrics[:average_search_time]).to be_within(0.1).of(1.13) # (0.1+2.5+0.8)/3
       expect(metrics[:slow_searches_count]).to eq(1) # Queries > 2 seconds
     end
 
     it 'identifies slowest search patterns' do
       metrics = SearchAnalyticsService.search_performance_metrics(1.day.ago, Time.current)
-      
+
       expect(metrics).to have_key(:slowest_queries)
       expect(metrics[:slowest_queries]).to be_an(Array)
       expect(metrics[:slowest_queries].first[:query]).to eq('slow query')
@@ -134,7 +134,7 @@ RSpec.describe SearchAnalyticsService, type: :service do
 
     it 'calculates search success rates' do
       analysis = SearchAnalyticsService.search_success_analysis(1.day.ago, Time.current)
-      
+
       expect(analysis[:total_searches]).to eq(4)
       expect(analysis[:successful_searches]).to eq(2) # results_count > 0
       expect(analysis[:success_rate]).to eq(50.0)
@@ -143,7 +143,7 @@ RSpec.describe SearchAnalyticsService, type: :service do
 
     it 'identifies queries with zero results' do
       analysis = SearchAnalyticsService.search_success_analysis(1.day.ago, Time.current)
-      
+
       zero_result = analysis[:zero_result_queries].first
       expect(zero_result[:query]).to eq('failed query')
       expect(zero_result[:count]).to eq(2)
@@ -151,7 +151,7 @@ RSpec.describe SearchAnalyticsService, type: :service do
 
     it 'suggests query improvements' do
       analysis = SearchAnalyticsService.search_success_analysis(1.day.ago, Time.current)
-      
+
       expect(analysis).to have_key(:improvement_suggestions)
       expect(analysis[:improvement_suggestions]).to be_an(Array)
     end
@@ -168,23 +168,23 @@ RSpec.describe SearchAnalyticsService, type: :service do
 
     it 'analyzes user search patterns' do
       behavior = SearchAnalyticsService.user_search_behavior(user, 1.day.ago, Time.current)
-      
+
       expect(behavior).to have_key(:total_searches)
       expect(behavior).to have_key(:unique_queries)
       expect(behavior).to have_key(:search_frequency)
       expect(behavior).to have_key(:preferred_search_times)
       expect(behavior).to have_key(:query_refinement_patterns)
-      
+
       expect(behavior[:total_searches]).to eq(4)
       expect(behavior[:unique_queries]).to eq(4)
     end
 
     it 'identifies search refinement patterns' do
       behavior = SearchAnalyticsService.user_search_behavior(user, 1.day.ago, Time.current)
-      
+
       refinements = behavior[:query_refinement_patterns]
       expect(refinements).to be_an(Array)
-      
+
       # Should detect that "motor insurance" is a refinement of "motor"
       motor_refinement = refinements.find { |r| r[:original] == 'motor' && r[:refined] == 'motor insurance' }
       expect(motor_refinement).to be_present
@@ -192,7 +192,7 @@ RSpec.describe SearchAnalyticsService, type: :service do
 
     it 'calculates search session patterns' do
       behavior = SearchAnalyticsService.user_search_behavior(user, 1.day.ago, Time.current)
-      
+
       expect(behavior).to have_key(:average_session_length)
       expect(behavior).to have_key(:searches_per_session)
     end
@@ -205,7 +205,7 @@ RSpec.describe SearchAnalyticsService, type: :service do
 
     it 'exports search analytics to CSV format' do
       csv_data = SearchAnalyticsService.export_analytics(organization, 7.days.ago, Time.current, 'csv')
-      
+
       expect(csv_data).to be_a(String)
       expect(csv_data).to include('Query,User,Results Count,Search Time,Created At')
     end
@@ -213,7 +213,7 @@ RSpec.describe SearchAnalyticsService, type: :service do
     it 'exports search analytics to JSON format' do
       json_data = SearchAnalyticsService.export_analytics(organization, 7.days.ago, Time.current, 'json')
       parsed_data = JSON.parse(json_data)
-      
+
       expect(parsed_data).to have_key('searches')
       expect(parsed_data).to have_key('summary')
       expect(parsed_data['searches']).to be_an(Array)
@@ -221,7 +221,7 @@ RSpec.describe SearchAnalyticsService, type: :service do
 
     it 'handles invalid export formats gracefully' do
       result = SearchAnalyticsService.export_analytics(organization, 7.days.ago, Time.current, 'invalid')
-      
+
       expect(result).to be_nil
     end
   end
@@ -236,18 +236,18 @@ RSpec.describe SearchAnalyticsService, type: :service do
 
     it 'returns real-time search metrics' do
       metrics = SearchAnalyticsService.real_time_search_metrics(organization)
-      
+
       expect(metrics).to have_key(:searches_last_hour)
       expect(metrics).to have_key(:searches_last_5_minutes)
       expect(metrics).to have_key(:active_users)
       expect(metrics).to have_key(:success_rate_last_hour)
-      
+
       expect(metrics[:searches_last_5_minutes]).to eq(2)
     end
 
     it 'includes trending queries' do
       metrics = SearchAnalyticsService.real_time_search_metrics(organization)
-      
+
       expect(metrics).to have_key(:trending_queries)
       expect(metrics[:trending_queries]).to be_an(Array)
     end
@@ -258,7 +258,7 @@ RSpec.describe SearchAnalyticsService, type: :service do
       expect {
         SearchAnalyticsService.track_search(nil)
       }.not_to raise_error
-      
+
       expect {
         SearchAnalyticsService.organization_search_stats(nil, 1.day.ago, Time.current)
       }.not_to raise_error
@@ -268,7 +268,7 @@ RSpec.describe SearchAnalyticsService, type: :service do
       # Future dates
       stats = SearchAnalyticsService.organization_search_stats(organization, 1.day.from_now, 2.days.from_now)
       expect(stats[:total_searches]).to eq(0)
-      
+
       # Inverted date range
       stats = SearchAnalyticsService.organization_search_stats(organization, Time.current, 1.day.ago)
       expect(stats[:total_searches]).to eq(0)
@@ -277,11 +277,11 @@ RSpec.describe SearchAnalyticsService, type: :service do
     it 'handles large datasets efficiently' do
       # Create a large number of search records
       create_list(:search_history, 1000, user: user, created_at: 1.day.ago)
-      
+
       start_time = Time.current
       SearchAnalyticsService.organization_search_stats(organization, 7.days.ago, Time.current)
       end_time = Time.current
-      
+
       expect(end_time - start_time).to be < 5.0 # Should complete within 5 seconds
     end
   end
@@ -289,10 +289,10 @@ RSpec.describe SearchAnalyticsService, type: :service do
   describe 'privacy and compliance' do
     it 'anonymizes sensitive data in exports' do
       create(:search_history, user: user, query: 'sensitive client data')
-      
+
       json_data = SearchAnalyticsService.export_analytics(organization, 7.days.ago, Time.current, 'json')
       parsed_data = JSON.parse(json_data)
-      
+
       # Should not include user email or other PII
       search = parsed_data['searches'].first
       expect(search).not_to have_key('user_email')
@@ -301,7 +301,7 @@ RSpec.describe SearchAnalyticsService, type: :service do
 
     it 'respects data retention policies' do
       old_search = create(:search_history, user: user, created_at: 2.years.ago)
-      
+
       # Analytics should exclude data beyond retention period
       stats = SearchAnalyticsService.organization_search_stats(organization, 1.year.ago, Time.current)
       expect(stats[:total_searches]).to eq(0)

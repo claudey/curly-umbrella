@@ -2,7 +2,7 @@
 
 class Api::V1::SearchController < Api::V1::BaseController
   before_action :authenticate_api_user!
-  before_action :validate_search_params, only: [:global]
+  before_action :validate_search_params, only: [ :global ]
   before_action :check_rate_limiting
   before_action :track_usage
 
@@ -12,9 +12,9 @@ class Api::V1::SearchController < Api::V1::BaseController
     results = search_service.search
 
     # Add cache headers
-    response.headers['Cache-Control'] = 'public, max-age=300' # 5 minutes
-    response.headers['ETag'] = generate_etag(results)
-    response.headers['Vary'] = 'User, Authorization'
+    response.headers["Cache-Control"] = "public, max-age=300" # 5 minutes
+    response.headers["ETag"] = generate_etag(results)
+    response.headers["Vary"] = "User, Authorization"
 
     render_success({
       **results,
@@ -23,9 +23,9 @@ class Api::V1::SearchController < Api::V1::BaseController
   rescue StandardError => e
     Rails.logger.error "Global search error: #{e.message}"
     render_error(
-      'Search temporarily unavailable',
+      "Search temporarily unavailable",
       status: :internal_server_error,
-      details: { error_type: 'search_service_error' }
+      details: { error_type: "search_service_error" }
     )
   end
 
@@ -51,7 +51,7 @@ class Api::V1::SearchController < Api::V1::BaseController
     render_success({ filters: filter_data })
   rescue StandardError => e
     Rails.logger.error "Search filters error: #{e.message}"
-    render_error('Unable to load filters', status: :internal_server_error)
+    render_error("Unable to load filters", status: :internal_server_error)
   end
 
   # GET /api/v1/search/history
@@ -66,7 +66,7 @@ class Api::V1::SearchController < Api::V1::BaseController
   def analytics
     authorize_admin_access!
 
-    period = analytics_params[:period] || '7d'
+    period = analytics_params[:period] || "7d"
     start_date, end_date = parse_period(period)
 
     analytics_data = SearchAnalyticsService.organization_search_stats(
@@ -82,20 +82,20 @@ class Api::V1::SearchController < Api::V1::BaseController
     })
   rescue StandardError => e
     Rails.logger.error "Search analytics error: #{e.message}"
-    render_error('Unable to generate analytics', status: :internal_server_error)
+    render_error("Unable to generate analytics", status: :internal_server_error)
   end
 
   # DELETE /api/v1/search/history
   def clear_history
     current_api_user.search_histories.delete_all
-    
-    render_success({ 
-      message: 'Search history cleared successfully',
+
+    render_success({
+      message: "Search history cleared successfully",
       cleared_at: Time.current.iso8601
     })
   rescue StandardError => e
     Rails.logger.error "Clear search history error: #{e.message}"
-    render_error('Unable to clear search history', status: :internal_server_error)
+    render_error("Unable to clear search history", status: :internal_server_error)
   end
 
   private
@@ -121,17 +121,17 @@ class Api::V1::SearchController < Api::V1::BaseController
   def validate_search_params
     if params[:query].blank?
       return render_error(
-        'Query parameter is required',
+        "Query parameter is required",
         status: :bad_request,
-        details: { parameter: 'query' }
+        details: { parameter: "query" }
       )
     end
 
     if params[:scope].present? && !GlobalSearchService::VALID_SCOPES.include?(params[:scope])
       return render_error(
-        'Invalid scope',
+        "Invalid scope",
         status: :bad_request,
-        details: { 
+        details: {
           provided_scope: params[:scope],
           valid_scopes: GlobalSearchService::VALID_SCOPES
         }
@@ -141,13 +141,13 @@ class Api::V1::SearchController < Api::V1::BaseController
     # Validate pagination parameters
     if params[:page].present? && params[:page].to_i < 1
       return render_error(
-        'Page must be greater than 0',
+        "Page must be greater than 0",
         status: :bad_request
       )
     end
 
     if params[:per_page].present? && (params[:per_page].to_i < 1 || params[:per_page].to_i > GlobalSearchService::MAX_PER_PAGE)
-      return render_error(
+      render_error(
         "Per page must be between 1 and #{GlobalSearchService::MAX_PER_PAGE}",
         status: :bad_request
       )
@@ -156,7 +156,7 @@ class Api::V1::SearchController < Api::V1::BaseController
 
   def authorize_admin_access!
     unless current_api_user.can_manage_organization?(current_organization)
-      render_error('Insufficient permissions', status: :forbidden)
+      render_error("Insufficient permissions", status: :forbidden)
     end
   end
 
@@ -168,11 +168,11 @@ class Api::V1::SearchController < Api::V1::BaseController
       window: 1.hour
     )
       render_error(
-        'Rate limit exceeded',
+        "Rate limit exceeded",
         status: :too_many_requests,
-        details: { 
+        details: {
           limit: 100,
-          window: '1 hour',
+          window: "1 hour",
           retry_after: 3600
         }
       )
@@ -181,20 +181,20 @@ class Api::V1::SearchController < Api::V1::BaseController
 
   def parse_period(period)
     case period
-    when '1h'
-      [1.hour.ago, Time.current]
-    when '24h', '1d'
-      [1.day.ago, Time.current]
-    when '7d', '1w'
-      [1.week.ago, Time.current]
-    when '30d', '1m'
-      [1.month.ago, Time.current]
-    when '90d', '3m'
-      [3.months.ago, Time.current]
-    when '1y'
-      [1.year.ago, Time.current]
+    when "1h"
+      [ 1.hour.ago, Time.current ]
+    when "24h", "1d"
+      [ 1.day.ago, Time.current ]
+    when "7d", "1w"
+      [ 1.week.ago, Time.current ]
+    when "30d", "1m"
+      [ 1.month.ago, Time.current ]
+    when "90d", "3m"
+      [ 3.months.ago, Time.current ]
+    when "1y"
+      [ 1.year.ago, Time.current ]
     else
-      [1.week.ago, Time.current] # Default to 1 week
+      [ 1.week.ago, Time.current ] # Default to 1 week
     end
   end
 

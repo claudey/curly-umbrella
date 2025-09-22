@@ -6,7 +6,7 @@ class GlobalSearchService
   VALID_SCOPES = %w[all clients applications quotes documents].freeze
   DEFAULT_PER_PAGE = 25
   MAX_PER_PAGE = 100
-  
+
   def initialize(current_user, params = {})
     @current_user = current_user
     @params = params.with_indifferent_access
@@ -17,19 +17,19 @@ class GlobalSearchService
     return empty_results if query.blank?
 
     results = case scope
-             when 'clients'
+    when "clients"
                search_clients_only
-             when 'applications'
+    when "applications"
                search_applications_only
-             when 'quotes'
+    when "quotes"
                search_quotes_only
-             when 'documents'
+    when "documents"
                search_documents_only
-             when 'all'
+    when "all"
                search_all_entities
-             else
+    else
                empty_results
-             end
+    end
 
     # Track the search
     track_search(results[:total_count])
@@ -46,31 +46,31 @@ class GlobalSearchService
     return [] if query.blank? || query.length < 2
 
     suggestions = []
-    
+
     # Client suggestions
     suggestions.concat(client_suggestions)
-    
-    # Application suggestions  
+
+    # Application suggestions
     suggestions.concat(application_suggestions)
-    
+
     # Document suggestions
     suggestions.concat(document_suggestions)
-    
+
     # Limit and return
-    suggestions.uniq { |s| [s[:type], s[:value]] }.first(10)
+    suggestions.uniq { |s| [ s[:type], s[:value] ] }.first(10)
   end
 
   def filters
     base_clients = organization_clients
-    base_applications = organization_applications  
+    base_applications = organization_applications
     base_quotes = organization_quotes
     base_documents = organization_documents
 
     if query.present?
-      base_clients = apply_text_search(base_clients, [:first_name, :last_name, :email])
-      base_applications = apply_text_search(base_applications, [:insurance_type, :status])
-      base_quotes = apply_text_search(base_quotes, [:status])
-      base_documents = apply_text_search(base_documents, [:name, :description])
+      base_clients = apply_text_search(base_clients, [ :first_name, :last_name, :email ])
+      base_applications = apply_text_search(base_applications, [ :insurance_type, :status ])
+      base_quotes = apply_text_search(base_quotes, [ :status ])
+      base_documents = apply_text_search(base_documents, [ :name, :description ])
     end
 
     {
@@ -117,15 +117,15 @@ class GlobalSearchService
   end
 
   def scope
-    @scope ||= VALID_SCOPES.include?(params[:scope]) ? params[:scope] : 'all'
+    @scope ||= VALID_SCOPES.include?(params[:scope]) ? params[:scope] : "all"
   end
 
   def page
-    @page ||= [params[:page].to_i, 1].max
+    @page ||= [ params[:page].to_i, 1 ].max
   end
 
   def per_page
-    @per_page ||= [[params[:per_page].to_i, DEFAULT_PER_PAGE].max, MAX_PER_PAGE].min
+    @per_page ||= [ [ params[:per_page].to_i, DEFAULT_PER_PAGE ].max, MAX_PER_PAGE ].min
   end
 
   def offset
@@ -133,10 +133,10 @@ class GlobalSearchService
   end
 
   def search_all_entities
-    clients_result = search_in_scope(organization_clients, :clients, [:first_name, :last_name, :email])
-    applications_result = search_in_scope(organization_applications, :applications, [:insurance_type, :status])
-    quotes_result = search_in_scope(organization_quotes, :quotes, [:status])
-    documents_result = search_in_scope(organization_documents, :documents, [:name, :description])
+    clients_result = search_in_scope(organization_clients, :clients, [ :first_name, :last_name, :email ])
+    applications_result = search_in_scope(organization_applications, :applications, [ :insurance_type, :status ])
+    quotes_result = search_in_scope(organization_quotes, :quotes, [ :status ])
+    documents_result = search_in_scope(organization_documents, :documents, [ :name, :description ])
 
     # Apply global pagination across all results
     all_results = [
@@ -148,9 +148,9 @@ class GlobalSearchService
 
     # Sort by relevance score or created_at
     all_results.sort_by! { |item| item[:entity].respond_to?(:created_at) ? -item[:entity].created_at.to_i : 0 }
-    
+
     paginated_results = all_results[offset, per_page] || []
-    
+
     # Group back by type
     grouped_results = paginated_results.group_by { |item| item[:type] }
 
@@ -171,21 +171,21 @@ class GlobalSearchService
         results: grouped_results[:documents]&.map { |item| item[:entity] } || [],
         count: documents_result[:count]
       },
-      total_count: clients_result[:count] + applications_result[:count] + 
+      total_count: clients_result[:count] + applications_result[:count] +
                    quotes_result[:count] + documents_result[:count]
     }
   end
 
   def search_clients_only
-    result = search_in_scope(organization_clients, :clients, [:first_name, :last_name, :email], paginate: true)
+    result = search_in_scope(organization_clients, :clients, [ :first_name, :last_name, :email ], paginate: true)
     base_result.merge(
       clients: result,
       total_count: result[:count]
     )
   end
 
-  def search_applications_only  
-    result = search_in_scope(organization_applications, :applications, [:insurance_type, :status], paginate: true)
+  def search_applications_only
+    result = search_in_scope(organization_applications, :applications, [ :insurance_type, :status ], paginate: true)
     base_result.merge(
       applications: result,
       total_count: result[:count]
@@ -193,7 +193,7 @@ class GlobalSearchService
   end
 
   def search_quotes_only
-    result = search_in_scope(organization_quotes, :quotes, [:status], paginate: true)
+    result = search_in_scope(organization_quotes, :quotes, [ :status ], paginate: true)
     base_result.merge(
       quotes: result,
       total_count: result[:count]
@@ -204,7 +204,7 @@ class GlobalSearchService
     # Use the existing DocumentSearchService for documents
     document_service = DocumentSearchService.new(organization_documents, params, current_user)
     documents = document_service.search.limit(per_page).offset(offset)
-    
+
     base_result.merge(
       documents: {
         results: documents.to_a,
@@ -219,13 +219,13 @@ class GlobalSearchService
 
     # Apply text search
     results = apply_text_search(base_scope, search_fields)
-    
+
     # Apply filters if present
     results = apply_entity_filters(results, entity_type)
-    
+
     # Get count before pagination
     total_count = results.count
-    
+
     # Apply pagination if requested
     if paginate
       results = results.limit(per_page).offset(offset)
@@ -242,18 +242,18 @@ class GlobalSearchService
 
   def apply_text_search(scope, fields)
     search_terms = query.split(/\s+/).reject(&:blank?)
-    
+
     search_terms.inject(scope) do |current_scope, term|
       conditions = fields.map { |field| "#{field} ILIKE ?" }
       values = fields.map { "%#{term}%" }
-      
-      current_scope.where(conditions.join(' OR '), *values)
+
+      current_scope.where(conditions.join(" OR "), *values)
     end
   end
 
   def apply_entity_filters(scope, entity_type)
     filters = params[:filters] || {}
-    
+
     case entity_type
     when :clients
       apply_client_filters(scope, filters)
@@ -282,8 +282,8 @@ class GlobalSearchService
 
   def apply_quote_filters(scope, filters)
     scope = scope.where(status: filters[:status]) if filters[:status].present?
-    scope = scope.where('total_premium >= ?', filters[:min_premium]) if filters[:min_premium].present?
-    scope = scope.where('total_premium <= ?', filters[:max_premium]) if filters[:max_premium].present?
+    scope = scope.where("total_premium >= ?", filters[:min_premium]) if filters[:min_premium].present?
+    scope = scope.where("total_premium <= ?", filters[:max_premium]) if filters[:max_premium].present?
     scope
   end
 
@@ -327,15 +327,15 @@ class GlobalSearchService
   def organization_documents
     # Apply document access permissions
     documents = current_user.organization.documents.includes(:user)
-    
+
     # Filter based on user permissions
     case current_user.role
-    when 'brokerage_admin', 'admin'
+    when "brokerage_admin", "admin"
       documents # Admins can see all
     else
       documents.where(
-        '(access_level = ? AND is_public = ?) OR (access_level = ?) OR (user_id = ?)',
-        'public', true, 'organization', current_user.id
+        "(access_level = ? AND is_public = ?) OR (access_level = ?) OR (user_id = ?)",
+        "public", true, "organization", current_user.id
       )
     end
   end
@@ -344,16 +344,16 @@ class GlobalSearchService
     return [] if query.length < 2
 
     clients = organization_clients
-              .where("first_name ILIKE ? OR last_name ILIKE ? OR email ILIKE ?", 
+              .where("first_name ILIKE ? OR last_name ILIKE ? OR email ILIKE ?",
                      "%#{query}%", "%#{query}%", "%#{query}%")
               .limit(3)
 
     clients.map do |client|
       {
-        type: 'client',
+        type: "client",
         value: client.id,
         label: "#{client.full_name} (#{client.email})",
-        category: 'Clients'
+        category: "Clients"
       }
     end
   end
@@ -367,10 +367,10 @@ class GlobalSearchService
 
     applications.map do |app|
       {
-        type: 'application',
+        type: "application",
         value: app.id,
         label: "#{app.insurance_type.humanize} - #{app.client.full_name}",
-        category: 'Applications'
+        category: "Applications"
       }
     end
   end
@@ -384,10 +384,10 @@ class GlobalSearchService
 
     documents.map do |doc|
       {
-        type: 'document',
+        type: "document",
         value: doc.id,
         label: "#{doc.name} (#{doc.document_type.humanize})",
-        category: 'Documents'
+        category: "Documents"
       }
     end
   end
@@ -430,7 +430,7 @@ class GlobalSearchService
 
   def pagination_info(total_count)
     total_pages = (total_count.to_f / per_page).ceil
-    
+
     {
       current_page: page,
       per_page: per_page,

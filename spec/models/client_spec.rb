@@ -7,7 +7,7 @@ RSpec.describe Client, type: :model do
 
   describe "validations" do
     subject { create(:client) }
-    
+
     it { is_expected.to validate_presence_of(:first_name) }
     it { is_expected.to validate_presence_of(:last_name) }
     it { is_expected.to validate_presence_of(:email) }
@@ -38,10 +38,10 @@ RSpec.describe Client, type: :model do
 
   describe "scopes" do
     let(:organization) { create(:organization) }
-    
+
     it "searches by name" do
       client = create(:client, organization: organization, first_name: "John", last_name: "Doe")
-      
+
       expect(Client.by_name("John")).to include(client)
       expect(Client.by_name("Doe")).to include(client)
       expect(Client.by_name("Smith")).not_to include(client)
@@ -49,7 +49,7 @@ RSpec.describe Client, type: :model do
 
     it "searches by email" do
       client = create(:client, organization: organization, email: "john@example.com")
-      
+
       expect(Client.by_email("john@example.com")).to include(client)
       expect(Client.by_email("smith@example.com")).not_to include(client)
     end
@@ -59,7 +59,7 @@ RSpec.describe Client, type: :model do
     it "returns primary contact based on preference" do
       client = create(:client, email: "test@example.com", phone: "123456789", preferred_contact_method: "email")
       expect(client.primary_contact).to eq("test@example.com")
-      
+
       client.update(preferred_contact_method: "phone")
       expect(client.primary_contact).to eq("123456789")
     end

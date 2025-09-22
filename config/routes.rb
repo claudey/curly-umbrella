@@ -195,12 +195,12 @@ Rails.application.routes.draw do
   end
 
   # Search routes
-  resources :search, only: [:index] do
+  resources :search, only: [ :index ] do
     collection do
       get :suggestions
       post :save
       get :history
-      delete :clear_history, path: 'history'
+      delete :clear_history, path: "history"
     end
   end
 
@@ -209,12 +209,12 @@ Rails.application.routes.draw do
     namespace :v1 do
       # Search API routes
       scope :search do
-        get :global, to: 'search#global'
-        get :suggestions, to: 'search#suggestions'
-        get :filters, to: 'search#filters'
-        get :history, to: 'search#history'
-        get :analytics, to: 'search#analytics'
-        delete :history, to: 'search#clear_history'
+        get :global, to: "search#global"
+        get :suggestions, to: "search#suggestions"
+        get :filters, to: "search#filters"
+        get :history, to: "search#history"
+        get :analytics, to: "search#analytics"
+        delete :history, to: "search#clear_history"
       end
       resources :applications, except: [ :destroy ] do
         member do

@@ -94,13 +94,13 @@ RSpec.describe DocumentsHelper, type: :helper do
     let(:documentable) { create(:insurance_application, organization: organization) }
 
     it "returns archived badge for archived document" do
-      document = create(:document, 
+      document = create(:document,
         organization: organization,
         user: user,
         documentable: documentable,
         is_archived: true
       )
-      
+
       expect(helper.document_status_badge(document)).to include("Archived")
       expect(helper.document_status_badge(document)).to include("badge bg-warning")
     end
@@ -112,7 +112,7 @@ RSpec.describe DocumentsHelper, type: :helper do
         documentable: documentable,
         expires_at: 1.day.ago
       )
-      
+
       expect(helper.document_status_badge(document)).to include("Expired")
       expect(helper.document_status_badge(document)).to include("badge bg-danger")
     end
@@ -124,7 +124,7 @@ RSpec.describe DocumentsHelper, type: :helper do
         documentable: documentable,
         expires_at: 15.days.from_now
       )
-      
+
       expect(helper.document_status_badge(document)).to include("Expiring Soon")
       expect(helper.document_status_badge(document)).to include("badge bg-warning")
     end
@@ -136,7 +136,7 @@ RSpec.describe DocumentsHelper, type: :helper do
         documentable: documentable,
         expires_at: 60.days.from_now
       )
-      
+
       expect(helper.document_status_badge(document)).to include("Active")
       expect(helper.document_status_badge(document)).to include("badge bg-success")
     end

@@ -31,7 +31,7 @@ class SearchAnalyticsService
 
     user_ids = organization.users.pluck(:id)
     searches = SearchHistory.where(user_id: user_ids, created_at: start_date..end_date)
-    
+
     {
       total_searches: searches.count,
       unique_users: searches.distinct.count(:user_id),
@@ -45,9 +45,9 @@ class SearchAnalyticsService
   def self.search_performance_metrics(start_date, end_date)
     searches = SearchHistory.where(created_at: start_date..end_date)
                            .where.not(search_time: nil)
-    
+
     search_times = searches.pluck(:search_time).compact.map(&:to_f)
-    
+
     return default_performance_metrics if search_times.empty?
 
     {
@@ -63,13 +63,13 @@ class SearchAnalyticsService
     searches = SearchHistory.where(created_at: start_date..end_date)
     successful = searches.successful
     failed = searches.where(results_count: 0)
-    
+
     {
       total_searches: searches.count,
       successful_searches: successful.count,
       success_rate: calculate_success_rate(searches),
       zero_result_queries: failed.group(:query)
-                                 .order('count_query DESC')
+                                 .order("count_query DESC")
                                  .limit(10)
                                  .count(:query)
                                  .map { |query, count| { query: query, count: count } },
@@ -80,7 +80,7 @@ class SearchAnalyticsService
   def self.user_search_behavior(user, start_date, end_date)
     searches = SearchHistory.where(user: user, created_at: start_date..end_date)
                            .order(:created_at)
-    
+
     {
       total_searches: searches.count,
       unique_queries: searches.distinct.count(:query),
@@ -100,9 +100,9 @@ class SearchAnalyticsService
                            .includes(:user)
 
     case format
-    when 'csv'
+    when "csv"
       generate_csv_export(searches)
-    when 'json'
+    when "json"
       generate_json_export(searches, organization, start_date, end_date)
     end
   end
@@ -111,7 +111,7 @@ class SearchAnalyticsService
     user_ids = organization.users.pluck(:id)
     last_hour = SearchHistory.where(user_id: user_ids, created_at: 1.hour.ago..Time.current)
     last_5_minutes = SearchHistory.where(user_id: user_ids, created_at: 5.minutes.ago..Time.current)
-    
+
     {
       searches_last_hour: last_hour.count,
       searches_last_5_minutes: last_5_minutes.count,
@@ -165,7 +165,7 @@ class SearchAnalyticsService
     sorted = array.sort
     length = sorted.length
     return 0 if length == 0
-    
+
     if length.odd?
       sorted[length / 2]
     else
@@ -175,7 +175,7 @@ class SearchAnalyticsService
 
   def self.calculate_percentile(array, percentile)
     return 0 if array.empty?
-    
+
     sorted = array.sort
     index = (percentile / 100.0 * (sorted.length - 1)).round
     sorted[index].round(3)
@@ -191,17 +191,17 @@ class SearchAnalyticsService
 
   def self.calculate_search_frequency(searches)
     return 0 if searches.count == 0
-    
+
     time_span_hours = (searches.last.created_at - searches.first.created_at) / 1.hour
     return searches.count if time_span_hours < 1
-    
+
     (searches.count / time_span_hours).round(2)
   end
 
   def self.calculate_preferred_times(searches)
     hours = searches.pluck(:created_at).map { |time| time.hour }
     hour_counts = hours.group_by(&:itself).transform_values(&:size)
-    
+
     hour_counts.sort_by { |_, count| -count }
                .first(3)
                .map { |hour, count| { hour: hour, count: count } }
@@ -210,10 +210,10 @@ class SearchAnalyticsService
   def self.detect_refinement_patterns(searches)
     refinements = []
     queries = searches.pluck(:query, :created_at).sort_by(&:last)
-    
+
     queries.each_with_index do |(query, _), index|
       next if index == 0
-      
+
       previous_query = queries[index - 1][0]
       if query.include?(previous_query) && query != previous_query
         refinements << {
@@ -223,56 +223,56 @@ class SearchAnalyticsService
         }
       end
     end
-    
+
     refinements
   end
 
   def self.calculate_average_session_length(searches)
     return 0 if searches.count < 2
-    
+
     session_gaps = []
     searches.pluck(:created_at).each_cons(2) do |prev_time, curr_time|
       gap = curr_time - prev_time
       session_gaps << gap if gap < 1.hour # Consider gaps > 1 hour as new sessions
     end
-    
+
     return 0 if session_gaps.empty?
     (session_gaps.sum / session_gaps.size).round(0)
   end
 
   def self.calculate_searches_per_session(searches)
     return 0 if searches.count == 0
-    
+
     # Estimate sessions by gaps > 30 minutes
     sessions = 1
     searches.pluck(:created_at).each_cons(2) do |prev_time, curr_time|
       sessions += 1 if (curr_time - prev_time) > 30.minutes
     end
-    
+
     (searches.count.to_f / sessions).round(2)
   end
 
   def self.generate_improvement_suggestions(failed_searches)
     suggestions = []
-    
+
     common_failures = failed_searches.group(:query).count(:query)
-    
+
     if common_failures.any?
       suggestions << "Consider adding search suggestions for commonly failed queries"
     end
-    
-    if failed_searches.joins(:user).group('metadata').count.any?
+
+    if failed_searches.joins(:user).group("metadata").count.any?
       suggestions << "Review search filters and scoping options"
     end
-    
+
     suggestions << "Consider implementing fuzzy search for typo tolerance" if suggestions.empty?
     suggestions
   end
 
   def self.generate_csv_export(searches)
     CSV.generate(headers: true) do |csv|
-      csv << ['Query', 'User Email', 'Results Count', 'Search Time', 'Created At', 'Scope']
-      
+      csv << [ "Query", "User Email", "Results Count", "Search Time", "Created At", "Scope" ]
+
       searches.find_each do |search|
         csv << [
           search.query,
@@ -280,7 +280,7 @@ class SearchAnalyticsService
           search.results_count,
           search.search_time,
           search.created_at.iso8601,
-          search.metadata.dig('scope')
+          search.metadata.dig("scope")
         ]
       end
     end

@@ -23,7 +23,7 @@ RSpec.describe Api::V1::SearchController, type: :controller do
 
         expect(response).to have_http_status(:ok)
         json_response = JSON.parse(response.body)
-        
+
         expect(json_response['success']).to be true
         expect(json_response['data']).to have_key('clients')
         expect(json_response['data']).to have_key('applications')
@@ -35,7 +35,7 @@ RSpec.describe Api::V1::SearchController, type: :controller do
         get :global, params: { query: 'John', scope: 'clients' }
 
         json_response = JSON.parse(response.body)
-        
+
         expect(json_response['data']['clients']['count']).to be > 0
         expect(json_response['data']['applications']['count']).to eq(0)
         expect(json_response['data']['quotes']['count']).to eq(0)
@@ -46,7 +46,7 @@ RSpec.describe Api::V1::SearchController, type: :controller do
         get :global, params: { query: 'motor insurance' }
 
         json_response = JSON.parse(response.body)
-        
+
         expect(json_response['data']['query']).to eq('motor insurance')
         expect(json_response['data']['scope']).to eq('all')
         expect(json_response['data']['search_time']).to be_a(Float)
@@ -56,7 +56,7 @@ RSpec.describe Api::V1::SearchController, type: :controller do
         get :global, params: { query: 'John', page: 1, per_page: 5 }
 
         json_response = JSON.parse(response.body)
-        
+
         expect(json_response['data']).to have_key('pagination')
         pagination = json_response['data']['pagination']
         expect(pagination['current_page']).to eq(1)
@@ -82,7 +82,7 @@ RSpec.describe Api::V1::SearchController, type: :controller do
 
         expect(response).to have_http_status(:ok)
         json_response = JSON.parse(response.body)
-        
+
         expect(json_response['data']['total_count']).to eq(0)
       end
     end
@@ -93,7 +93,7 @@ RSpec.describe Api::V1::SearchController, type: :controller do
 
         expect(response).to have_http_status(:bad_request)
         json_response = JSON.parse(response.body)
-        
+
         expect(json_response['success']).to be false
         expect(json_response['error']['message']).to include('Invalid scope')
       end
@@ -134,10 +134,10 @@ RSpec.describe Api::V1::SearchController, type: :controller do
 
       expect(response).to have_http_status(:ok)
       json_response = JSON.parse(response.body)
-      
+
       expect(json_response['success']).to be true
       expect(json_response['data']['suggestions']).to be_an(Array)
-      
+
       if json_response['data']['suggestions'].any?
         suggestion = json_response['data']['suggestions'].first
         expect(suggestion).to have_key('type')
@@ -173,10 +173,10 @@ RSpec.describe Api::V1::SearchController, type: :controller do
 
       expect(response).to have_http_status(:ok)
       json_response = JSON.parse(response.body)
-      
+
       expect(json_response['success']).to be true
       expect(json_response['data']['filters']).to have_key('applications')
-      
+
       app_filters = json_response['data']['filters']['applications']
       expect(app_filters).to have_key('statuses')
       expect(app_filters['statuses']).to be_an(Array)
@@ -187,7 +187,7 @@ RSpec.describe Api::V1::SearchController, type: :controller do
 
       json_response = JSON.parse(response.body)
       app_statuses = json_response['data']['filters']['applications']['statuses']
-      
+
       if app_statuses.any?
         status_filter = app_statuses.first
         expect(status_filter).to have_key('value')
@@ -209,11 +209,11 @@ RSpec.describe Api::V1::SearchController, type: :controller do
 
       expect(response).to have_http_status(:ok)
       json_response = JSON.parse(response.body)
-      
+
       expect(json_response['success']).to be true
       expect(json_response['data']['recent_searches']).to be_an(Array)
       expect(json_response['data']['recent_searches'].size).to eq(2)
-      
+
       search = json_response['data']['recent_searches'].first
       expect(search).to have_key('query')
       expect(search).to have_key('results_count')
@@ -225,7 +225,7 @@ RSpec.describe Api::V1::SearchController, type: :controller do
 
       json_response = JSON.parse(response.body)
       searches = json_response['data']['recent_searches']
-      
+
       # Assuming motor insurance was created after fire policy
       expect(searches.first['query']).to eq('motor insurance')
     end
@@ -233,7 +233,7 @@ RSpec.describe Api::V1::SearchController, type: :controller do
     it 'limits history to recent searches' do
       # Create many old searches
       create_list(:search_history, 20, user: user, created_at: 1.week.ago)
-      
+
       get :history
 
       json_response = JSON.parse(response.body)
@@ -253,7 +253,7 @@ RSpec.describe Api::V1::SearchController, type: :controller do
 
         expect(response).to have_http_status(:ok)
         json_response = JSON.parse(response.body)
-        
+
         expect(json_response['success']).to be true
         expect(json_response['data']['analytics']).to have_key('total_searches')
         expect(json_response['data']['analytics']).to have_key('unique_users')
@@ -265,7 +265,7 @@ RSpec.describe Api::V1::SearchController, type: :controller do
 
         expect(response).to have_http_status(:ok)
         json_response = JSON.parse(response.body)
-        
+
         expect(json_response['data']['period']).to eq('30d')
       end
     end
@@ -315,7 +315,7 @@ RSpec.describe Api::V1::SearchController, type: :controller do
 
         expect(response).to have_http_status(:internal_server_error)
         json_response = JSON.parse(response.body)
-        
+
         expect(json_response['success']).to be false
         expect(json_response['error']['message']).to include('Search temporarily unavailable')
       end
@@ -327,7 +327,7 @@ RSpec.describe Api::V1::SearchController, type: :controller do
 
         expect(response).to have_http_status(:bad_request)
         json_response = JSON.parse(response.body)
-        
+
         expect(json_response['success']).to be false
         expect(json_response['error']['message']).to include('Query parameter is required')
       end
@@ -351,7 +351,7 @@ RSpec.describe Api::V1::SearchController, type: :controller do
       start_time = Time.current
       get :global, params: { query: 'test', scope: 'all' }
       end_time = Time.current
-      
+
       expect(end_time - start_time).to be < 3.0 # Should complete within 3 seconds
       expect(response).to have_http_status(:ok)
     end
@@ -368,11 +368,11 @@ RSpec.describe Api::V1::SearchController, type: :controller do
   describe 'caching' do
     it 'caches identical search requests' do
       expect(GlobalSearchService).to receive(:new).once.and_call_original
-      
+
       # Make the same request twice
       get :global, params: { query: 'motor insurance', scope: 'all' }
       get :global, params: { query: 'motor insurance', scope: 'all' }
-      
+
       expect(response).to have_http_status(:ok)
     end
 

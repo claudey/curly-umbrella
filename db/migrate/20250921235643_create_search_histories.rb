@@ -12,8 +12,8 @@ class CreateSearchHistories < ActiveRecord::Migration[8.0]
 
     # Add indexes for performance
     add_index :search_histories, :query
-    add_index :search_histories, [:user_id, :created_at]
-    add_index :search_histories, [:query, :created_at]
+    add_index :search_histories, [ :user_id, :created_at ]
+    add_index :search_histories, [ :query, :created_at ]
     add_index :search_histories, :results_count
     add_index :search_histories, :created_at
   end

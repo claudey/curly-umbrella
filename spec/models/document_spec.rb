@@ -32,9 +32,9 @@ RSpec.describe Document, type: :model do
     end
 
     it 'validates expires_at is in the future' do
-      document = build(:document, 
-        organization: organization, 
-        user: user, 
+      document = build(:document,
+        organization: organization,
+        user: user,
         documentable: documentable,
         expires_at: 1.day.ago
       )
@@ -192,7 +192,7 @@ RSpec.describe Document, type: :model do
     it 'archives document with reason' do
       reason = "No longer needed"
       expect(document.archive!(admin, reason)).to be true
-      
+
       document.reload
       expect(document.is_archived?).to be true
       expect(document.archived_by).to eq(admin)
@@ -207,9 +207,9 @@ RSpec.describe Document, type: :model do
 
     it 'restores archived document' do
       document.update!(is_archived: true, archived_by: admin, archived_at: Time.current)
-      
+
       expect(document.restore!(admin)).to be true
-      
+
       document.reload
       expect(document.is_archived?).to be false
       expect(document.archived_by).to be_nil
@@ -250,12 +250,12 @@ RSpec.describe Document, type: :model do
 
     it 'creates new version of document' do
       new_file = File.open(Rails.root.join('test-documents/fire-insurance/building_permit.pdf'))
-      
+
       new_document = document.create_new_version!(new_file, user, description: 'Updated version')
-      
+
       expect(new_document.version).to eq(document.version + 1)
       expect(new_document.is_current?).to be true
-      
+
       document.reload
       expect(document.is_current?).to be false
     end
@@ -263,7 +263,7 @@ RSpec.describe Document, type: :model do
     it 'returns version history' do
       new_file = File.open(Rails.root.join('test-documents/fire-insurance/building_permit.pdf'))
       new_document = document.create_new_version!(new_file, user)
-      
+
       history = new_document.version_history
       expect(history.count).to eq(2)
       expect(history.first).to eq(new_document)
@@ -273,7 +273,7 @@ RSpec.describe Document, type: :model do
     it 'finds previous and next versions' do
       new_file = File.open(Rails.root.join('test-documents/fire-insurance/building_permit.pdf'))
       new_document = document.create_new_version!(new_file, user)
-      
+
       expect(new_document.previous_version).to eq(document)
       expect(document.next_version).to eq(new_document)
     end
@@ -283,7 +283,7 @@ RSpec.describe Document, type: :model do
     it 'sets file metadata on save' do
       document = build(:document, organization: organization, user: user, documentable: documentable)
       document.save!
-      
+
       expect(document.file_size).to be_present
       expect(document.content_type).to be_present
       expect(document.checksum).to be_present
@@ -292,7 +292,7 @@ RSpec.describe Document, type: :model do
     it 'ensures single current version' do
       document1 = create(:document, organization: organization, user: user, documentable: documentable, name: 'Test', is_current: true)
       document2 = create(:document, organization: organization, user: user, documentable: documentable, name: 'Test', is_current: true)
-      
+
       document1.reload
       expect(document1.is_current?).to be false
       expect(document2.is_current?).to be true

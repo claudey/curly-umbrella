@@ -3,12 +3,12 @@ class SearchHistory < ApplicationRecord
 
   validates :query, presence: true, length: { maximum: 500 }
   validates :results_count, presence: true, numericality: { greater_than_or_equal_to: 0 }
-  
+
   validate :no_sensitive_information
 
   scope :recent, -> { order(created_at: :desc) }
   scope :for_user, ->(user) { where(user: user) }
-  scope :successful, -> { where('results_count > 0') }
+  scope :successful, -> { where("results_count > 0") }
 
   before_save :normalize_query
 
@@ -28,20 +28,20 @@ class SearchHistory < ApplicationRecord
 
   def self.popular_queries(limit = 10)
     group(:query)
-      .order('count_query DESC')
+      .order("count_query DESC")
       .limit(limit)
       .count(:query)
       .map { |query, count| { query: query, count: count } }
   end
 
   def self.cleanup_old_searches(days_old = 90)
-    where('created_at < ?', days_old.days.ago).delete_all
+    where("created_at < ?", days_old.days.ago).delete_all
   end
 
   def self.trending_searches(since = 1.day.ago)
-    where('created_at >= ?', since)
+    where("created_at >= ?", since)
       .group(:query)
-      .order('count_query DESC')
+      .order("count_query DESC")
       .limit(10)
       .count(:query)
       .map { |query, count| { query: query, count: count } }
@@ -50,7 +50,7 @@ class SearchHistory < ApplicationRecord
   def self.search_analytics(start_date, end_date)
     searches = where(created_at: start_date..end_date)
     successful_searches = searches.successful
-    
+
     {
       total_searches: searches.count,
       successful_searches: successful_searches.count,
@@ -64,19 +64,19 @@ class SearchHistory < ApplicationRecord
 
   def normalize_query
     return unless query.present?
-    
+
     # Normalize whitespace and remove special characters
     self.query = query.strip
-                     .squeeze(' ')
+                     .squeeze(" ")
                      .downcase
-                     .gsub(/[^\w\s\-_]/, ' ')
-                     .squeeze(' ')
+                     .gsub(/[^\w\s\-_]/, " ")
+                     .squeeze(" ")
                      .strip
   end
 
   def no_sensitive_information
     return unless query.present?
-    
+
     sensitive_patterns = [
       /\b[\w\.-]+@[\w\.-]+\.\w+\b/,  # Email addresses
       /\b\d{4}[\s\-]?\d{4}[\s\-]?\d{4}[\s\-]?\d{4}\b/,  # Credit card numbers
@@ -85,9 +85,9 @@ class SearchHistory < ApplicationRecord
       /\bapi[_\s]?key\b/i,
       /\btoken\b/i
     ]
-    
+
     if sensitive_patterns.any? { |pattern| query.match?(pattern) }
-      errors.add(:query, 'contains sensitive information')
+      errors.add(:query, "contains sensitive information")
     end
   end
 end
