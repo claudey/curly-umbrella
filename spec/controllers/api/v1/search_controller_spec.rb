@@ -6,14 +6,16 @@ RSpec.describe Api::V1::SearchController, type: :controller do
   let(:api_key) { create(:api_key, user: user, organization: organization) }
 
   before do
-    request.headers['Authorization'] = "ApiKey #{api_key.key}"
+    request.headers['Authorization'] = "Bearer #{api_key.key}"
+    allow(ApiAuthenticationService).to receive(:authenticate_request!).and_return(api_key)
+    allow(controller).to receive(:current_api_key).and_return(api_key)
     allow(controller).to receive(:current_api_user).and_return(user)
     allow(controller).to receive(:current_organization).and_return(organization)
   end
 
   describe 'GET #global' do
     let!(:client) { create(:client, organization: organization, first_name: 'John', last_name: 'Doe') }
-    let!(:application) { create(:insurance_application, organization: organization, client: client, application_type: 'motor') }
+    let!(:application) { create(:insurance_application, organization: organization, client: client, insurance_type: 'motor') }
 
     context 'with valid search query' do
       it 'returns search results successfully' do

@@ -40,7 +40,8 @@
       "Bash(cat:*)",
       "Bash(RAILS_ENV=development bundle exec rails server -p 3000)",
       "Bash(git diff:*)",
-      "Bash(rubocop:*)"
+      "Bash(rubocop:*)",
+      "Bash(RUN_SLOW_TESTS=true bundle exec rspec spec/features/user_authentication_spec.rb -f documentation)"
     ],
     "deny": [],
     "ask": []

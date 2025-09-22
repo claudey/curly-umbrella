@@ -1,6 +1,16 @@
 # frozen_string_literal: true
 
 class ApiRateLimitService
+  class RateLimitError < StandardError
+    attr_reader :retry_after, :limit, :usage
+
+    def initialize(message, retry_after: nil, limit: nil, usage: nil)
+      super(message)
+      @retry_after = retry_after
+      @limit = limit
+      @usage = usage
+    end
+  end
   attr_reader :api_key, :rate_limit, :window_duration, :current_usage, :reset_time
 
   # Rate limit configurations by API key tier
@@ -13,8 +23,8 @@ class ApiRateLimitService
 
   def initialize(api_key)
     @api_key = api_key
-    @tier = api_key.tier || "basic"
-    @rate_limit = RATE_LIMITS[@tier][:requests]
+    @tier = determine_tier_from_rate_limit(api_key.rate_limit)
+    @rate_limit = api_key.rate_limit || RATE_LIMITS[@tier][:requests]
     @window_duration = RATE_LIMITS[@tier][:window]
     @current_usage = get_current_usage
     @reset_time = get_reset_time
@@ -23,6 +33,18 @@ class ApiRateLimitService
   # Check if request is allowed under rate limit
   def allow_request?
     current_usage < rate_limit
+  end
+
+  # Check rate limit and raise error if exceeded
+  def check_rate_limit!
+    return true if allow_request?
+
+    raise RateLimitError.new(
+      "Rate limit exceeded for API key tier '#{@tier}'. Limit: #{rate_limit} requests per hour.",
+      retry_after: reset_time.to_i,
+      limit: rate_limit,
+      usage: current_usage
+    )
   end
 
   # Record a new request
@@ -166,6 +188,19 @@ class ApiRateLimitService
   end
 
   private
+
+  def determine_tier_from_rate_limit(limit)
+    case limit
+    when 0..1000
+      "basic"
+    when 1001..5000
+      "standard"
+    when 5001..20000
+      "premium"
+    else
+      "enterprise"
+    end
+  end
 
   def rate_limit_cache_key
     window_start = (Time.current.to_i / window_duration.to_i) * window_duration.to_i
