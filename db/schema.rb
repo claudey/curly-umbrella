@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_21_002834) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_21_235643) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -632,6 +632,22 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_21_002834) do
     t.index ["system_role"], name: "index_roles_on_system_role"
   end
 
+  create_table "search_histories", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "query", null: false
+    t.integer "results_count", default: 0, null: false
+    t.decimal "search_time", precision: 8, scale: 3
+    t.json "metadata", default: {}
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_search_histories_on_created_at"
+    t.index ["query", "created_at"], name: "index_search_histories_on_query_and_created_at"
+    t.index ["query"], name: "index_search_histories_on_query"
+    t.index ["results_count"], name: "index_search_histories_on_results_count"
+    t.index ["user_id", "created_at"], name: "index_search_histories_on_user_id_and_created_at"
+    t.index ["user_id"], name: "index_search_histories_on_user_id"
+  end
+
   create_table "security_alerts", force: :cascade do |t|
     t.string "alert_type", null: false
     t.text "message", null: false
@@ -801,6 +817,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_21_002834) do
   add_foreign_key "role_permissions", "roles"
   add_foreign_key "role_permissions", "users", column: "granted_by_id"
   add_foreign_key "roles", "organizations"
+  add_foreign_key "search_histories", "users"
   add_foreign_key "security_alerts", "organizations"
   add_foreign_key "security_alerts", "users", column: "resolved_by_id"
   add_foreign_key "sms_logs", "organizations"

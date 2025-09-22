@@ -1,13 +1,13 @@
 FactoryBot.define do
   factory :feature_flag do
-    key { "MyString" }
-    name { "MyString" }
-    description { "MyText" }
+    sequence(:key) { |n| "test_feature_#{n}" }
+    name { "Test Feature" }
+    description { "A test feature flag" }
     enabled { false }
-    percentage { 1 }
-    user_groups { "MyText" }
-    conditions { "MyText" }
-    metadata { "" }
+    percentage { nil }
+    user_groups { [] }
+    conditions { {} }
+    metadata { {} }
     created_by { nil }
     updated_by { nil }
   end

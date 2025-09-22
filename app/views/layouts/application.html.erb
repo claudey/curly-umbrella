@@ -93,8 +93,14 @@
             <h2 class="text-lg font-semibold mb-4">Navigation</h2>
             <ul class="menu p-0 w-full">
               <li><%= link_to "Dashboard", root_path, class: "flex items-center space-x-3" %></li>
-
+              
               <% if user_signed_in? %>
+                <li>
+                  <%= link_to search_index_path, class: "flex items-center space-x-3" do %>
+                    <%= nav_icon(:magnifying_glass) %>
+                    Global Search
+                  <% end %>
+                </li>
                 <!-- Clients Section -->
                 <li>
                   <details open>

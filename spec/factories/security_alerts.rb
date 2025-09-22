@@ -1,13 +1,15 @@
 FactoryBot.define do
   factory :security_alert do
-    alert_type { "MyString" }
-    message { "MyText" }
-    severity { "MyString" }
-    data { "" }
-    organization { nil }
-    triggered_at { "2025-09-15 23:24:37" }
-    status { "MyString" }
-    resolved_at { "2025-09-15 23:24:37" }
+    association :organization
+    
+    alert_type { "multiple_failed_logins" }
+    message { "Multiple failed login attempts detected" }
+    severity { "medium" }
+    status { "active" }
+    triggered_at { Time.current }
+    data { {} }
+    resolved_at { nil }
     resolved_by { nil }
+    resolution_notes { nil }
   end
 end

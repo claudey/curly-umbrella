@@ -1,0 +1,148 @@
+<% content_for :title, "Global Search" %>
+
+<div class="container mx-auto" data-controller="search" data-search-url-value="<%= search_index_path %>">
+  <!-- Search Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-base-content mb-2">Global Search</h1>
+    <p class="text-base-content/70">Search across clients, applications, quotes, and documents</p>
+  </div>
+
+  <!-- Search Form -->
+  <div class="card bg-base-100 shadow-lg mb-6">
+    <div class="card-body">
+      <div class="form-control">
+        <div class="input-group">
+          <input 
+            type="text" 
+            placeholder="Search anything..." 
+            class="input input-bordered input-lg flex-1" 
+            data-search-target="query"
+            data-action="input->search#onInput keydown->search#onKeydown"
+            value="<%= params[:query] %>"
+          />
+          <button class="btn btn-primary btn-lg" data-action="click->search#performSearch">
+            <%= phosphor_icon(:magnifying_glass, size: 5) %>
+            Search
+          </button>
+        </div>
+      </div>
+      
+      <!-- Search Suggestions -->
+      <div class="dropdown dropdown-open hidden" data-search-target="suggestions">
+        <div class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-full max-h-60 overflow-y-auto">
+          <!-- Suggestions will be populated by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Search Scope and Filters -->
+      <div class="flex flex-wrap gap-4 mt-4">
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Search in:</span>
+          </label>
+          <select class="select select-bordered" data-search-target="scope" data-action="change->search#onScopeChange">
+            <option value="all" <%= 'selected' if params[:scope] == 'all' || params[:scope].blank? %>>All</option>
+            <option value="clients" <%= 'selected' if params[:scope] == 'clients' %>>Clients</option>
+            <option value="applications" <%= 'selected' if params[:scope] == 'applications' %>>Applications</option>
+            <option value="quotes" <%= 'selected' if params[:scope] == 'quotes' %>>Quotes</option>
+            <option value="documents" <%= 'selected' if params[:scope] == 'documents' %>>Documents</option>
+          </select>
+        </div>
+
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Results per page:</span>
+          </label>
+          <select class="select select-bordered" data-search-target="perPage">
+            <option value="25" <%= 'selected' if params[:per_page] == '25' || params[:per_page].blank? %>>25</option>
+            <option value="50" <%= 'selected' if params[:per_page] == '50' %>>50</option>
+            <option value="100" <%= 'selected' if params[:per_page] == '100' %>>100</option>
+          </select>
+        </div>
+
+        <!-- Advanced Filters Toggle -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">&nbsp;</span>
+          </label>
+          <button class="btn btn-outline" data-action="click->search#toggleFilters">
+            <%= phosphor_icon(:funnel, size: 4) %>
+            Filters
+          </button>
+        </div>
+      </div>
+
+      <!-- Advanced Filters Panel -->
+      <div class="collapse collapse-arrow mt-4 hidden" data-search-target="filtersPanel">
+        <input type="checkbox" data-search-target="filtersToggle" />
+        <div class="collapse-title text-lg font-medium">
+          Advanced Filters
+        </div>
+        <div class="collapse-content">
+          <div id="filter-content" data-search-target="filterContent">
+            <!-- Filters will be loaded dynamically based on scope -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search History -->
+  <% if @recent_searches&.any? %>
+    <div class="card bg-base-100 shadow-lg mb-6">
+      <div class="card-body">
+        <h3 class="card-title text-lg">Recent Searches</h3>
+        <div class="flex flex-wrap gap-2">
+          <% @recent_searches.each do |search| %>
+            <button 
+              class="btn btn-sm btn-outline" 
+              data-action="click->search#selectRecentSearch"
+              data-query="<%= search[:query] %>"
+            >
+              "<%= search[:query] %>"
+              <span class="badge badge-neutral badge-sm"><%= search[:results_count] %></span>
+            </button>
+          <% end %>
+        </div>
+        <div class="flex justify-end mt-2">
+          <button class="btn btn-sm btn-ghost text-error" data-action="click->search#clearHistory">
+            Clear History
+          </button>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Loading State -->
+  <div class="hidden" data-search-target="loading">
+    <div class="card bg-base-100 shadow-lg">
+      <div class="card-body text-center">
+        <span class="loading loading-spinner loading-lg"></span>
+        <p class="mt-4">Searching...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search Results -->
+  <div data-search-target="results">
+    <% if @results %>
+      <%= render 'search_results', results: @results %>
+    <% elsif params[:query].present? %>
+      <div class="card bg-base-100 shadow-lg">
+        <div class="card-body text-center">
+          <div class="text-6xl mb-4">🔍</div>
+          <h3 class="text-xl font-semibold mb-2">No results found</h3>
+          <p class="text-base-content/70">Try adjusting your search terms or filters</p>
+        </div>
+      </div>
+    <% else %>
+      <div class="card bg-base-100 shadow-lg">
+        <div class="card-body text-center">
+          <div class="text-6xl mb-4">🔍</div>
+          <h3 class="text-xl font-semibold mb-2">Start searching</h3>
+          <p class="text-base-content/70">Enter a search term above to find clients, applications, quotes, and documents</p>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

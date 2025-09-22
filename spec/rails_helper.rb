@@ -47,7 +47,7 @@ RSpec.configure do |config|
   # config.use_active_record = false
 
   # Include FactoryBot methods
-  # config.include FactoryBot::Syntax::Methods
+  config.include FactoryBot::Syntax::Methods
 
   # Configure database cleaner
   config.before(:suite) do
@@ -70,10 +70,8 @@ RSpec.configure do |config|
   config.before(:each) do
     ActsAsTenant.current_tenant = nil
 
-    # Mock all security services to bypass during testing
-    allow(IpBlockingService).to receive(:new).and_return(double(whitelisted?: true, blocked?: false))
-    allow(RateLimitingService).to receive(:check_request_rate_limit).and_return(true)
-    allow(SecurityMonitoringService).to receive(:monitor_request).and_return(true)
+    # Mock all security services to bypass during testing - skip for now
+    # Security services will be bypassed through controller mocking below
 
     # Allow any instance of ApplicationController to bypass security
     allow_any_instance_of(ApplicationController).to receive(:check_ip_blocking).and_return(true)

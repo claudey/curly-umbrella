@@ -282,6 +282,185 @@ POST /api/v1/quotes/{id}/accept
 POST /api/v1/quotes/{id}/generate_pdf
 ```
 
+## Feature Flags API
+
+The Feature Flags API allows you to manage feature flags for your organization, enabling controlled rollouts and A/B testing.
+
+### List Feature Flags
+```http
+GET /api/v1/feature_flags
+```
+
+**Query Parameters:**
+- `page` - Page number (default: 1)
+- `per_page` - Items per page (default: 50, max: 100)
+- `status` - Filter by status (enabled, disabled)
+- `search` - Search by name or key
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "feature_flags": [
+      {
+        "id": 123,
+        "key": "new_quote_engine",
+        "name": "New Quote Engine",
+        "description": "Enable the new enhanced quote calculation engine",
+        "enabled": true,
+        "percentage": 50,
+        "user_groups": ["beta_users", "premium_clients"],
+        "conditions": {
+          "role": "agent",
+          "created_after": "2024-01-01"
+        },
+        "metadata": {
+          "owner": "engineering",
+          "experiment_id": "exp_001"
+        },
+        "created_at": "2024-01-01T10:00:00Z",
+        "updated_at": "2024-01-01T15:30:00Z",
+        "created_by": {
+          "id": 456,
+          "name": "John Doe",
+          "email": "john@company.com"
+        }
+      }
+    ],
+    "pagination": {
+      "current_page": 1,
+      "per_page": 50,
+      "total_pages": 1,
+      "total_count": 12
+    },
+    "stats": {
+      "enabled": 8,
+      "disabled": 4,
+      "percentage_rollouts": 3,
+      "conditional_flags": 2
+    }
+  }
+}
+```
+
+### Get Feature Flag
+```http
+GET /api/v1/feature_flags/{id}
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "feature_flag": {
+      "id": 123,
+      "key": "new_quote_engine",
+      "name": "New Quote Engine",
+      "description": "Enable the new enhanced quote calculation engine",
+      "enabled": true,
+      "percentage": 50,
+      "user_groups": ["beta_users"],
+      "conditions": {
+        "role": "agent"
+      },
+      "metadata": {
+        "owner": "engineering"
+      },
+      "created_at": "2024-01-01T10:00:00Z",
+      "updated_at": "2024-01-01T15:30:00Z"
+    },
+    "usage_stats": {
+      "total_evaluations": 1500,
+      "enabled_evaluations": 750,
+      "unique_users": 45,
+      "last_evaluation": "2024-01-01T15:25:00Z"
+    }
+  }
+}
+```
+
+### Create Feature Flag
+```http
+POST /api/v1/feature_flags
+```
+
+**Request Body:**
+```json
+{
+  "feature_flag": {
+    "key": "enhanced_dashboard",
+    "name": "Enhanced Dashboard",
+    "description": "New dashboard with advanced analytics",
+    "enabled": false,
+    "percentage": 25,
+    "user_groups": ["beta_users"],
+    "conditions": {
+      "role": "admin",
+      "email_domain": "company.com"
+    },
+    "metadata": {
+      "owner": "product",
+      "experiment_duration": "30d"
+    }
+  }
+}
+```
+
+### Update Feature Flag
+```http
+PUT /api/v1/feature_flags/{id}
+```
+
+### Delete Feature Flag
+```http
+DELETE /api/v1/feature_flags/{id}
+```
+
+### Toggle Feature Flag
+```http
+POST /api/v1/feature_flags/{id}/toggle
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "feature_flag": {
+      "id": 123,
+      "enabled": true,
+      "updated_at": "2024-01-01T16:00:00Z"
+    },
+    "message": "Feature flag enabled successfully"
+  }
+}
+```
+
+### Check Feature Flag Status
+```http
+GET /api/v1/feature_flags/{key}/enabled
+```
+
+**Query Parameters:**
+- `user_id` - User ID to check flag for (optional)
+- `context` - Additional context as JSON (optional)
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "key": "new_quote_engine",
+    "enabled": true,
+    "reason": "percentage_rollout",
+    "percentage": 50,
+    "evaluated_at": "2024-01-01T16:00:00Z"
+  }
+}
+```
+
 ## Webhooks API
 
 ### List Webhooks
@@ -444,13 +623,328 @@ GET /api/v1/analytics/usage
 GET /api/v1/analytics/dashboard
 ```
 
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "dashboard": {
+      "overview": {
+        "total_applications": 1250,
+        "pending_quotes": 45,
+        "active_policies": 890,
+        "total_premium": 2450000.00,
+        "growth_rate": 12.5
+      },
+      "activity_timeline": [
+        {
+          "date": "2024-01-01",
+          "applications_created": 25,
+          "quotes_generated": 20,
+          "policies_issued": 15
+        }
+      ],
+      "endpoint_performance": {
+        "fastest_endpoint": "/api/v1/applications",
+        "slowest_endpoint": "/api/v1/analytics/dashboard",
+        "average_response_time": 235.5
+      },
+      "error_rates": {
+        "total_errors": 125,
+        "error_rate_percentage": 2.1,
+        "most_common_error": "401 Unauthorized"
+      },
+      "user_activity": {
+        "active_users_today": 45,
+        "peak_concurrent_users": 23,
+        "average_session_duration": 1245
+      }
+    },
+    "refresh_interval": 300,
+    "generated_at": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
 ### Performance Analytics
 ```http
 GET /api/v1/analytics/performance
 ```
 
 **Query Parameters:**
-- `time_range` - Time range (24h, 7d, 30d)
+- `time_range` - Time range for analysis (1h, 6h, 24h, 7d, 30d)
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "time_range": "24h",
+    "performance": {
+      "response_times": {
+        "average": 245.5,
+        "p50": 180.0,
+        "p95": 650.0,
+        "p99": 1200.0,
+        "max": 2500.0
+      },
+      "throughput": {
+        "requests_per_second": 12.5,
+        "peak_rps": 45.2,
+        "total_requests": 10800
+      },
+      "error_analysis": {
+        "total_errors": 54,
+        "error_rate": 0.5,
+        "errors_by_type": {
+          "4xx": 42,
+          "5xx": 12
+        },
+        "common_errors": [
+          {
+            "status_code": 401,
+            "count": 25,
+            "endpoint": "/api/v1/applications"
+          }
+        ]
+      },
+      "slow_queries": [
+        {
+          "endpoint": "/api/v1/analytics/dashboard",
+          "average_response_time": 1250.0,
+          "slowest_response": 3200.0,
+          "frequency": 145
+        }
+      ],
+      "resource_usage": {
+        "memory_usage": 65.5,
+        "cpu_usage": 23.8,
+        "database_connections": 12
+      }
+    },
+    "recommendations": [
+      "Consider adding caching for /api/v1/analytics/dashboard",
+      "Optimize database queries for application endpoints",
+      "Review authentication middleware performance"
+    ],
+    "generated_at": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+### Export Analytics
+```http
+GET /api/v1/analytics/export
+```
+
+**Query Parameters:**
+- `format` - Export format (json, csv, xlsx)
+- `period` - Time period (7d, 30d, 90d)
+- `metrics` - Specific metrics to include (comma-separated)
+
+**Example Request:**
+```http
+GET /api/v1/analytics/export?format=csv&period=30d&metrics=usage,performance,errors
+```
+
+**Example Response (JSON format):**
+```json
+{
+  "success": true,
+  "data": {
+    "export_metadata": {
+      "format": "json",
+      "period": "30d",
+      "total_records": 2500,
+      "generated_at": "2024-01-01T12:00:00Z"
+    },
+    "usage_data": [
+      {
+        "date": "2024-01-01",
+        "total_requests": 1500,
+        "unique_users": 45,
+        "response_time_avg": 235.5
+      }
+    ],
+    "performance_data": [
+      {
+        "endpoint": "/api/v1/applications",
+        "avg_response_time": 180.0,
+        "total_requests": 5500,
+        "error_rate": 0.2
+      }
+    ]
+  }
+}
+```
+
+**CSV/XLSX Response:**
+Returns a downloadable file with the requested analytics data.
+
+## Security & Compliance API
+
+### Security Alerts
+
+#### List Security Alerts
+```http
+GET /api/v1/security/alerts
+```
+
+**Query Parameters:**
+- `severity` - Filter by severity (low, medium, high, critical)
+- `status` - Filter by status (active, investigating, resolved, dismissed)
+- `alert_type` - Filter by type (multiple_failed_logins, suspicious_ip_activity, etc.)
+- `page` - Page number (default: 1)
+- `per_page` - Items per page (default: 25, max: 100)
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "alerts": [
+      {
+        "id": 789,
+        "alert_type": "multiple_failed_logins",
+        "severity": "high",
+        "status": "active",
+        "message": "Multiple failed login attempts detected from IP 192.168.1.100",
+        "triggered_at": "2024-01-01T14:30:00Z",
+        "data": {
+          "ip_address": "192.168.1.100",
+          "attempt_count": 15,
+          "user_email": "admin@company.com",
+          "time_window": "5m"
+        },
+        "affected_user": {
+          "id": 123,
+          "email": "admin@company.com",
+          "name": "John Admin"
+        },
+        "resolved_at": null,
+        "resolved_by": null
+      }
+    ],
+    "pagination": {
+      "current_page": 1,
+      "per_page": 25,
+      "total_pages": 3,
+      "total_count": 67
+    },
+    "summary": {
+      "total_active": 15,
+      "critical_unresolved": 3,
+      "resolved_today": 8
+    }
+  }
+}
+```
+
+#### Get Security Alert
+```http
+GET /api/v1/security/alerts/{id}
+```
+
+#### Resolve Security Alert
+```http
+POST /api/v1/security/alerts/{id}/resolve
+```
+
+**Request Body:**
+```json
+{
+  "resolution_notes": "False positive - verified legitimate user activity"
+}
+```
+
+#### Dismiss Security Alert
+```http
+POST /api/v1/security/alerts/{id}/dismiss
+```
+
+**Request Body:**
+```json
+{
+  "reason": "Known behavior pattern"
+}
+```
+
+### Audit Logs
+
+#### List Audit Logs
+```http
+GET /api/v1/audit/logs
+```
+
+**Query Parameters:**
+- `action` - Filter by action type (create, update, delete, etc.)
+- `resource_type` - Filter by resource (Application, Quote, User, etc.)
+- `user_id` - Filter by user ID
+- `date_from` - Start date (ISO 8601)
+- `date_to` - End date (ISO 8601)
+- `page` - Page number
+- `per_page` - Items per page
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "audit_logs": [
+      {
+        "id": 1001,
+        "action": "create",
+        "resource_type": "Application",
+        "resource_id": 456,
+        "user_id": 123,
+        "user_email": "agent@company.com",
+        "changes": {
+          "status": ["draft", "submitted"],
+          "coverage_amount": [null, 50000.00]
+        },
+        "ip_address": "192.168.1.50",
+        "user_agent": "Mozilla/5.0...",
+        "created_at": "2024-01-01T15:00:00Z",
+        "metadata": {
+          "source": "web_app",
+          "session_id": "sess_abc123"
+        }
+      }
+    ],
+    "pagination": {
+      "current_page": 1,
+      "per_page": 50,
+      "total_pages": 10,
+      "total_count": 500
+    }
+  }
+}
+```
+
+### Compliance Reports
+
+#### Generate Compliance Report
+```http
+POST /api/v1/compliance/reports
+```
+
+**Request Body:**
+```json
+{
+  "report_type": "gdpr_data_processing",
+  "date_range": {
+    "start_date": "2024-01-01",
+    "end_date": "2024-01-31"
+  },
+  "include_sections": ["data_access", "user_activity", "data_changes"],
+  "format": "pdf"
+}
+```
+
+#### Download Compliance Report
+```http
+GET /api/v1/compliance/reports/{id}/download
+```
 
 ### Export Analytics
 ```http
