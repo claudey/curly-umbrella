@@ -100,7 +100,7 @@ gem "rotp", "~> 6.3"
 gem "rqrcode", "~> 2.2"
 
 # SMS and communication
-gem "twilio-ruby", "~> 7.3"
+gem "twilio-ruby", "~> 7.8"
 gem "httparty", "~> 0.22"
 
 # Audit logging (using audited instead of paper_trail for Rails 8 compatibility)
