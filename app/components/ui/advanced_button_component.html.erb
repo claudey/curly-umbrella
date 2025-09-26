@@ -1,0 +1,15 @@
+<<%= tag_name %> <%= tag.attributes(button_attributes) %>>
+  <% if show_loading? %>
+    <span class="loading loading-spinner loading-sm mr-2"></span>
+  <% elsif show_left_icon? %>
+    <%= icon(icon_left, size: icon_size, class: "mr-2") %>
+  <% end %>
+
+  <% if content.present? %>
+    <span><%= content %></span>
+  <% end %>
+
+  <% if show_right_icon? %>
+    <%= icon(icon_right, size: icon_size, class: "ml-2") %>
+  <% end %>
+</<%= tag_name %>>

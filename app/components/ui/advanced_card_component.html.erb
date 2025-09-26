@@ -1,0 +1,88 @@
+<div <%= tag.attributes(card_attributes) %>>
+  <% if show_image? %>
+    <figure class="<%= variant == 'image-top' ? '' : 'px-6 pt-6' %>">
+      <% if image.is_a?(String) %>
+        <img src="<%= image %>" alt="Card image" class="rounded-xl <%= 'w-full h-48 object-cover' if variant == 'image-top' %>" />
+      <% else %>
+        <%= image %>
+      <% end %>
+    </figure>
+  <% end %>
+
+  <div class="<%= body_classes %>">
+    <% if show_header? %>
+      <div class="card-header mb-4">
+        <% if collapsible %>
+          <div class="collapse-title p-0">
+        <% end %>
+        
+        <div class="flex items-start justify-between">
+          <div class="flex-1">
+            <% if title.present? %>
+              <h2 class="card-title text-lg font-semibold text-base-content">
+                <%= title %>
+                <% if badge.present? %>
+                  <div class="badge badge-secondary"><%= badge %></div>
+                <% end %>
+              </h2>
+            <% end %>
+            
+            <% if subtitle.present? %>
+              <p class="text-sm text-base-content/70 mt-1"><%= subtitle %></p>
+            <% end %>
+          </div>
+          
+          <% if collapsible %>
+            <button class="btn btn-ghost btn-sm" data-action="click->collapsible-card#toggle">
+              <svg class="w-4 h-4 transition-transform duration-200" data-collapsible-card-target="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7"></path>
+              </svg>
+            </button>
+          <% end %>
+        </div>
+
+        <% if header? %>
+          <div class="mt-3">
+            <%= render header %>
+          </div>
+        <% end %>
+
+        <% if collapsible %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if collapsible %>
+      <div class="collapse-content p-0">
+    <% end %>
+
+    <% if body? %>
+      <div class="card-content">
+        <%= render body %>
+      </div>
+    <% else %>
+      <%= content %>
+    <% end %>
+
+    <% if show_footer? %>
+      <div class="card-footer mt-6">
+        <% if footer? %>
+          <%= render footer %>
+        <% end %>
+        
+        <% if show_actions? %>
+          <div class="card-actions justify-end mt-4 space-x-2">
+            <% actions.each do |action| %>
+              <%= render action %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if collapsible %>
+      </div>
+    <% end %>
+  </div>
+</div>

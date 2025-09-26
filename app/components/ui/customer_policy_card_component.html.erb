@@ -1,0 +1,106 @@
+<div class="<%= card_classes %>">
+  <div class="card-body <%= compact ? 'p-4' : 'p-6' %>">
+    <!-- Header with policy type and status -->
+    <div class="flex items-start justify-between mb-4">
+      <div class="flex-1">
+        <div class="flex items-center gap-3 mb-2">
+          <h3 class="card-title text-lg font-semibold">
+            <%= policy_type_display %> Insurance
+          </h3>
+          <div class="badge badge-<%= status_badge_variant %> badge-sm">
+            <%= policy_status.humanize %>
+          </div>
+        </div>
+        
+        <div class="text-sm text-base-content/70">
+          Policy #<%= policy_number %>
+        </div>
+      </div>
+      
+      <% if show_expiry_warning? %>
+        <div class="tooltip tooltip-left" data-tip="<%= expiry_message %>">
+          <div class="flex items-center gap-1 text-<%= expired? ? 'error' : 'warning' %> text-sm">
+            <%= icon(expiry_icon, size: 16) %>
+            <% if expired? %>
+              <span class="font-medium">Expired</span>
+            <% else %>
+              <span class="font-medium"><%= days_until_expiry %>d</span>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Policy details -->
+    <div class="space-y-3">
+      <div class="grid grid-cols-2 gap-4 text-sm">
+        <div>
+          <div class="text-base-content/60">Effective Date</div>
+          <div class="font-medium"><%= effective_date&.strftime('%b %d, %Y') || 'N/A' %></div>
+        </div>
+        
+        <div>
+          <div class="text-base-content/60">Expiration</div>
+          <div class="font-medium <%= 'text-error' if expired? %><%= 'text-warning' if expiring_soon? %>">
+            <%= expiration_date&.strftime('%b %d, %Y') || 'N/A' %>
+          </div>
+        </div>
+        
+        <div>
+          <div class="text-base-content/60">Premium</div>
+          <div class="font-semibold text-lg text-primary">
+            <%= number_to_currency(premium_amount) %>
+          </div>
+        </div>
+        
+        <div>
+          <div class="text-base-content/60">Payment</div>
+          <div class="font-medium">Monthly</div>
+        </div>
+      </div>
+
+      <!-- Coverage details -->
+      <% if show_coverage_details? %>
+        <div class="bg-base-200 rounded-lg p-3 space-y-1">
+          <div class="text-xs font-medium text-base-content/70 uppercase tracking-wide">Coverage Details</div>
+          <% coverage_details.each do |detail| %>
+            <div class="text-sm text-base-content/80"><%= detail %></div>
+          <% end %>
+        </div>
+      <% end %>
+
+      <!-- Expiry warning -->
+      <% if show_expiry_warning? %>
+        <div class="alert alert-<%= expired? ? 'error' : 'warning' %> py-2">
+          <div class="flex items-center gap-2">
+            <%= icon(expiry_icon, size: 16) %>
+            <span class="text-sm"><%= expiry_message %></span>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Actions -->
+    <% if show_actions %>
+      <div class="card-actions justify-end mt-4 pt-4 border-t border-base-300">
+        <% if actions.any? %>
+          <% actions.each do |action| %>
+            <%= render action %>
+          <% end %>
+        <% else %>
+          <% default_actions.each do |action| %>
+            <%= render Ui::AdvancedButtonComponent.new(
+              variant: action[:variant],
+              size: "sm",
+              href: action[:path],
+              icon_left: action[:icon],
+              class: "btn-sm"
+            ) do %>
+              <%= action[:label] %>
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

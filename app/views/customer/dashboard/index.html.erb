@@ -1,0 +1,193 @@
+<% content_for :portal_title, "Dashboard" %>
+
+<div class="space-y-6">
+  <!-- Welcome section -->
+  <div class="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-base-content">
+          Welcome back, <%= current_user.first_name %>!
+        </h1>
+        <p class="text-base-content/70 mt-1">
+          Here's an overview of your insurance portfolio
+        </p>
+      </div>
+      <div class="hidden md:block">
+        <%= ui_primary_button "New Application", 
+            href: "/customer/applications/new", 
+            icon_left: :plus,
+            size: "lg" %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats overview -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <%= ui_metric_card(
+      title: "Total Policies",
+      value: @policies_count,
+      icon: :document_text,
+      variant: "bordered"
+    ) %>
+    
+    <%= ui_metric_card(
+      title: "Active Policies",
+      value: @active_policies_count,
+      change: "+#{@active_policies_count - @pending_applications_count}",
+      change_type: :positive,
+      icon: :shield_check,
+      variant: "bordered"
+    ) %>
+    
+    <%= ui_metric_card(
+      title: "Pending Applications",
+      value: @pending_applications_count,
+      icon: :clock,
+      variant: "bordered"
+    ) %>
+    
+    <%= ui_metric_card(
+      title: "Documents",
+      value: @documents_count,
+      icon: :folder,
+      variant: "bordered"
+    ) %>
+  </div>
+
+  <!-- Main content grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Recent policies -->
+    <div class="lg:col-span-2">
+      <%= advanced_card(title: "Recent Policies", variant: "bordered") do |card| %>
+        <% card.with_body do %>
+          <% if @recent_policies.any? %>
+            <div class="space-y-4">
+              <% @recent_policies.each do |policy| %>
+                <div class="flex items-center justify-between p-4 border border-base-300 rounded-lg hover:border-primary transition-colors">
+                  <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <%= icon(:document_text, size: 20, class: "text-primary") %>
+                    </div>
+                    <div>
+                      <div class="font-medium text-base-content">
+                        <%= policy.insurance_type.humanize %> Insurance
+                      </div>
+                      <div class="text-sm text-base-content/70">
+                        Policy #<%= policy.application_number %>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <div class="badge badge-<%= policy.status == 'approved' ? 'success' : 'warning' %>">
+                      <%= policy.status.humanize %>
+                    </div>
+                    <%= ui_ghost_button "View", 
+                        href: "/customer/policies/#{policy.id}",
+                        size: "sm" %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <%= ui_empty_state(
+              title: "No policies yet",
+              description: "Start by creating your first insurance application",
+              icon: :document_plus,
+              action: ui_primary_button("Create Application", href: "/customer/applications/new", size: "sm")
+            ) %>
+          <% end %>
+        <% end %>
+        
+        <% card.with_footer do %>
+          <div class="flex justify-end">
+            <%= ui_outline_button "View All", href: "/customer/policies" %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+
+    <!-- Sidebar content -->
+    <div class="space-y-6">
+      <!-- Expiring policies alert -->
+      <% if @expiring_policies.any? %>
+        <%= advanced_card(variant: "bordered", class: "border-warning bg-warning/5") do |card| %>
+          <% card.with_body do %>
+            <div class="flex items-start gap-3">
+              <div class="flex-shrink-0">
+                <%= icon(:exclamation_triangle, size: 24, class: "text-warning") %>
+              </div>
+              <div class="flex-1">
+                <h3 class="font-semibold text-warning">Policies Expiring Soon</h3>
+                <p class="text-sm text-base-content/70 mt-1">
+                  <%= pluralize(@expiring_policies.count, 'policy') %> expiring within 30 days
+                </p>
+                <div class="mt-3 space-y-2">
+                  <% @expiring_policies.each do |policy| %>
+                    <div class="text-xs text-base-content/60">
+                      <%= policy.insurance_type.humanize %> - expires <%= policy.expiration_date&.strftime('%b %d') %>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+          
+          <% card.with_footer do %>
+            <%= ui_warning_button "Review Policies", href: "/customer/policies?status=expiring", size: "sm", block: true %>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <!-- Quick actions -->
+      <%= advanced_card(title: "Quick Actions", variant: "bordered") do |card| %>
+        <% card.with_body do %>
+          <div class="space-y-3">
+            <%= link_to "/customer/applications/new", 
+                class: "flex items-center gap-3 p-3 rounded-lg hover:bg-base-200 transition-colors" do %>
+              <div class="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                <%= icon(:plus, size: 16, class: "text-primary") %>
+              </div>
+              <div>
+                <div class="font-medium text-sm">New Application</div>
+                <div class="text-xs text-base-content/60">Apply for insurance coverage</div>
+              </div>
+            <% end %>
+            
+            <%= link_to "/customer/claims/new", 
+                class: "flex items-center gap-3 p-3 rounded-lg hover:bg-base-200 transition-colors" do %>
+              <div class="w-8 h-8 bg-warning/10 rounded-lg flex items-center justify-center">
+                <%= icon(:exclamation_triangle, size: 16, class: "text-warning") %>
+              </div>
+              <div>
+                <div class="font-medium text-sm">File a Claim</div>
+                <div class="text-xs text-base-content/60">Report an incident</div>
+              </div>
+            <% end %>
+            
+            <%= link_to "/customer/documents", 
+                class: "flex items-center gap-3 p-3 rounded-lg hover:bg-base-200 transition-colors" do %>
+              <div class="w-8 h-8 bg-info/10 rounded-lg flex items-center justify-center">
+                <%= icon(:folder, size: 16, class: "text-info") %>
+              </div>
+              <div>
+                <div class="font-medium text-sm">My Documents</div>
+                <div class="text-xs text-base-content/60">View policy documents</div>
+              </div>
+            <% end %>
+            
+            <%= link_to "/customer/support", 
+                class: "flex items-center gap-3 p-3 rounded-lg hover:bg-base-200 transition-colors" do %>
+              <div class="w-8 h-8 bg-secondary/10 rounded-lg flex items-center justify-center">
+                <%= icon(:chat_bubble_left_right, size: 16, class: "text-secondary") %>
+              </div>
+              <div>
+                <div class="font-medium text-sm">Get Support</div>
+                <div class="text-xs text-base-content/60">Contact our team</div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</div>

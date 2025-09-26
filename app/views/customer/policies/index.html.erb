@@ -1,0 +1,108 @@
+<% content_for :portal_title, "My Policies" %>
+
+<div class="space-y-6">
+  <!-- Header with search and filters -->
+  <div class="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center">
+    <div>
+      <h1 class="text-2xl font-bold text-base-content">My Policies</h1>
+      <p class="text-base-content/70">Manage your insurance policies and coverage</p>
+    </div>
+    
+    <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+      <!-- Search -->
+      <%= form_with url: customer_policies_path, method: :get, local: true, class: "flex-1 lg:w-80" do |f| %>
+        <div class="join w-full">
+          <%= f.search_field :search, 
+              value: params[:search], 
+              placeholder: "Search policies...", 
+              class: "input input-bordered join-item flex-1" %>
+          <%= f.submit "Search", class: "btn btn-primary join-item" %>
+        </div>
+      <% end %>
+      
+      <%= ui_primary_button "New Application", 
+          href: "/customer/applications/new", 
+          icon_left: :plus %>
+    </div>
+  </div>
+
+  <!-- Filter tabs -->
+  <div class="tabs tabs-boxed bg-base-200">
+    <%= link_to customer_policies_path, 
+        class: "tab #{'tab-active' if params[:status].blank?}" do %>
+      All (<%= @all_count %>)
+    <% end %>
+    
+    <%= link_to customer_policies_path(status: 'approved'), 
+        class: "tab #{'tab-active' if params[:status] == 'approved'}" do %>
+      Active (<%= @active_count %>)
+    <% end %>
+    
+    <%= link_to customer_policies_path(status: 'submitted'), 
+        class: "tab #{'tab-active' if params[:status] == 'submitted'}" do %>
+      Pending (<%= @pending_count %>)
+    <% end %>
+    
+    <%= link_to customer_policies_path(status: 'expired'), 
+        class: "tab #{'tab-active' if params[:status] == 'expired'}" do %>
+      Expired (<%= @expired_count %>)
+    <% end %>
+  </div>
+
+  <!-- Policies grid -->
+  <% if @policies.any? %>
+    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      <% @policies.each do |policy| %>
+        <%= customer_policy_card(policy, show_actions: true) %>
+      <% end %>
+    </div>
+
+    <!-- Pagination -->
+    <% if @policies.respond_to?(:total_pages) && @policies.total_pages > 1 %>
+      <div class="flex justify-center">
+        <div class="join">
+          <% if @policies.prev_page %>
+            <%= link_to customer_policies_path(page: @policies.prev_page, **params.except(:page)), 
+                class: "join-item btn" do %>
+              « Previous
+            <% end %>
+          <% end %>
+          
+          <% (1..@policies.total_pages).each do |page| %>
+            <% if page == @policies.current_page %>
+              <span class="join-item btn btn-active"><%= page %></span>
+            <% elsif (page - @policies.current_page).abs <= 2 || page == 1 || page == @policies.total_pages %>
+              <%= link_to customer_policies_path(page: page, **params.except(:page)), 
+                  class: "join-item btn" do %>
+                <%= page %>
+              <% end %>
+            <% elsif (page - @policies.current_page).abs == 3 %>
+              <span class="join-item btn btn-disabled">...</span>
+            <% end %>
+          <% end %>
+          
+          <% if @policies.next_page %>
+            <%= link_to customer_policies_path(page: @policies.next_page, **params.except(:page)), 
+                class: "join-item btn" do %>
+              Next »
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <!-- Empty state -->
+    <div class="text-center py-16">
+      <%= ui_empty_state(
+        title: "No policies found",
+        description: params[:search].present? ? "Try adjusting your search terms" : "Start by creating your first insurance application",
+        icon: :document_magnifying_glass,
+        action: if params[:search].present?
+                  ui_outline_button("Clear Search", href: customer_policies_path)
+                else
+                  ui_primary_button("Create Application", href: "/customer/applications/new", icon_left: :plus)
+                end
+      ) %>
+    </div>
+  <% end %>
+</div>

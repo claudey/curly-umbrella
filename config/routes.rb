@@ -15,6 +15,33 @@ Rails.application.routes.draw do
       get :search_suggestions
     end
   end
+  # Customer portal routes
+  namespace :customer do
+    root 'dashboard#index'
+    get 'dashboard', to: 'dashboard#index'
+    
+    resources :policies, only: [:index, :show] do
+      member do
+        post :renew
+      end
+    end
+    
+    resources :applications, only: [:index, :show, :new, :create]
+    resources :claims, only: [:index, :show, :new, :create]
+    resources :documents, only: [:index, :show]
+    
+    get 'profile', to: 'profile#show'
+    patch 'profile', to: 'profile#update'
+    get 'profile/edit', to: 'profile#edit'
+    
+    get 'support', to: 'support#index'
+    post 'support', to: 'support#create'
+    
+    # API endpoints for portal
+    get 'notifications', to: 'notifications#index'
+    patch 'notifications/:id/mark_read', to: 'notifications#mark_read'
+  end
+
   namespace :insurance_company do
     get "quotes/index"
     get "quotes/show"

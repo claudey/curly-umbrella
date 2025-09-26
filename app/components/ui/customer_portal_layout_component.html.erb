@@ -1,0 +1,157 @@
+<div class="<%= layout_classes %>" data-theme="<%= theme %>">
+  <div class="<%= drawer_classes %>" data-controller="customer-portal" data-customer-portal-mobile-value="<%= mobile_friendly %>">
+    <!-- Mobile drawer toggle -->
+    <input id="customer-portal-drawer" type="checkbox" class="drawer-toggle" />
+    
+    <!-- Page content -->
+    <div class="<%= main_classes %>">
+      <!-- Navigation bar -->
+      <nav class="<%= navbar_classes %>">
+        <div class="flex-none">
+          <% if mobile_friendly %>
+            <label for="customer-portal-drawer" class="btn btn-square btn-ghost lg:hidden">
+              <%= icon(:bars_3, size: 24) %>
+            </label>
+          <% end %>
+        </div>
+        
+        <div class="flex-1 px-4">
+          <h1 class="text-xl font-bold text-base-content"><%= title %></h1>
+        </div>
+        
+        <div class="flex-none">
+          <% if user.present? %>
+            <!-- User menu dropdown -->
+            <div class="dropdown dropdown-end">
+              <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
+                <div class="w-8 h-8 rounded-full bg-primary text-primary-content flex items-center justify-center">
+                  <% if user.first_name.present? %>
+                    <%= user.first_name.first %>
+                  <% else %>
+                    <%= icon(:user, size: 16) %>
+                  <% end %>
+                </div>
+              </div>
+              
+              <ul tabindex="0" class="menu dropdown-content z-30 p-2 shadow-lg bg-base-100 rounded-box w-52 border border-base-300">
+                <li class="menu-title">
+                  <span><%= user.first_name %> <%= user.last_name %></span>
+                </li>
+                <li><%= link_to customer_profile_path, class: "flex items-center gap-2" do %>
+                  <%= icon(:user, size: 16) %>
+                  <span>Profile</span>
+                <% end %></li>
+                <li><%= link_to customer_support_path, class: "flex items-center gap-2" do %>
+                  <%= icon(:question_mark_circle, size: 16) %>
+                  <span>Help & Support</span>
+                <% end %></li>
+                <div class="divider my-1"></div>
+                <li><%= link_to destroy_user_session_path, method: :delete, class: "flex items-center gap-2 text-error" do %>
+                  <%= icon(:arrow_right_on_rectangle, size: 16) %>
+                  <span>Sign Out</span>
+                <% end %></li>
+              </ul>
+            </div>
+          <% else %>
+            <!-- Sign in button for unauthenticated users -->
+            <%= link_to "Sign In", new_user_session_path, class: "btn btn-primary btn-sm" %>
+          <% end %>
+        </div>
+      </nav>
+
+      <!-- Breadcrumbs -->
+      <% if show_breadcrumbs && breadcrumbs.length > 1 %>
+        <div class="bg-base-200 border-b border-base-300 px-6 py-3">
+          <div class="breadcrumbs text-sm">
+            <ul>
+              <% breadcrumbs.each do |crumb| %>
+                <li>
+                  <% if crumb[:current] %>
+                    <span class="text-base-content/70"><%= crumb[:label] %></span>
+                  <% else %>
+                    <%= link_to crumb[:label], crumb[:path], class: "link link-hover" %>
+                  <% end %>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        </div>
+      <% end %>
+
+      <!-- Header section -->
+      <% if show_header? && header? %>
+        <div class="bg-base-200 border-b border-base-300">
+          <%= render header %>
+        </div>
+      <% end %>
+
+      <!-- Main content area -->
+      <main class="<%= content_classes %>">
+        <% if main_content? %>
+          <%= render main_content %>
+        <% else %>
+          <%= content %>
+        <% end %>
+      </main>
+
+      <!-- Footer -->
+      <% if show_footer? %>
+        <footer class="bg-base-300 border-t border-base-300 p-6">
+          <% if footer? %>
+            <%= render footer %>
+          <% else %>
+            <div class="text-center text-sm text-base-content/60">
+              © <%= Date.current.year %> BrokerSync. All rights reserved.
+            </div>
+          <% end %>
+        </footer>
+      <% end %>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="<%= sidebar_classes %>">
+      <label for="customer-portal-drawer" class="drawer-overlay"></label>
+      
+      <aside class="<%= sidebar_content_classes %>">
+        <!-- Portal branding -->
+        <div class="mb-8">
+          <div class="flex items-center gap-3 px-4 py-2">
+            <div class="w-8 h-8 rounded-lg bg-primary text-primary-content flex items-center justify-center">
+              <%= icon(:building_office, size: 20) %>
+            </div>
+            <div>
+              <div class="font-bold text-sm">Customer Portal</div>
+              <div class="text-xs text-base-content/60">BrokerSync</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation menu -->
+        <% if sidebar? %>
+          <%= render sidebar %>
+        <% else %>
+          <ul class="space-y-1">
+            <% navigation_items.each do |item| %>
+              <li>
+                <%= link_to item[:path], 
+                    class: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors #{item[:active] ? 'bg-primary text-primary-content' : 'hover:bg-base-300'}" do %>
+                  <%= icon(item[:icon], size: 20) %>
+                  <span class="font-medium"><%= item[:label] %></span>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        <% end %>
+
+        <!-- Sidebar footer -->
+        <div class="mt-auto pt-4 border-t border-base-300">
+          <div class="px-4 py-2">
+            <div class="text-xs text-base-content/60 text-center">
+              Need help? <%= link_to "Contact Support", customer_support_path, class: "link link-primary" %>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>

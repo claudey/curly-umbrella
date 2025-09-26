@@ -1,0 +1,63 @@
+<div class="<%= wrapper_classes %>">
+  <% if has_label? && !floating_label %>
+    <label class="label" for="<%= field_id %>">
+      <span class="label-text">
+        <%= label %>
+        <% if required %>
+          <span class="text-error">*</span>
+        <% end %>
+      </span>
+    </label>
+  <% end %>
+
+  <div class="relative">
+    <% if has_prefix? || has_suffix? || has_icons? %>
+      <div class="<%= input_group_classes %>">
+        <% if has_prefix? %>
+          <span class="input-group-text"><%= prefix %></span>
+        <% end %>
+
+        <% if icon_left %>
+          <span class="input-group-text">
+            <%= icon(icon_left, size: icon_size) %>
+          </span>
+        <% end %>
+
+        <input <%= tag.attributes(input_attributes.merge(id: field_id)) %> />
+
+        <% if icon_right %>
+          <span class="input-group-text">
+            <%= icon(icon_right, size: icon_size) %>
+          </span>
+        <% end %>
+
+        <% if has_suffix? %>
+          <span class="input-group-text"><%= suffix %></span>
+        <% end %>
+      </div>
+    <% else %>
+      <input <%= tag.attributes(input_attributes.merge(id: field_id)) %> />
+    <% end %>
+
+    <% if floating_label && has_label? %>
+      <label for="<%= field_id %>" class="<%= label_classes %>">
+        <%= label %>
+        <% if required %>
+          <span class="text-error">*</span>
+        <% end %>
+      </label>
+    <% end %>
+  </div>
+
+  <% if has_hint? || has_error? %>
+    <label class="label">
+      <span class="label-text-alt">
+        <% if has_error? %>
+          <span class="text-error"><%= error %></span>
+        <% elsif has_hint? %>
+          <span class="text-base-content/60"><%= hint %></span>
+        <% end %>
+      </span>
+    </label>
+  <% end %>
+</div>

@@ -43,6 +43,12 @@ class User < ApplicationRecord
     full_name.presence || email
   end
 
+  def can_access_customer_portal?
+    # For now, allow all authenticated users to access customer portal
+    # In a real implementation, you might want to restrict this based on role or other criteria
+    true
+  end
+
   # Notification preferences helper
   def notification_preferences
     super || build_notification_preference
