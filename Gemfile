@@ -85,7 +85,7 @@ gem "acts_as_tenant", "~> 1.0"
 gem "devise", "~> 4.9"
 gem "discard", "~> 1.3"
 gem "phosphor_icons", "~> 0.3"
-gem "view_component", "~> 3.0"
+gem "view_component", "~> 4.0"
 
 # PDF generation
 gem "wicked_pdf", "~> 2.8"
