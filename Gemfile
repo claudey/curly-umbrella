@@ -113,7 +113,7 @@ gem "kaminari", "~> 1.2"
 gem "redis", "~> 5.0"
 
 # Application Performance Monitoring
-gem "newrelic_rpm", "~> 9.19"
+gem "newrelic_rpm", "~> 9.21"
 
 # API Development
 gem "jwt", "~> 2.9"
