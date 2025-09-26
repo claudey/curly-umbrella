@@ -76,7 +76,7 @@ end
 
 gem "tailwindcss-rails", "~> 4.3"
 
-gem "lexxy", "~> 0.1.6.beta"
+gem "lexxy", "~> 0.1.8.beta"
 
 gem "aws-sdk-s3", "~> 1.199"
 
