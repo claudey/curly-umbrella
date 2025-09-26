@@ -179,3 +179,4 @@ db/*.sqlite3-*
 # Ignore PostgreSQL dumps
 *.dump
 *.sql
+config/credentials/production.yml.enc
