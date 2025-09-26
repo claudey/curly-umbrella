@@ -92,7 +92,7 @@ gem "wicked_pdf", "~> 2.8"
 gem "wkhtmltopdf-binary", "~> 0.12"
 
 # Email delivery
-gem "brevo", "~> 2.0"
+gem "brevo", "~> 4.0"
 gem "enum_help", "~> 0.0.17"
 
 # Multi-factor authentication
