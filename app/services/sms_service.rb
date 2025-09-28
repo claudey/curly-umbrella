@@ -120,8 +120,8 @@ end
 
 # Configure SMS service
 SmsService.configure do |config|
-  config.account_sid = Rails.application.credentials.dig(:twilio, :account_sid)
-  config.auth_token = Rails.application.credentials.dig(:twilio, :auth_token)
-  config.from_number = Rails.application.credentials.dig(:twilio, :from_number)
-  config.enabled = Rails.env.production? || Rails.application.credentials.dig(:twilio, :enabled) == true
+  config.account_sid = ENV['TWILIO_ACCOUNT_SID']
+  config.auth_token = ENV['TWILIO_AUTH_TOKEN']
+  config.from_number = ENV['TWILIO_FROM_NUMBER']
+  config.enabled = Rails.env.production? || ENV['TWILIO_ENABLED'] == 'true'
 end

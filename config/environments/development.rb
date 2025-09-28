@@ -35,8 +35,8 @@ Rails.application.configure do
   config.action_mailer.raise_delivery_errors = true
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
-    user_name: Rails.application.credentials.dig(:brevo, :user_name),
-    password: Rails.application.credentials.dig(:brevo, :password),
+    user_name: ENV['BREVO_USER_NAME'],
+    password: ENV['BREVO_PASSWORD'],
     address: "smtp-relay.sendinblue.com",
     port: 587,
     authentication: :plain,

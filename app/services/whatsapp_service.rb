@@ -222,9 +222,9 @@ end
 
 # Configure WhatsApp service
 WhatsappService.configure do |config|
-  config.access_token = Rails.application.credentials.dig(:whatsapp, :access_token)
-  config.phone_number_id = Rails.application.credentials.dig(:whatsapp, :phone_number_id)
-  config.business_account_id = Rails.application.credentials.dig(:whatsapp, :business_account_id)
-  config.webhook_verify_token = Rails.application.credentials.dig(:whatsapp, :webhook_verify_token)
-  config.enabled = Rails.env.production? || Rails.application.credentials.dig(:whatsapp, :enabled) == true
+  config.access_token = ENV['WHATSAPP_ACCESS_TOKEN']
+  config.phone_number_id = ENV['WHATSAPP_PHONE_NUMBER_ID']
+  config.business_account_id = ENV['WHATSAPP_BUSINESS_ACCOUNT_ID']
+  config.webhook_verify_token = ENV['WHATSAPP_WEBHOOK_VERIFY_TOKEN']
+  config.enabled = Rails.env.production? || ENV['WHATSAPP_ENABLED'] == 'true'
 end

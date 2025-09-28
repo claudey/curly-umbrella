@@ -189,15 +189,12 @@ module Encryptable
     # This would integrate with your key management system
     case key_name
     when :pii_encryption_key
-      Rails.application.credentials.dig(:encryption, :pii_key) ||
       ENV["PII_ENCRYPTION_KEY"] ||
       Rails.application.config.active_record.encryption.primary_key
     when :auth_encryption_key
-      Rails.application.credentials.dig(:encryption, :auth_key) ||
       ENV["AUTH_ENCRYPTION_KEY"] ||
       Rails.application.config.active_record.encryption.primary_key
     when :financial_encryption_key
-      Rails.application.credentials.dig(:encryption, :financial_key) ||
       ENV["FINANCIAL_ENCRYPTION_KEY"] ||
       Rails.application.config.active_record.encryption.primary_key
     else
