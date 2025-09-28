@@ -3,16 +3,13 @@
 # Configure Active Record Encryption
 Rails.application.configure do
   # Primary encryption configuration
-  config.active_record.encryption.primary_key = Rails.application.credentials.encryption_primary_key ||
-                                                ENV["ENCRYPTION_PRIMARY_KEY"] ||
+  config.active_record.encryption.primary_key = ENV["ENCRYPTION_PRIMARY_KEY"] ||
                                                 SecureRandom.hex(32)
 
-  config.active_record.encryption.deterministic_key = Rails.application.credentials.encryption_deterministic_key ||
-                                                      ENV["ENCRYPTION_DETERMINISTIC_KEY"] ||
+  config.active_record.encryption.deterministic_key = ENV["ENCRYPTION_DETERMINISTIC_KEY"] ||
                                                       SecureRandom.hex(32)
 
-  config.active_record.encryption.key_derivation_salt = Rails.application.credentials.encryption_key_derivation_salt ||
-                                                        ENV["ENCRYPTION_KEY_DERIVATION_SALT"] ||
+  config.active_record.encryption.key_derivation_salt = ENV["ENCRYPTION_KEY_DERIVATION_SALT"] ||
                                                         SecureRandom.hex(32)
 
   # Configure encryption behavior

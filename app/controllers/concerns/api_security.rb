@@ -351,7 +351,6 @@ module ApiSecurity
   end
 
   def jwt_secret
-    Rails.application.credentials.jwt_secret ||
     ENV["JWT_SECRET"] ||
     Rails.application.secret_key_base
   end

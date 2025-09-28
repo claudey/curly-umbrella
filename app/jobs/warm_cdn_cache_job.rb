@@ -223,7 +223,7 @@ class WarmCdnCacheJob < ApplicationJob
   end
 
   def cloudflare_configured?
-    Rails.application.credentials.cloudflare&.api_token.present? &&
-      Rails.application.credentials.cloudflare&.zone_id.present?
+    ENV['CLOUDFLARE_API_TOKEN'].present? &&
+      ENV['CLOUDFLARE_ZONE_ID'].present?
   end
 end

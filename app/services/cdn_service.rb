@@ -36,9 +36,9 @@ class CdnService
   }.freeze
 
   def initialize
-    @api_token = Rails.application.credentials.cloudflare&.api_token
-    @zone_id = Rails.application.credentials.cloudflare&.zone_id
-    @account_id = Rails.application.credentials.cloudflare&.account_id
+    @api_token = ENV['CLOUDFLARE_API_TOKEN']
+    @zone_id = ENV['CLOUDFLARE_ZONE_ID']
+    @account_id = ENV['CLOUDFLARE_ACCOUNT_ID']
     @enabled = Rails.env.production? && cloudflare_configured?
     @base_url = Rails.application.config.cdn_base_url
     @zones = load_cloudflare_zones
@@ -817,7 +817,7 @@ end
   end
 
   def cdn_namespace
-    Rails.application.credentials.cloudflare&.kv_namespace_id || "default"
+    ENV['CLOUDFLARE_KV_NAMESPACE_ID'] || "default"
   end
 
   def estimate_cloudflare_cost(bandwidth_bytes, requests)

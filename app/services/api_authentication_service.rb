@@ -6,7 +6,7 @@ class ApiAuthenticationService
   class RateLimitError < StandardError; end
 
   # JWT configuration
-  JWT_SECRET = Rails.application.credentials.jwt_secret_key || ENV["JWT_SECRET_KEY"] || Rails.application.secret_key_base
+  JWT_SECRET = ENV["JWT_SECRET_KEY"] || Rails.application.secret_key_base
   JWT_ALGORITHM = "HS256"
   JWT_EXPIRATION = 24.hours
 
