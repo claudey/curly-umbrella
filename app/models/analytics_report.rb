@@ -5,15 +5,6 @@ class AnalyticsReport < ApplicationRecord
   acts_as_tenant :organization
   audited
 
-  belongs_to :organization
-  belongs_to :created_by, class_name: "User"
-  belongs_to :scheduled_by, class_name: "User", optional: true
-
-  validates :name, presence: true, length: { maximum: 255 }
-  validates :report_type, presence: true, inclusion: { in: REPORT_TYPES }
-  validates :status, presence: true, inclusion: { in: STATUSES }
-  validates :frequency, inclusion: { in: FREQUENCIES }, allow_nil: true
-
   # Report type constants
   REPORT_TYPES = %w[
     executive_dashboard
@@ -46,6 +37,15 @@ class AnalyticsReport < ApplicationRecord
     yearly
     on_demand
   ].freeze
+
+  belongs_to :organization
+  belongs_to :created_by, class_name: "User"
+  belongs_to :scheduled_by, class_name: "User", optional: true
+
+  validates :name, presence: true, length: { maximum: 255 }
+  validates :report_type, presence: true, inclusion: { in: REPORT_TYPES }
+  validates :status, presence: true, inclusion: { in: STATUSES }
+  validates :frequency, inclusion: { in: FREQUENCIES }, allow_nil: true
 
   # Data format constants
   DATA_FORMATS = %w[
