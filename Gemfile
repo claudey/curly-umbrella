@@ -97,7 +97,7 @@ gem "enum_help", "~> 0.0.17"
 
 # Multi-factor authentication
 gem "rotp", "~> 6.3"
-gem "rqrcode", "~> 2.2"
+gem "rqrcode", "~> 3.1"
 
 # SMS and communication
 gem "twilio-ruby", "~> 7.3"
