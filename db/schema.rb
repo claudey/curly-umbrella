@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_22_211838) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_29_081323) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -181,6 +181,22 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_22_211838) do
     t.index ["user_id", "user_type"], name: "user_index"
   end
 
+  create_table "backup_records", force: :cascade do |t|
+    t.string "backup_type"
+    t.string "status"
+    t.datetime "started_at"
+    t.datetime "completed_at"
+    t.string "file_path"
+    t.bigint "file_size"
+    t.boolean "integrity_verified"
+    t.text "metadata"
+    t.text "error_details"
+    t.text "verification_details"
+    t.decimal "duration_seconds"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "brokerage_agents", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "organization_id", null: false
@@ -195,6 +211,39 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_22_211838) do
     t.index ["organization_id"], name: "index_brokerage_agents_on_organization_id"
     t.index ["user_id", "organization_id"], name: "index_brokerage_agents_on_user_id_and_organization_id", unique: true
     t.index ["user_id"], name: "index_brokerage_agents_on_user_id"
+  end
+
+  create_table "business_metric_snapshots", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.datetime "snapshot_timestamp"
+    t.integer "period_hours"
+    t.text "metrics_data"
+    t.integer "total_records"
+    t.decimal "avg_value"
+    t.decimal "min_value"
+    t.decimal "max_value"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_business_metric_snapshots_on_organization_id"
+  end
+
+  create_table "business_metrics", force: :cascade do |t|
+    t.string "metric_name", null: false
+    t.decimal "metric_value", precision: 15, scale: 4, null: false
+    t.string "metric_unit", null: false
+    t.string "metric_category", null: false
+    t.datetime "recorded_at", null: false
+    t.integer "period_hours", null: false
+    t.text "metadata"
+    t.bigint "organization_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["metric_category"], name: "index_business_metrics_on_metric_category"
+    t.index ["metric_name"], name: "index_business_metrics_on_metric_name"
+    t.index ["organization_id", "metric_name", "recorded_at"], name: "idx_on_organization_id_metric_name_recorded_at_a69524e434"
+    t.index ["organization_id"], name: "index_business_metrics_on_organization_id"
+    t.index ["period_hours"], name: "index_business_metrics_on_period_hours"
+    t.index ["recorded_at"], name: "index_business_metrics_on_recorded_at"
   end
 
   create_table "clients", force: :cascade do |t|
@@ -252,6 +301,22 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_22_211838) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["insurance_company_id"], name: "index_company_preferences_on_insurance_company_id", unique: true
+  end
+
+  create_table "compliance_reports", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.string "report_type"
+    t.integer "status"
+    t.string "title"
+    t.text "description"
+    t.text "configuration"
+    t.text "data"
+    t.text "metadata"
+    t.datetime "generated_at"
+    t.datetime "expires_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_compliance_reports_on_organization_id"
   end
 
   create_table "distribution_analytics", force: :cascade do |t|
@@ -315,6 +380,33 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_22_211838) do
     t.index ["tags"], name: "index_documents_on_tags", using: :gin
     t.index ["user_id", "created_at"], name: "idx_documents_user_created"
     t.index ["user_id"], name: "index_documents_on_user_id"
+  end
+
+  create_table "error_reports", force: :cascade do |t|
+    t.string "exception_class", null: false
+    t.text "message", null: false
+    t.string "severity", null: false
+    t.string "category", null: false
+    t.string "fingerprint", null: false
+    t.text "backtrace"
+    t.text "context"
+    t.datetime "occurred_at", null: false
+    t.string "environment"
+    t.string "application_version"
+    t.string "request_id"
+    t.bigint "user_id"
+    t.bigint "organization_id"
+    t.boolean "resolved", default: false
+    t.integer "occurrence_count", default: 1
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category"], name: "index_error_reports_on_category"
+    t.index ["fingerprint"], name: "index_error_reports_on_fingerprint"
+    t.index ["occurred_at"], name: "index_error_reports_on_occurred_at"
+    t.index ["organization_id"], name: "index_error_reports_on_organization_id"
+    t.index ["resolved"], name: "index_error_reports_on_resolved"
+    t.index ["severity"], name: "index_error_reports_on_severity"
+    t.index ["user_id"], name: "index_error_reports_on_user_id"
   end
 
   create_table "feature_flags", force: :cascade do |t|
@@ -769,6 +861,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_22_211838) do
     t.index ["user_id"], name: "index_sms_logs_on_user_id"
   end
 
+  create_table "solid_cache_entries", force: :cascade do |t|
+    t.binary "key", null: false
+    t.binary "value", null: false
+    t.datetime "created_at", null: false
+    t.bigint "key_hash", null: false
+    t.integer "byte_size", null: false
+    t.index ["byte_size"], name: "index_solid_cache_entries_on_byte_size"
+    t.index ["key_hash", "byte_size"], name: "index_solid_cache_entries_on_key_hash_and_byte_size"
+    t.index ["key_hash"], name: "index_solid_cache_entries_on_key_hash", unique: true
+  end
+
   create_table "user_roles", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "role_id", null: false
@@ -855,14 +958,19 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_22_211838) do
   add_foreign_key "audits", "organizations"
   add_foreign_key "brokerage_agents", "organizations"
   add_foreign_key "brokerage_agents", "users"
+  add_foreign_key "business_metric_snapshots", "organizations"
+  add_foreign_key "business_metrics", "organizations"
   add_foreign_key "clients", "organizations"
   add_foreign_key "clients", "users"
   add_foreign_key "company_preferences", "insurance_companies"
+  add_foreign_key "compliance_reports", "organizations"
   add_foreign_key "distribution_analytics", "insurance_companies"
   add_foreign_key "distribution_analytics", "motor_applications"
   add_foreign_key "documents", "organizations"
   add_foreign_key "documents", "users"
   add_foreign_key "documents", "users", column: "archived_by_id"
+  add_foreign_key "error_reports", "organizations"
+  add_foreign_key "error_reports", "users"
   add_foreign_key "feature_flags", "organizations"
   add_foreign_key "feature_flags", "users", column: "created_by_id"
   add_foreign_key "feature_flags", "users", column: "updated_by_id"
