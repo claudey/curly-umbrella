@@ -116,7 +116,7 @@ gem "redis", "~> 5.0"
 gem "newrelic_rpm", "~> 9.19"
 
 # API Development
-gem "jwt", "~> 2.9"
+gem "jwt", "~> 3.1"
 gem "rack-cors", "~> 3.0"
 gem "rack-attack", "~> 6.7"
 gem "secure_headers", "~> 7.1"
