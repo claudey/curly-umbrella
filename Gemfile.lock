@@ -108,7 +108,7 @@ GEM
       msgpack (~> 1.2)
     brakeman (7.1.0)
       racc
-    brevo (2.0.0)
+    brevo (4.0.0)
       addressable (~> 2.3, >= 2.3.0)
       json (~> 2.1, >= 2.1.0)
       typhoeus (~> 1.0, >= 1.0.1)
@@ -484,7 +484,7 @@ DEPENDENCIES
   benchmark-ips (~> 2.14)
   bootsnap
   brakeman
-  brevo (~> 2.0)
+  brevo (~> 4.0)
   bullet
   bundler-audit (~> 0.9)
   capybara (~> 3.40)
