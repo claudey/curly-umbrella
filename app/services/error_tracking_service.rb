@@ -118,19 +118,19 @@ class ErrorTrackingService
   def determine_category(exception)
     case exception
     when ActiveRecord::ActiveRecordError, PG::Error
-      "database"
+      "database_error"
     when Net::OpenTimeout, Net::ReadTimeout, Timeout::Error, SocketError
-      "network"
+      "network_error"
     when SecurityError
-      "security"
+      "security_error"
     when ActionController::InvalidAuthenticityToken
-      "authentication"
+      "authentication_error"
     when ActionController::ParameterMissing, ActiveRecord::RecordInvalid
-      "validation"
+      "validation_error"
     when NoMethodError, ArgumentError, TypeError
-      "application"
+      "application_error"
     else
-      "application"
+      "application_error"
     end
   end
 

@@ -57,7 +57,8 @@
       "Bash(RAILS_ENV=production rails db:setup)",
       "Bash(RAILS_ENV=production rails db:migrate)",
       "Bash(RAILS_ENV=production bundle exec rails runner \"puts ''Testing service fixes:''; puts IpBlockingService.instance.whitelisted?(''127.0.0.1'')\")",
-      "Bash(RAILS_ENV=production bundle exec rails runner \"puts ''Testing all service fixes:''; puts IpBlockingService.instance.whitelisted?(''127.0.0.1'')\")"
+      "Bash(RAILS_ENV=production bundle exec rails runner \"puts ''Testing all service fixes:''; puts IpBlockingService.instance.whitelisted?(''127.0.0.1'')\")",
+      "Bash(RAILS_ENV=production bundle exec rails runner \"puts ''Application and database working correctly with all fixes!''\")"
     ],
     "deny": [],
     "ask": []
