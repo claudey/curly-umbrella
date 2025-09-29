@@ -1,16 +1,18 @@
 class DashboardWidgetComponent < ApplicationComponent
-  option :title, Types::String
-  option :size, Types::String, default: proc { "medium" } # small, medium, large, full
-  option :type, Types::String, default: proc { "default" } # default, chart, metric, list, activity
-  option :refresh_url, Types::String.optional, default: proc { nil }
-  option :auto_refresh, Types::Integer.optional, default: proc { nil } # seconds
-  option :collapsible, Types::Bool, default: proc { false }
-  option :removable, Types::Bool, default: proc { false }
-  option :draggable, Types::Bool, default: proc { false }
-  option :loading, Types::Bool, default: proc { false }
-  option :error, Types::String.optional, default: proc { nil }
-  option :actions, Types::Array, default: proc { [] }
-  option :classes, Types::String, default: proc { "" }
+  def initialize(title:, size: "medium", type: "default", refresh_url: nil, auto_refresh: nil, collapsible: false, removable: false, draggable: false, loading: false, error: nil, actions: [], classes: "")
+    @title = title
+    @size = size
+    @type = type
+    @refresh_url = refresh_url
+    @auto_refresh = auto_refresh
+    @collapsible = collapsible
+    @removable = removable
+    @draggable = draggable
+    @loading = loading
+    @error = error
+    @actions = actions
+    @classes = classes
+  end
 
   private
 

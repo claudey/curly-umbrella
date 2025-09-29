@@ -1,12 +1,14 @@
 class ProgressBarComponent < ApplicationComponent
-  option :current_step, Types::Integer
-  option :total_steps, Types::Integer
-  option :steps, Types::Array.optional, default: proc { [] }
-  option :color, Types::String, default: proc { "primary" }
-  option :size, Types::String, default: proc { "normal" }
-  option :show_labels, Types::Bool, default: proc { true }
-  option :show_percentage, Types::Bool, default: proc { false }
-  option :animated, Types::Bool, default: proc { true }
+  def initialize(current_step:, total_steps:, steps: [], color: "primary", size: "normal", show_labels: true, show_percentage: false, animated: true)
+    @current_step = current_step
+    @total_steps = total_steps
+    @steps = steps
+    @color = color
+    @size = size
+    @show_labels = show_labels
+    @show_percentage = show_percentage
+    @animated = animated
+  end
 
   private
 

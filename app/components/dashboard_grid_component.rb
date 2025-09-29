@@ -1,11 +1,13 @@
 class DashboardGridComponent < ApplicationComponent
-  option :columns, Types::Integer, default: proc { 4 }
-  option :gap, Types::String, default: proc { "4" } # Tailwind gap class number
-  option :min_height, Types::String, default: proc { "200px" }
-  option :responsive, Types::Bool, default: proc { true }
-  option :sortable, Types::Bool, default: proc { false }
-  option :customizable, Types::Bool, default: proc { false }
-  option :grid_id, Types::String, default: proc { "dashboard-grid" }
+  def initialize(columns: 4, gap: "4", min_height: "200px", responsive: true, sortable: false, customizable: false, grid_id: "dashboard-grid")
+    @columns = columns
+    @gap = gap
+    @min_height = min_height
+    @responsive = responsive
+    @sortable = sortable
+    @customizable = customizable
+    @grid_id = grid_id
+  end
 
   private
 

@@ -1,15 +1,17 @@
 class DataTableComponent < ApplicationComponent
-  option :headers, Types::Array
-  option :rows, Types::Array
-  option :sortable, Types::Bool, default: proc { true }
-  option :searchable, Types::Bool, default: proc { false }
-  option :paginated, Types::Bool, default: proc { false }
-  option :striped, Types::Bool, default: proc { true }
-  option :compact, Types::Bool, default: proc { false }
-  option :actions, Types::Array, default: proc { [] }
-  option :empty_message, Types::String, default: proc { "No data available" }
-  option :loading, Types::Bool, default: proc { false }
-  option :id, Types::String, default: proc { "data-table" }
+  def initialize(headers:, rows:, sortable: true, searchable: false, paginated: false, striped: true, compact: false, actions: [], empty_message: "No data available", loading: false, id: "data-table")
+    @headers = headers
+    @rows = rows
+    @sortable = sortable
+    @searchable = searchable
+    @paginated = paginated
+    @striped = striped
+    @compact = compact
+    @actions = actions
+    @empty_message = empty_message
+    @loading = loading
+    @id = id
+  end
 
   private
 

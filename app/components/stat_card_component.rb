@@ -1,13 +1,15 @@
 class StatCardComponent < ApplicationComponent
-  option :title, Types::String
-  option :value, Types::Any
-  option :description, Types::String.optional, default: proc { nil }
-  option :icon, Types::String.optional, default: proc { nil }
-  option :color, Types::String, default: proc { "primary" }
-  option :size, Types::String, default: proc { "normal" }
-  option :trend, Types::Hash.optional, default: proc { nil }
-  option :link_to, Types::String.optional, default: proc { nil }
-  option :classes, Types::String, default: proc { "" }
+  def initialize(title:, value:, description: nil, icon: nil, color: "primary", size: "normal", trend: nil, link_to: nil, classes: "")
+    @title = title
+    @value = value
+    @description = description
+    @icon = icon
+    @color = color
+    @size = size
+    @trend = trend
+    @link_to = link_to
+    @classes = classes
+  end
 
   private
 

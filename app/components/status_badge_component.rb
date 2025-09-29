@@ -1,8 +1,10 @@
 class StatusBadgeComponent < ApplicationComponent
-  option :status, Types::String
-  option :size, Types::String, default: proc { "sm" }
-  option :pulse, Types::Bool, default: proc { false }
-  option :outlined, Types::Bool, default: proc { false }
+  def initialize(status:, size: "sm", pulse: false, outlined: false)
+    @status = status
+    @size = size
+    @pulse = pulse
+    @outlined = outlined
+  end
 
   STATUS_CONFIGS = {
     # Application statuses

@@ -1,21 +1,23 @@
 class FormFieldComponent < ApplicationComponent
-  option :form, Types::Any
-  option :field, Types::Symbol
-  option :type, Types::String, default: proc { "text" }
-  option :label, Types::String.optional, default: proc { nil }
-  option :placeholder, Types::String.optional, default: proc { nil }
-  option :help_text, Types::String.optional, default: proc { nil }
-  option :required, Types::Bool, default: proc { false }
-  option :disabled, Types::Bool, default: proc { false }
-  option :readonly, Types::Bool, default: proc { false }
-  option :options, Types::Array.optional, default: proc { nil } # For select fields
-  option :multiple, Types::Bool, default: proc { false }
-  option :size, Types::String, default: proc { "normal" } # xs, sm, normal, lg
-  option :validation, Types::Hash, default: proc { {} }
-  option :stimulus_controller, Types::String.optional, default: proc { nil }
-  option :stimulus_data, Types::Hash, default: proc { {} }
-  option :wrapper_classes, Types::String, default: proc { "" }
-  option :input_classes, Types::String, default: proc { "" }
+  def initialize(form:, field:, type: "text", label: nil, placeholder: nil, help_text: nil, required: false, disabled: false, readonly: false, options: nil, multiple: false, size: "normal", validation: {}, stimulus_controller: nil, stimulus_data: {}, wrapper_classes: "", input_classes: "")
+    @form = form
+    @field = field
+    @type = type
+    @label = label
+    @placeholder = placeholder
+    @help_text = help_text
+    @required = required
+    @disabled = disabled
+    @readonly = readonly
+    @options = options
+    @multiple = multiple
+    @size = size
+    @validation = validation
+    @stimulus_controller = stimulus_controller
+    @stimulus_data = stimulus_data
+    @wrapper_classes = wrapper_classes
+    @input_classes = input_classes
+  end
 
   private
 
