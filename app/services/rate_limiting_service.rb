@@ -271,7 +271,7 @@ class RateLimitingService
 
     # Check for local IP ranges if it's an IP
     if identifier =~ /\A(?:[0-9]{1,3}\.){3}[0-9]{1,3}\z/
-      IpBlockingService.new.send(:local_ip?, identifier)
+      IpBlockingService.instance.send(:local_ip?, identifier)
     else
       false
     end

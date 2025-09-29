@@ -123,7 +123,7 @@ class ErrorTrackingService
       "network"
     when SecurityError
       "security"
-    when Devise::InvalidAuthenticityToken
+    when ActionController::InvalidAuthenticityToken
       "authentication"
     when ActionController::ParameterMissing, ActiveRecord::RecordInvalid
       "validation"

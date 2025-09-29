@@ -82,7 +82,7 @@ class Admin::SecurityDashboardController < ApplicationController
     ip_address = params[:ip_address]
     reason = params[:reason] || "Added to whitelist by admin"
 
-    IpBlockingService.new.add_to_whitelist(ip_address, reason)
+    IpBlockingService.instance.add_to_whitelist(ip_address, reason)
     flash[:notice] = "IP #{ip_address} has been added to whitelist."
 
     redirect_to admin_security_dashboard_ip_blocks_path
