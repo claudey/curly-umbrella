@@ -53,7 +53,7 @@ class ErrorTrackingService
   rescue => nested_error
     # Fallback logging to prevent infinite loops
     Rails.logger.error "ErrorTrackingService failed: #{nested_error.message}"
-    Rails.logger.error "Original error: #{exception}" if exception
+    Rails.logger.error "Original error: #{exception.respond_to?(:message) ? exception.message : exception}" if exception
   end
 
   def track_custom_error(message, severity, category, context)
@@ -76,6 +76,11 @@ class ErrorTrackingService
   private
 
   def extract_error_details(exception, context)
+    # Handle case where exception might be a String
+    if exception.is_a?(String)
+      exception = StandardError.new(exception)
+    end
+
     {
       exception_class: exception.class.name,
       message: exception.message,

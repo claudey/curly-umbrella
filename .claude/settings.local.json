@@ -48,7 +48,8 @@
       "Bash(echo $RAILS_MASTER_KEY)",
       "Bash(RAILS_ENV=production bundle exec rake environment)",
       "Bash(RAILS_ENV=production bundle exec rake assets:precompile --trace)",
-      "Bash(RAILS_ENV=production bundle exec rails runner \"puts ''Rails application loaded successfully''\")"
+      "Bash(RAILS_ENV=production bundle exec rails runner \"puts ''Rails application loaded successfully''\")",
+      "Bash(RAILS_ENV=production bundle exec rails runner \"puts ''Application and database working correctly!''\")"
     ],
     "deny": [],
     "ask": []

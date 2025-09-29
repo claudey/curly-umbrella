@@ -378,6 +378,7 @@ GEM
       rspec-support (~> 3.13)
     rspec-support (3.13.5)
     rubyzip (3.1.0)
+    secure_headers (7.1.0)
     securerandom (0.4.1)
     selenium-webdriver (4.35.0)
       base64 (~> 0.2)
@@ -513,6 +514,7 @@ DEPENDENCIES
   rotp (~> 6.3)
   rqrcode (~> 2.2)
   rspec-rails (~> 7.1)
+  secure_headers (~> 7.1)
   selenium-webdriver (~> 4.25)
   shoulda-matchers (~> 6.4)
   solid_cable
