@@ -9,11 +9,11 @@ local:
 # Use bin/rails credentials:edit to set the R2 secrets (as r2:access_key_id|secret_access_key|bucket)
 r2:
   service: S3
-  access_key_id: <%= ENV['R2_ACCESS_KEY_ID'] %>
-  secret_access_key: <%= ENV['R2_SECRET_ACCESS_KEY'] %>
+  access_key_id: <%= ENV['R2_ACCESS_KEY_ID'] || 'dummy' %>
+  secret_access_key: <%= ENV['R2_SECRET_ACCESS_KEY'] || 'dummy' %>
   region: auto
-  bucket: <%= ENV['R2_BUCKET'] %>
-  endpoint: <%= ENV['R2_ENDPOINT'] %>
+  bucket: <%= ENV['R2_BUCKET'] || 'dummy-bucket' %>
+  endpoint: <%= ENV['R2_ENDPOINT'] || 'https://dummy.r2.cloudflarestorage.com' %>
   force_path_style: true
 
 # Use bin/rails credentials:edit to set the AWS secrets (as aws:access_key_id|secret_access_key)
