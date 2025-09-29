@@ -27,8 +27,8 @@ class ComplianceReport < ApplicationRecord
   }, _default: "generating"
 
   # Store report data as JSON
-  serialize :data, JSON
-  serialize :metadata, JSON
+  serialize :data, coder: JSON
+  serialize :metadata, coder: JSON
 
   before_save :set_defaults
   after_create :log_creation

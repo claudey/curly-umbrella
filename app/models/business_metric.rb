@@ -18,7 +18,7 @@ class BusinessMetric < ApplicationRecord
   scope :for_period_hours, ->(hours) { where(period_hours: hours) }
 
   # Store metadata as JSON
-  serialize :metadata, JSON
+  serialize :metadata, coder: JSON
 
   before_save :set_defaults
   after_create :update_metric_cache

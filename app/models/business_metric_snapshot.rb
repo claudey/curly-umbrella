@@ -13,7 +13,7 @@ class BusinessMetricSnapshot < ApplicationRecord
   scope :in_timeframe, ->(start_time, end_time) { where(snapshot_timestamp: start_time..end_time) }
 
   # Store metrics data as JSON
-  serialize :metrics_data, JSON
+  serialize :metrics_data, coder: JSON
 
   before_save :calculate_summary_stats
   after_create :cache_latest_snapshot

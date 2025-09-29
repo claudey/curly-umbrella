@@ -20,8 +20,8 @@ class ErrorReport < ApplicationRecord
   scope :in_last_days, ->(days) { where("occurred_at > ?", days.days.ago) }
 
   # Store arrays and hashes as JSON
-  serialize :backtrace, JSON
-  serialize :context, JSON
+  serialize :backtrace, coder: JSON
+  serialize :context, coder: JSON
 
   before_save :set_defaults
   after_create :update_occurrence_count

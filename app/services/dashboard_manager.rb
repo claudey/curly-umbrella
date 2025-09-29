@@ -242,5 +242,5 @@ class UserDashboard < ApplicationRecord
   validates :dashboard_type, presence: true
   validates :layout_config, presence: true
 
-  serialize :layout_config, JSON
+  serialize :layout_config, coder: JSON
 end
