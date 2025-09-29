@@ -49,7 +49,14 @@
       "Bash(RAILS_ENV=production bundle exec rake environment)",
       "Bash(RAILS_ENV=production bundle exec rake assets:precompile --trace)",
       "Bash(RAILS_ENV=production bundle exec rails runner \"puts ''Rails application loaded successfully''\")",
-      "Bash(RAILS_ENV=production bundle exec rails runner \"puts ''Application and database working correctly!''\")"
+      "Bash(RAILS_ENV=production bundle exec rails runner \"puts ''Application and database working correctly!''\")",
+      "Bash(RAILS_ENV=production bundle exec rails runner \"puts ''Application loaded successfully with service fixes''\")",
+      "Bash(RAILS_ENV=production bundle exec rails runner \"puts ''IpBlockingService methods:''; puts IpBlockingService.methods.sort\")",
+      "Bash(RAILS_ENV=production bundle exec rails runner \"puts ''Testing fixed service calls:''; puts IpBlockingService.instance.whitelisted?(''127.0.0.1'')\")",
+      "Bash(RAILS_ENV=production rails db:migrate:status)",
+      "Bash(RAILS_ENV=production rails db:setup)",
+      "Bash(RAILS_ENV=production rails db:migrate)",
+      "Bash(RAILS_ENV=production bundle exec rails runner \"puts ''Testing service fixes:''; puts IpBlockingService.instance.whitelisted?(''127.0.0.1'')\")"
     ],
     "deny": [],
     "ask": []

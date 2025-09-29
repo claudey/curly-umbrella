@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+require 'net/http'
+require 'timeout'
+require 'socket'
+
 class ErrorTrackingService
   include ActiveModel::Model
 
@@ -115,9 +119,9 @@ class ErrorTrackingService
     case exception
     when ActiveRecord::ActiveRecordError, PG::Error
       "database"
-    when Net::TimeoutError, Timeout::Error, SocketError
+    when Net::OpenTimeout, Net::ReadTimeout, Timeout::Error, SocketError
       "network"
-    when SecurityError, CanCan::AccessDenied
+    when SecurityError
       "security"
     when Devise::InvalidAuthenticityToken
       "authentication"

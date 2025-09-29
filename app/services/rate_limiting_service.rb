@@ -259,7 +259,7 @@ class RateLimitingService
     # Check if identifier is in whitelist
     # For IP addresses, delegate to IpBlockingService
     if identifier =~ /\A(?:[0-9]{1,3}\.){3}[0-9]{1,3}\z/
-      IpBlockingService.new.whitelisted?(identifier)
+      IpBlockingService.instance.whitelisted?(identifier)
     else
       false
     end
