@@ -15,9 +15,9 @@ class BackupRecord < ApplicationRecord
   scope :completed_today, -> { where(status: "completed", completed_at: Time.current.beginning_of_day..Time.current.end_of_day) }
 
   # Store JSON data
-  serialize :metadata, JSON
-  serialize :error_details, JSON
-  serialize :verification_details, JSON
+  serialize :metadata, coder: JSON
+  serialize :error_details, coder: JSON
+  serialize :verification_details, coder: JSON
 
   before_save :calculate_duration
   after_create :log_backup_started
